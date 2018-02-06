@@ -8,14 +8,11 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
 
 @Provider
-public class CorsFilter implements ContainerResponseFilter {
+public class CacheFilter implements ContainerResponseFilter {
 
     @Override
     public void filter(final ContainerRequestContext request,
                        final ContainerResponseContext response) throws IOException {
-        response.getHeaders().add("Access-Control-Allow-Origin", "*");
-        response.getHeaders().add("Access-Control-Allow-Headers", "origin, content-type, accept, authorization");
-        response.getHeaders().add("Access-Control-Allow-Credentials", "true");
-        response.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
+        response.getHeaders().add("Cache-Control", "no-cache");
     }
 }

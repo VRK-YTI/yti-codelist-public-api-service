@@ -56,6 +56,9 @@ public class JerseyConfig extends ResourceConfig {
         // CORS filtering.
         register(CorsFilter.class);
 
+        // Cache control headers to no cache.
+        register(CacheFilter.class);
+
         // Health.
         register(PingResource.class);
 
