@@ -254,7 +254,6 @@ abstract class AbstractBaseResource {
         appendValue(csv, csvSeparator, CONTENT_HEADER_SOURCE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_LEGALBASE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_GOVERNANCEPOLICY);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_LICENSE);
         prefLabelLanguages.forEach(language -> {
             appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         });
@@ -278,7 +277,6 @@ abstract class AbstractBaseResource {
             appendValue(csv, csvSeparator, codeScheme.getSource());
             appendValue(csv, csvSeparator, codeScheme.getLegalBase());
             appendValue(csv, csvSeparator, codeScheme.getGovernancePolicy());
-            appendValue(csv, csvSeparator, codeScheme.getLicense());
             prefLabelLanguages.forEach(language -> {
                 appendValue(csv, csvSeparator, codeScheme.getPrefLabel().get(language));
             });
@@ -324,7 +322,6 @@ abstract class AbstractBaseResource {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_SOURCE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LEGALBASE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_GOVERNANCEPOLICY);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LICENSE);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
@@ -351,7 +348,6 @@ abstract class AbstractBaseResource {
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getSource()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getLegalBase()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getGovernancePolicy()));
-            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getLicense()));
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(codeScheme.getPrefLabel().get(language));
             }
