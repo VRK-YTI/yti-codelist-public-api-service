@@ -56,6 +56,7 @@ public interface Domain {
                        final String codeSchemeCodeValue,
                        final String codeCodeValue,
                        final String prefLabel,
+                       final Integer hierarchyLevel,
                        final String broaderCodeId,
                        final List<String> statuses,
                        final Date after,

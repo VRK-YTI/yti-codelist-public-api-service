@@ -216,6 +216,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                    @ApiParam(value = "Code code.") @QueryParam("codeValue") final String codeCodeValue,
                                                    @ApiParam(value = "Code PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                                                    @ApiParam(value = "Code Broader Code Id.") @QueryParam("broaderCodeId") final String broaderCodeId,
+                                                   @ApiParam(value = "Filter for hierarchy level.") @QueryParam("hierarchyLevel") final Integer hierarchyLevel,
                                                    @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
                                                    @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
@@ -226,7 +227,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final CodeScheme codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
             if (FORMAT_CSV.equalsIgnoreCase(format)) {
-                final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, broaderCodeId, statusList, Meta.parseAfterFromString(after), null);
+                final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, statusList, Meta.parseAfterFromString(after), null);
                 final String csv = constructCodesCsv(codes);
                 final StreamingOutput stream = output -> {
                     try {
@@ -237,7 +238,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 };
                 return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODES)).build();
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, broaderCodeId, statusList, Meta.parseAfterFromString(after), null);
+                final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, statusList, Meta.parseAfterFromString(after), null);
                 final Workbook workbook = constructCodesExcel(format, codes);
                 final StreamingOutput stream = output -> {
                     try {
@@ -249,7 +250,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODES)).build();
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-                final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, broaderCodeId, statusList, meta.getAfter(), meta);
+                final Set<Code> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, statusList, meta.getAfter(), meta);
                 if (pageSize != null && from + pageSize < meta.getTotalResults()) {
                     meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES, after, pageSize, from + pageSize));
                 }

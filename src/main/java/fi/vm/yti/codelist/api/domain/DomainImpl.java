@@ -301,6 +301,7 @@ public class DomainImpl implements Domain {
                               final String codeSchemeCodeValue,
                               final String codeCodeValue,
                               final String prefLabel,
+                              final Integer hierarchyLevel,
                               final String broaderCodeId,
                               final List<String> statuses,
                               final Date after,
@@ -323,6 +324,9 @@ public class DomainImpl implements Domain {
                 .minimumShouldMatch(1));
             builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
+            if (hierarchyLevel != null) {
+                builder.must(QueryBuilders.rangeQuery("hierarchyLevel").lte(hierarchyLevel));
+            }
             if (broaderCodeId != null && !broaderCodeId.isEmpty()) {
                 builder.must(matchQuery("broaderCodeId", broaderCodeId.toLowerCase()));
             }
