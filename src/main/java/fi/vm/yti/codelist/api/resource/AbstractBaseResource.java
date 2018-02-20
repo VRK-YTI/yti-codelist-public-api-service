@@ -436,7 +436,7 @@ abstract class AbstractBaseResource {
                 appendValue(csv, csvSeparator, code.getDescription().get(language));
             });
             appendValue(csv, csvSeparator, code.getShortName());
-            appendValue(csv, csvSeparator, code.getHierarchyLevel());
+            appendValue(csv, csvSeparator, code.getHierarchyLevel().toString());
             appendValue(csv, csvSeparator, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             appendValue(csv, csvSeparator, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "", true);
         }
@@ -492,7 +492,7 @@ abstract class AbstractBaseResource {
                 row.createCell(k++).setCellValue(code.getDescription().get(language));
             }
             row.createCell(k++).setCellValue(checkEmptyValue(code.getShortName()));
-            row.createCell(k++).setCellValue(checkEmptyValue(code.getHierarchyLevel()));
+            row.createCell(k++).setCellValue(checkEmptyValue(code.getHierarchyLevel().toString()));
             row.createCell(k++).setCellValue(code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             row.createCell(k).setCellValue(code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
         }
