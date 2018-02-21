@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +38,39 @@ import fi.vm.yti.codelist.common.model.CodeRegistry;
 import fi.vm.yti.codelist.common.model.CodeScheme;
 import fi.vm.yti.codelist.common.model.Meta;
 import fi.vm.yti.codelist.common.model.Status;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_BROADER;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_CHANGENOTE_PREFIX;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_CLASSIFICATION;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_CODEVALUE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_DEFINITION_PREFIX;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_DESCRIPTION_PREFIX;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_ENDDATE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_GOVERNANCEPOLICY;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_HIERARCHYLEVEL;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_ID;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_LEGALBASE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_PREFLABEL_PREFIX;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_SHORTNAME;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_SOURCE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_STARTDATE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_STATUS;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.CONTENT_HEADER_VERSION;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.EXCEL_SHEET_CODEREGISTRIES;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.EXCEL_SHEET_CODES;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.EXCEL_SHEET_CODESCHEMES;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FIELD_NAME_ID;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FIELD_NAME_URI;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_CODE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_CODEREGISTRY;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_CODESCHEME;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_DATACLASSIFICATION;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_EXTERNALREFERENCE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_ORGANIZATION;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_PROPERTYTYPE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_CSV;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_EXCEL;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_EXCEL_XLS;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_EXCEL_XLSX;
 
 abstract class AbstractBaseResource {
 
@@ -436,7 +467,7 @@ abstract class AbstractBaseResource {
                 appendValue(csv, csvSeparator, code.getDescription().get(language));
             });
             appendValue(csv, csvSeparator, code.getShortName());
-            appendValue(csv, csvSeparator, code.getHierarchyLevel().toString());
+            appendValue(csv, csvSeparator, code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null);
             appendValue(csv, csvSeparator, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             appendValue(csv, csvSeparator, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "", true);
         }
@@ -492,7 +523,7 @@ abstract class AbstractBaseResource {
                 row.createCell(k++).setCellValue(code.getDescription().get(language));
             }
             row.createCell(k++).setCellValue(checkEmptyValue(code.getShortName()));
-            row.createCell(k++).setCellValue(checkEmptyValue(code.getHierarchyLevel().toString()));
+            row.createCell(k++).setCellValue(checkEmptyValue(code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null));
             row.createCell(k++).setCellValue(code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             row.createCell(k).setCellValue(code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
         }
@@ -536,6 +567,20 @@ abstract class AbstractBaseResource {
         }
     }
 
+    private String formatDataClassificationsToString(final Set<Code> classifications) {
+        final StringBuilder csvClassifications = new StringBuilder();
+        int i = 0;
+        for (final Code code : classifications) {
+            i++;
+            csvClassifications.append(code.getCodeValue().trim());
+            if (i < classifications.size()) {
+                csvClassifications.append(";");
+            }
+            i++;
+        }
+        return csvClassifications.toString();
+    }
+
     static class FilterModifier extends ObjectWriterModifier {
 
         private final FilterProvider provider;
@@ -552,19 +597,5 @@ abstract class AbstractBaseResource {
                                    final JsonGenerator g) throws IOException {
             return w.with(provider);
         }
-    }
-
-    private String formatDataClassificationsToString(final Set<Code> classifications) {
-        final StringBuilder csvClassifications = new StringBuilder();
-        int i = 0;
-        for (final Code code : classifications) {
-            i++;
-            csvClassifications.append(code.getCodeValue().trim());
-            if (i < classifications.size()) {
-                csvClassifications.append(";");
-            }
-            i++;
-        }
-        return csvClassifications.toString();
     }
 }
