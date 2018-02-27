@@ -8,7 +8,6 @@ import java.util.Set;
 
 import javax.inject.Singleton;
 
-import org.apache.lucene.search.Query;
 import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -32,7 +31,16 @@ import fi.vm.yti.codelist.common.model.CodeScheme;
 import fi.vm.yti.codelist.common.model.ExternalReference;
 import fi.vm.yti.codelist.common.model.Meta;
 import fi.vm.yti.codelist.common.model.PropertyType;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODEREGISTRY;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODESCHEME;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_EXTERNALREFERENCE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_PROPERTYTYPE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODEREGISTRY;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODESCHEME;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_EXTERNALREFERENCE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_PROPERTYTYPE;
 import static java.lang.Math.toIntExact;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
