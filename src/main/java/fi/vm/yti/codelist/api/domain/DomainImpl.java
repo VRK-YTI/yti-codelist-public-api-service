@@ -44,6 +44,11 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_PROP
 import static java.lang.Math.toIntExact;
 import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
 import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
+import static org.elasticsearch.index.query.QueryBuilders.multiMatchQuery;
+import static org.elasticsearch.index.query.QueryBuilders.nestedQuery;
+import static org.elasticsearch.index.query.QueryBuilders.prefixQuery;
+import static org.elasticsearch.index.query.QueryBuilders.rangeQuery;
+import static org.elasticsearch.index.query.QueryBuilders.termsQuery;
 
 @Singleton
 @Service
@@ -110,7 +115,7 @@ public class DomainImpl implements Domain {
 
             final BoolQueryBuilder builder = constructSearchQuery(codeRegistryCodeValue, codeRegistryPrefLabel, after);
             if (organizations != null && !organizations.isEmpty()) {
-                builder.must(QueryBuilders.termsQuery("organizations.id.keyword", organizations));
+                builder.must(termsQuery("organizations.id.keyword", organizations));
             }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -236,20 +241,19 @@ public class DomainImpl implements Domain {
                 .setFrom(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(codeSchemeCodeValue, codeSchemePrefLabel, after);
             if (organizationId != null) {
-                builder.must(QueryBuilders.nestedQuery("codeRegistry.organizations", matchQuery("codeRegistry.organizations.id", organizationId.toLowerCase()), ScoreMode.None));
-//                builder.must(QueryBuilders.matchQuery("codeRegistry.organizations.id", organizationId.toLowerCase()));
+                builder.must(nestedQuery("codeRegistry.organizations", matchQuery("codeRegistry.organizations.id", organizationId.toLowerCase()), ScoreMode.None));
             }
             if (codeRegistryCodeValue != null) {
                 builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             }
             if (codeRegistryPrefLabel != null) {
-                builder.must(QueryBuilders.nestedQuery("codeRegistry.prefLabel", QueryBuilders.multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+                builder.must(nestedQuery("codeRegistry.prefLabel", multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             }
             if (dataClassifications != null && !dataClassifications.isEmpty()) {
-                builder.must(QueryBuilders.nestedQuery("dataClassifications", QueryBuilders.termsQuery("dataClassifications.codeValue.keyword", dataClassifications), ScoreMode.None));
+                builder.must(nestedQuery("dataClassifications", termsQuery("dataClassifications.codeValue.keyword", dataClassifications), ScoreMode.None));
             }
             if (statuses != null && !statuses.isEmpty()) {
-                builder.must(QueryBuilders.termsQuery("status.keyword", statuses));
+                builder.must(termsQuery("status.keyword", statuses));
             }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -333,13 +337,13 @@ public class DomainImpl implements Domain {
             builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
             if (hierarchyLevel != null) {
-                builder.must(QueryBuilders.rangeQuery("hierarchyLevel").lte(hierarchyLevel));
+                builder.must(rangeQuery("hierarchyLevel").lte(hierarchyLevel));
             }
             if (broaderCodeId != null && !broaderCodeId.isEmpty()) {
                 builder.must(matchQuery("broaderCodeId", broaderCodeId.toLowerCase()));
             }
             if (!statuses.isEmpty()) {
-                builder.must(QueryBuilders.termsQuery("status.keyword", statuses));
+                builder.must(termsQuery("status.keyword", statuses));
             }
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
@@ -401,7 +405,7 @@ public class DomainImpl implements Domain {
                 .setFrom(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(null, propertyTypePrefLabel, after);
             if (context != null) {
-                builder.must(QueryBuilders.prefixQuery("context", context.toLowerCase()));
+                builder.must(prefixQuery("context", context.toLowerCase()));
             }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -465,11 +469,11 @@ public class DomainImpl implements Domain {
             final BoolQueryBuilder builder = constructSearchQuery(null, externalReferencePrefLabel, after);
             searchRequest.setQuery(builder);
             if (codeScheme != null) {
-                builder.should(QueryBuilders.boolQuery()
-                    .should(QueryBuilders.boolQuery()
-                        .must(QueryBuilders.prefixQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()))
-                        .must(QueryBuilders.prefixQuery("parentCodeScheme.id.keyword", codeScheme.getId().toString().toLowerCase())))
-                    .should(QueryBuilders.boolQuery()
+                builder.should(boolQuery()
+                    .should(boolQuery()
+                        .must(prefixQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()))
+                        .must(prefixQuery("parentCodeScheme.id.keyword", codeScheme.getId().toString().toLowerCase())))
+                    .should(boolQuery()
                         .must(matchQuery("global", true))));
 
             }
@@ -492,15 +496,15 @@ public class DomainImpl implements Domain {
                                                   final Date after) {
         final BoolQueryBuilder builder = boolQuery();
         if (codeValue != null) {
-            builder.must(QueryBuilders.prefixQuery("codeValue", codeValue.toLowerCase()));
+            builder.must(prefixQuery("codeValue", codeValue.toLowerCase()));
         }
         if (prefLabel != null) {
-            builder.must(QueryBuilders.nestedQuery("prefLabel", QueryBuilders.multiMatchQuery(prefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            builder.must(nestedQuery("prefLabel", multiMatchQuery(prefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
         }
         if (after != null) {
             final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
             final String afterString = dateFormat.format(after);
-            builder.must(QueryBuilders.rangeQuery("modified").gt(afterString));
+            builder.must(rangeQuery("modified").gt(afterString));
         }
         return builder;
     }
