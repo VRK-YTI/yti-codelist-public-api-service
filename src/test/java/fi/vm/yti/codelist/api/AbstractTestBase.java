@@ -6,6 +6,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import javax.inject.Inject;
+
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.flush.FlushRequest;
@@ -16,7 +18,6 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,7 +29,18 @@ import fi.vm.yti.codelist.common.model.Code;
 import fi.vm.yti.codelist.common.model.CodeRegistry;
 import fi.vm.yti.codelist.common.model.CodeScheme;
 import fi.vm.yti.codelist.common.model.Status;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.API_BASE_PATH;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.API_CONTEXT_PATH_RESTAPI;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.API_PATH_VERSION_V1;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODEREGISTRY;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODESCHEME;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODEREGISTRY;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODESCHEME;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.LANGUAGE_CODE_EN;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.LANGUAGE_CODE_FI;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.LANGUAGE_CODE_SV;
 
 abstract public class AbstractTestBase {
 
@@ -49,10 +61,10 @@ abstract public class AbstractTestBase {
         "  }\n" +
         "}\n}";
 
-    @Autowired
+    @Inject
     private Client client;
 
-    @Autowired
+    @Inject
     private Domain domain;
 
     private CodeScheme createCodeScheme(final CodeRegistry codeRegistry,

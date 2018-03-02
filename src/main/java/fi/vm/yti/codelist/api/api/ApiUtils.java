@@ -5,7 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import javax.inject.Inject;
+
 import org.springframework.stereotype.Component;
 
 import fi.vm.yti.codelist.api.configuration.PublicApiServiceProperties;
@@ -16,7 +17,7 @@ public class ApiUtils {
 
     private final PublicApiServiceProperties publicApiServiceProperties;
 
-    @Autowired
+    @Inject
     public ApiUtils(final PublicApiServiceProperties publicApiServiceProperties) {
         this.publicApiServiceProperties = publicApiServiceProperties;
     }
