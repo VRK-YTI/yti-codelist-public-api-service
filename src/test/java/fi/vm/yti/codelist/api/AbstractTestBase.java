@@ -29,18 +29,7 @@ import fi.vm.yti.codelist.common.model.Code;
 import fi.vm.yti.codelist.common.model.CodeRegistry;
 import fi.vm.yti.codelist.common.model.CodeScheme;
 import fi.vm.yti.codelist.common.model.Status;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.API_BASE_PATH;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.API_CONTEXT_PATH_RESTAPI;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.API_PATH_VERSION_V1;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODE;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODEREGISTRY;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_CODESCHEME;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODE;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODEREGISTRY;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_TYPE_CODESCHEME;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.LANGUAGE_CODE_EN;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.LANGUAGE_CODE_FI;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.LANGUAGE_CODE_SV;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 abstract public class AbstractTestBase {
 

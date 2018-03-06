@@ -32,15 +32,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.API_PATH_CODESCHEMES;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.API_PATH_VERSION_V1;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_CODESCHEME;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_CSV;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_EXCEL;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_EXCEL_XLS;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_EXCEL_XLSX;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_JSON;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.METHOD_GET;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 /**
  * REST resources for CodeSchemes.
