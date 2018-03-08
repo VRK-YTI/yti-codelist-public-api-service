@@ -65,7 +65,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_EXTERNALREFERENCES);
         CodeScheme codeScheme = null;
         if (codeSchemeId != null && !codeSchemeId.isEmpty()) {
-            codeScheme = domain.getCodeSchemeWithId(codeSchemeId);
+            codeScheme = domain.getCodeScheme(codeSchemeId);
             if (codeScheme == null) {
                 final ResponseWrapper<ExternalReference> wrapper = new ResponseWrapper<>();
                 final Meta meta = new Meta();

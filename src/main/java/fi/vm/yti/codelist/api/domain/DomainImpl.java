@@ -40,6 +40,7 @@ public class DomainImpl implements Domain {
 
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
     private static int MAX_SIZE = 10000;
+    private static String ANALYZER_KEYWORD = "analyzer_keyword";
     private Client client;
 
     @Inject
@@ -54,10 +55,10 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODEREGISTRY)
                 .setTypes(ELASTIC_TYPE_CODEREGISTRY)
-                .addSort("codeValue.keyword", SortOrder.ASC);
+                .addSort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
-                .should(termQuery("id", codeRegistryCodeValue.toLowerCase()))
-                .should(termQuery("codeValue", codeRegistryCodeValue.toLowerCase()))
+                .should(matchQuery("id", codeRegistryCodeValue.toLowerCase()))
+                .should(matchQuery("codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD))
                 .minimumShouldMatch(1);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -93,7 +94,7 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODEREGISTRY)
                 .setTypes(ELASTIC_TYPE_CODEREGISTRY)
-                .addSort("codeValue.keyword", SortOrder.ASC)
+                .addSort("codeValue.raw", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
@@ -115,32 +116,6 @@ public class DomainImpl implements Domain {
         return codeRegistries;
     }
 
-    public CodeScheme getCodeSchemeWithId(final String codeSchemeId) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
-        if (exists) {
-            final ObjectMapper mapper = new ObjectMapper();
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODESCHEME)
-                .setTypes(ELASTIC_TYPE_CODESCHEME)
-                .addSort("codeValue.keyword", SortOrder.ASC);
-            final BoolQueryBuilder builder = boolQuery()
-                .must(termQuery("id", codeSchemeId.toLowerCase()));
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            if (response.getHits().getTotalHits() > 0) {
-                final SearchHit hit = response.getHits().getAt(0);
-                try {
-                    if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(), CodeScheme.class);
-                    }
-                } catch (IOException e) {
-                    LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
-                }
-            }
-        }
-        return null;
-    }
-
     public CodeScheme getCodeScheme(final String codeSchemeId) {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
@@ -148,13 +123,13 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODESCHEME)
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
-                .addSort("codeValue.keyword", SortOrder.ASC);
+                .addSort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
-                .should(termQuery("id", codeSchemeId.toLowerCase()))
-                .minimumShouldMatch(1);
+                .must(matchQuery("id", codeSchemeId.toLowerCase()));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
+                LOG.info("Found " + response.getHits().getTotalHits() + " CodeSchemes");
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
@@ -176,15 +151,16 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODESCHEME)
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
-                .addSort("codeValue.keyword", SortOrder.ASC);
+                .addSort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
-                .should(termQuery("id", codeSchemeCodeValue.toLowerCase()))
-                .should(termQuery("codeValue", codeSchemeCodeValue.toLowerCase()))
+                .should(matchQuery("id", codeSchemeCodeValue.toLowerCase()))
+                .should(matchQuery("codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD))
                 .minimumShouldMatch(1);
-            builder.must(termQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
+            builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
+                LOG.info("Found " + response.getHits().getTotalHits() + " CodeSchemes");
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
@@ -220,21 +196,21 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODESCHEME)
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
-                .addSort("codeValue.keyword", SortOrder.ASC)
+                .addSort("codeValue.raw", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(codeSchemeCodeValue, codeSchemePrefLabel, after);
             if (organizationId != null) {
-                builder.must(nestedQuery("codeRegistry.organizations", termQuery("codeRegistry.organizations.id", organizationId.toLowerCase()), ScoreMode.None));
+                builder.must(nestedQuery("codeRegistry.organizations", matchQuery("codeRegistry.organizations.id", organizationId.toLowerCase()), ScoreMode.None));
             }
             if (codeRegistryCodeValue != null) {
-                builder.must(termQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
+                builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
             }
             if (codeRegistryPrefLabel != null) {
                 builder.must(nestedQuery("codeRegistry.prefLabel", multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             }
             if (dataClassifications != null && !dataClassifications.isEmpty()) {
-                builder.must(nestedQuery("dataClassifications", termsQuery("dataClassifications.codeValue.keyword", dataClassifications), ScoreMode.None));
+                builder.must(nestedQuery("dataClassifications", termsQuery("dataClassifications.codeValue", dataClassifications), ScoreMode.None));
             }
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
@@ -263,14 +239,14 @@ public class DomainImpl implements Domain {
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE);
             final BoolQueryBuilder builder = boolQuery()
-                .should(termQuery("id", codeCodeValue.toLowerCase()))
-                .should(termQuery("codeValue", codeCodeValue.toLowerCase()))
+                .should(matchQuery("id", codeCodeValue.toLowerCase()))
+                .should(matchQuery("codeValue", codeCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD))
                 .minimumShouldMatch(1);
             builder.must(boolQuery()
-                .should(termQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase()))
-                .should(termQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()))
+                .should(matchQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase()))
+                .should(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD))
                 .minimumShouldMatch(1));
-            builder.must(termQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
+            builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
             searchRequest.setQuery(builder);
 
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -309,22 +285,22 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE)
-                .addSort("codeValue.keyword", SortOrder.ASC)
+                .addSort("codeValue.raw", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
             final BoolQueryBuilder builder = constructSearchQuery(codeCodeValue, prefLabel, after);
+            builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
             builder.must(boolQuery()
-                .should(termQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()))
-                .should(termQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase()))
+                .should(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD))
+                .should(matchQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase()))
                 .minimumShouldMatch(1));
-            builder.must(termQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()));
             searchRequest.setQuery(builder);
             if (hierarchyLevel != null) {
                 builder.must(rangeQuery("hierarchyLevel").lte(hierarchyLevel));
             }
             if (broaderCodeId != null && !broaderCodeId.isEmpty()) {
-                builder.must(termQuery("broaderCodeId", broaderCodeId.toLowerCase()));
+                builder.must(matchQuery("broaderCodeId", broaderCodeId.toLowerCase()));
             }
             if (!statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
@@ -351,7 +327,7 @@ public class DomainImpl implements Domain {
                 .prepareSearch(ELASTIC_INDEX_PROPERTYTYPE)
                 .setTypes(ELASTIC_TYPE_PROPERTYTYPE);
             final BoolQueryBuilder builder = boolQuery()
-                .must(termQuery("id", propertyTypeId.toLowerCase()));
+                .must(matchQuery("id", propertyTypeId.toLowerCase()));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
@@ -455,8 +431,8 @@ public class DomainImpl implements Domain {
             if (codeScheme != null) {
                 builder.should(boolQuery()
                     .should(boolQuery()
-                        .must(prefixQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()))
-                        .must(prefixQuery("parentCodeScheme.id.keyword", codeScheme.getId().toString().toLowerCase())))
+                        .must(matchQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()).analyzer(ANALYZER_KEYWORD))
+                        .must(matchQuery("parentCodeScheme.id", codeScheme.getId().toString().toLowerCase())))
                     .should(boolQuery()
                         .must(matchQuery("global", true))));
 

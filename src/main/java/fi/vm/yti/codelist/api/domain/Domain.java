@@ -25,8 +25,6 @@ public interface Domain {
                                         final Meta meta,
                                         final List<String> organizations);
 
-    CodeScheme getCodeSchemeWithId(final String codeSchemeId);
-
     CodeScheme getCodeScheme(final String codeSchemeId);
 
     CodeScheme getCodeScheme(final String codeRegistryCodeValue,
