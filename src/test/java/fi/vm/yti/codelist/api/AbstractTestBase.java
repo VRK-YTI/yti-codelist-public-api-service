@@ -1,5 +1,6 @@
 package fi.vm.yti.codelist.api;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,6 +31,7 @@ import fi.vm.yti.codelist.common.model.CodeRegistry;
 import fi.vm.yti.codelist.common.model.CodeScheme;
 import fi.vm.yti.codelist.common.model.Status;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
+import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 abstract public class AbstractTestBase {
 
@@ -45,7 +47,92 @@ abstract public class AbstractTestBase {
 
     private static final String NESTED_PREFLABEL_MAPPING_JSON = "{" +
         "\"properties\": {\n" +
+        "  \"codeValue\": {\n" +
+        "    \"type\": \"text\"," +
+        "    \"analyzer\": \"analyzer_keyword\",\n" +
+        "    \"fields\": {\n" +
+        "      \"raw\": { \n" +
+        "        \"type\": \"keyword\"\n" +
+        "      }\n" +
+        "    }\n" +
+        "  },\n" +
+        "  \"id\": {\n" +
+        "    \"type\": \"text\"},\n" +
         "  \"prefLabel\": {\n" +
+        "    \"type\": \"nested\"\n" +
+        "  }\n" +
+        "}\n}";
+
+    private static final String CODESCHEME_MAPPING = "{" +
+        "\"properties\": {\n" +
+        "  \"codeValue\": {\n" +
+        "    \"type\": \"text\"," +
+        "    \"analyzer\": \"analyzer_keyword\",\n" +
+        "    \"fields\": {\n" +
+        "      \"raw\": { \n" +
+        "        \"type\": \"keyword\"\n" +
+        "      }\n" +
+        "    }\n" +
+        "  },\n" +
+        "  \"id\": {\n" +
+        "    \"type\": \"text\"},\n" +
+        "  \"prefLabel\": {\n" +
+        "    \"type\": \"nested\"\n" +
+        "  },\n" +
+        "  \"dataClassifications\": {\n" +
+        "    \"type\": \"nested\"\n" +
+        "  },\n" +
+        "  \"codeRegistry\": {\n" +
+        "    \"properties\": {\n" +
+        "      \"organizations\": {\n" +
+        "        \"type\": \"nested\"\n" +
+        "      }\n" +
+        "    }\n" +
+        "  },\n" +
+        "  \"externalReferences\": {\n" +
+        "    \"type\": \"nested\"\n" +
+        "  }\n" +
+        "}\n}";
+
+    private static final String CODE_MAPPING = "{" +
+        "\"properties\": {\n" +
+        "  \"codeValue\": {\n" +
+        "    \"type\": \"text\"," +
+        "    \"analyzer\": \"analyzer_keyword\",\n" +
+        "    \"fields\": {\n" +
+        "      \"raw\": { \n" +
+        "        \"type\": \"keyword\"\n" +
+        "      }\n" +
+        "    }\n" +
+        "  },\n" +
+        "  \"id\": {\n" +
+        "    \"type\": \"text\"},\n" +
+        "  \"prefLabel\": {\n" +
+        "    \"type\": \"nested\"\n" +
+        "  },\n" +
+        "  \"dataClassifications\": {\n" +
+        "    \"type\": \"nested\"\n" +
+        "  },\n" +
+        "  \"codeScheme\": {\n" +
+        "    \"properties\": {\n" +
+        "      \"codeValue\": {\n" +
+        "        \"type\": \"text\",\n" +
+        "        \"analyzer\": \"analyzer_keyword\"\n" +
+        "      },\n" +
+        "      \"codeRegistry\": {\n" +
+        "        \"properties\": {\n" +
+        "          \"codeValue\": {\n" +
+        "            \"type\": \"text\",\n" +
+        "            \"analyzer\": \"analyzer_keyword\"\n" +
+        "          },\n" +
+        "          \"organizations\": {\n" +
+        "            \"type\": \"nested\"\n" +
+        "          }\n" +
+        "        }\n" +
+        "      }\n" +
+        "    }\n" +
+        "  },\n" +
+        "  \"externalReferences\": {\n" +
         "    \"type\": \"nested\"\n" +
         "  }\n" +
         "}\n}";
@@ -123,8 +210,31 @@ abstract public class AbstractTestBase {
         final boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
         if (!exists) {
             final CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(indexName);
-            builder.setSettings(Settings.builder().put(MAX_RESULT_WINDOW, MAX_RESULT_WINDOW_SIZE));
-            builder.addMapping(type, NESTED_PREFLABEL_MAPPING_JSON, XContentType.JSON);
+            try {
+                builder.setSettings(Settings.builder().loadFromSource(jsonBuilder()
+                    .startObject()
+                    .startObject("analysis")
+                    .startObject("analyzer")
+                    .startObject("analyzer_keyword")
+                    .field("type", "custom")
+                    .field("tokenizer", "keyword")
+                    .field("filter", new String[]{"lowercase", "standard"})
+                    .endObject()
+                    .endObject()
+                    .endObject()
+                    .endObject().string(), XContentType.JSON)
+                    .put(MAX_RESULT_WINDOW, MAX_RESULT_WINDOW_SIZE));
+            } catch (final IOException e) {
+                LOG.error("Error parsing index request settings JSON!", e);
+            }
+
+            if (ELASTIC_TYPE_CODESCHEME.equals(type)) {
+                builder.addMapping(type, CODESCHEME_MAPPING, XContentType.JSON);
+            } else if (ELASTIC_TYPE_CODE.equals(type)) {
+                builder.addMapping(type, CODE_MAPPING, XContentType.JSON);
+            } else {
+                builder.addMapping(type, NESTED_PREFLABEL_MAPPING_JSON, XContentType.JSON);
+            }
             final CreateIndexResponse response = builder.get();
             if (!response.isAcknowledged()) {
                 LOG.error("Create failed for index: " + indexName);
