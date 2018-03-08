@@ -1,6 +1,5 @@
 package fi.vm.yti.codelist.api.resource;
 
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
 
@@ -11,10 +10,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.poi.ss.usermodel.Workbook;
 import org.slf4j.Logger;
@@ -25,7 +22,7 @@ import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
-import fi.vm.yti.codelist.common.model.CodeRegistry;
+import fi.vm.yti.codelist.api.export.CodeSchemeExporter;
 import fi.vm.yti.codelist.common.model.CodeScheme;
 import fi.vm.yti.codelist.common.model.Meta;
 import io.swagger.annotations.Api;
@@ -45,15 +42,18 @@ public class CodeSchemeResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(CodeSchemeResource.class);
     private final Domain domain;
+    private final CodeSchemeExporter codeSchemeExporter;
 
     @Inject
-    public CodeSchemeResource(final Domain domain) {
+    public CodeSchemeResource(final Domain domain,
+                              final CodeSchemeExporter codeSchemeExporter) {
         this.domain = domain;
+        this.codeSchemeExporter = codeSchemeExporter;
     }
 
     @GET
-    @ApiOperation(value = "Return list of available CodeSchemes.", response = CodeRegistry.class, responseContainer = "List")
-    @ApiResponse(code = 200, message = "Returns all Registers in JSON format.")
+    @ApiOperation(value = "Return list of available CodeSchemes.", response = CodeScheme.class, responseContainer = "List")
+    @ApiResponse(code = 200, message = "Returns all CodeSchemes in JSON format.")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN})
     public Response getCodeSchemes(@ApiParam(value = "CodeRegistry CodeValue.") @QueryParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                    @ApiParam(value = "CodeRegistry Name.") @QueryParam("codeRegistryName") final String codeRegistryPrefLabel,
@@ -72,26 +72,12 @@ public class CodeSchemeResource extends AbstractBaseResource {
         final List<String> statusList = parseStatus(status);
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
             final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
-            final String csv = constructCodeSchemesCsv(codeSchemes);
-            final StreamingOutput stream = output -> {
-                try {
-                    output.write(csv.getBytes(StandardCharsets.UTF_8));
-                } catch (final Exception e) {
-                    throw new WebApplicationException(e);
-                }
-            };
-            return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODESCHEMES)).build();
+            final String csv = codeSchemeExporter.createCsv(codeSchemes);
+            return streamCsvCodeSchemesOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
             final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
-            final Workbook workbook = constructCodeSchemesExcel(format, codeSchemes);
-            final StreamingOutput stream = output -> {
-                try {
-                    workbook.write(output);
-                } catch (final Exception e) {
-                    throw new WebApplicationException(e);
-                }
-            };
-            return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(format, DOWNLOAD_FILENAME_CODESCHEMES)).build();
+            final Workbook workbook = codeSchemeExporter.createExcel(codeSchemes, format);
+            return streamExcelCodeSchemesOutput(workbook);
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));

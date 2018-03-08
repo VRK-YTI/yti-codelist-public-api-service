@@ -22,10 +22,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.API_PATH_CODES;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.API_PATH_VERSION_V1;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_CODE;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.METHOD_GET;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 /**
  * REST resources for Codes.
