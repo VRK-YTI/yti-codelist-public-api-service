@@ -210,7 +210,7 @@ public class DomainImpl implements Domain {
                 builder.must(nestedQuery("codeRegistry.prefLabel", multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             }
             if (dataClassifications != null && !dataClassifications.isEmpty()) {
-                builder.must(nestedQuery("dataClassifications", termsQuery("dataClassifications.codeValue", dataClassifications), ScoreMode.None));
+                builder.must(nestedQuery("dataClassifications", matchQuery("dataClassifications.codeValue", dataClassifications), ScoreMode.None));
             }
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
