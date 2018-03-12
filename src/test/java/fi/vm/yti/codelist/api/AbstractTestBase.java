@@ -26,9 +26,9 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fi.vm.yti.codelist.api.domain.Domain;
-import fi.vm.yti.codelist.common.model.Code;
-import fi.vm.yti.codelist.common.model.CodeRegistry;
-import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.dto.CodeDTO;
+import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
+import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.model.Status;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
@@ -143,9 +143,9 @@ abstract public class AbstractTestBase {
     @Inject
     private Domain domain;
 
-    private CodeScheme createCodeScheme(final CodeRegistry codeRegistry,
+    private CodeSchemeDTO createCodeSchemeDTO(final CodeRegistryDTO codeRegistry,
                                         final String codeValue) {
-        final CodeScheme codeScheme = new CodeScheme();
+        final CodeSchemeDTO codeScheme = new CodeSchemeDTO();
         codeScheme.setId(UUID.randomUUID());
         codeScheme.setCodeValue(codeValue);
         codeScheme.setStatus(Status.VALID.toString());
@@ -164,39 +164,39 @@ abstract public class AbstractTestBase {
 
     public void createAndIndexMockData() {
         createAndIndexMockCodeRegistries();
-        createAndIndexMockCodeSchemes(domain.getCodeRegistries());
+        createAndIndexMockCodeSchemeDTOs(domain.getCodeRegistries());
         createAndIndexMockCodes(domain.getCodeSchemes());
         LOG.info("Mock data indexed!");
     }
 
     private void createAndIndexMockCodeRegistries() {
         createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODEREGISTRY, ELASTIC_TYPE_CODEREGISTRY);
-        final Set<CodeRegistry> codeRegistries = new HashSet<>();
+        final Set<CodeRegistryDTO> codeRegistries = new HashSet<>();
         for (int i = 0; i < 8; i++) {
-            codeRegistries.add(createCodeRegistry("testregistry" + (i + 1)));
+            codeRegistries.add(createCodeRegistryDTO("testregistry" + (i + 1)));
         }
         indexData(codeRegistries, ELASTIC_INDEX_CODEREGISTRY, ELASTIC_TYPE_CODEREGISTRY);
         refreshIndex(ELASTIC_INDEX_CODEREGISTRY);
         LOG.info("Indexed " + codeRegistries.size() + " CodeRegistries.");
     }
 
-    private void createAndIndexMockCodeSchemes(final Set<CodeRegistry> codeRegistries) {
+    private void createAndIndexMockCodeSchemeDTOs(final Set<CodeRegistryDTO> codeRegistries) {
         createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODESCHEME, ELASTIC_TYPE_CODESCHEME);
-        final Set<CodeScheme> codeSchemes = new HashSet<>();
-        for (final CodeRegistry codeRegistry : codeRegistries) {
+        final Set<CodeSchemeDTO> codeSchemes = new HashSet<>();
+        for (final CodeRegistryDTO codeRegistry : codeRegistries) {
             for (int i = 0; i < 8; i++) {
-                codeSchemes.add(createCodeScheme(codeRegistry, "testscheme" + (i + 1)));
+                codeSchemes.add(createCodeSchemeDTO(codeRegistry, "testscheme" + (i + 1)));
             }
         }
         indexData(codeSchemes, ELASTIC_INDEX_CODESCHEME, ELASTIC_TYPE_CODESCHEME);
         refreshIndex(ELASTIC_INDEX_CODESCHEME);
-        LOG.info("Indexed " + codeSchemes.size() + " CodeSchemes.");
+        LOG.info("Indexed " + codeSchemes.size() + " CodeSchemeDTOs.");
     }
 
-    private void createAndIndexMockCodes(final Set<CodeScheme> codeSchemes) {
+    private void createAndIndexMockCodes(final Set<CodeSchemeDTO> codeSchemes) {
         createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODE, ELASTIC_TYPE_CODE);
-        final Set<Code> codes = new HashSet<>();
-        for (final CodeScheme codeScheme : codeSchemes) {
+        final Set<CodeDTO> codes = new HashSet<>();
+        for (final CodeSchemeDTO codeScheme : codeSchemes) {
             for (int i = 0; i < 8; i++) {
                 codes.add(createCode(codeScheme, "testcode" + (i + 1)));
             }
@@ -285,8 +285,8 @@ abstract public class AbstractTestBase {
         }
     }
 
-    private CodeRegistry createCodeRegistry(final String codeValue) {
-        final CodeRegistry codeRegistry = new CodeRegistry();
+    private CodeRegistryDTO createCodeRegistryDTO(final String codeValue) {
+        final CodeRegistryDTO codeRegistry = new CodeRegistryDTO();
         codeRegistry.setId(UUID.randomUUID());
         codeRegistry.setCodeValue(codeValue);
         codeRegistry.setPrefLabel(LANGUAGE_CODE_FI, "Testirekisteri");
@@ -300,9 +300,9 @@ abstract public class AbstractTestBase {
         return codeRegistry;
     }
 
-    private Code createCode(final CodeScheme codeScheme,
+    private CodeDTO createCode(final CodeSchemeDTO codeScheme,
                             final String codeValue) {
-        final Code code = new Code();
+        final CodeDTO code = new CodeDTO();
         code.setId(UUID.randomUUID());
         code.setCodeValue(codeValue);
         code.setStatus(Status.VALID.toString());

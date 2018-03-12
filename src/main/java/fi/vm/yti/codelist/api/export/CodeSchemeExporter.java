@@ -11,18 +11,18 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Component;
 
-import fi.vm.yti.codelist.common.model.Code;
-import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.dto.CodeDTO;
+import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 public class CodeSchemeExporter extends BaseExporter {
 
-    public String createCsv(final Set<CodeScheme> codeSchemes) {
-        final Set<String> prefLabelLanguages = resolveCodeSchemePrefLabelLanguages(codeSchemes);
-        final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
-        final Set<String> descriptionLanguages = resolveCodeSchemeDescriptionLanguages(codeSchemes);
-        final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
+    public String createCsv(final Set<CodeSchemeDTO> codeSchemes) {
+        final Set<String> prefLabelLanguages = resolveCodeSchemeDTOPrefLabelLanguages(codeSchemes);
+        final Set<String> definitionLanguages = resolveCodeSchemeDTODefinitionLanguages(codeSchemes);
+        final Set<String> descriptionLanguages = resolveCodeSchemeDTODescriptionLanguages(codeSchemes);
+        final Set<String> changeNoteLanguages = resolveCodeSchemeDTOChangeNoteLanguages(codeSchemes);
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
@@ -40,7 +40,7 @@ public class CodeSchemeExporter extends BaseExporter {
         changeNoteLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_CHANGENOTE_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
-        for (final CodeScheme codeScheme : codeSchemes) {
+        for (final CodeSchemeDTO codeScheme : codeSchemes) {
             appendValue(csv, csvSeparator, codeScheme.getCodeValue());
             appendValue(csv, csvSeparator, codeScheme.getId().toString());
             appendValue(csv, csvSeparator, formatDataClassificationsToString(codeScheme.getDataClassifications()));
@@ -59,13 +59,13 @@ public class CodeSchemeExporter extends BaseExporter {
         return csv.toString();
     }
 
-    public Workbook createExcel(final Set<CodeScheme> codeSchemes,
+    public Workbook createExcel(final Set<CodeSchemeDTO> codeSchemes,
                                 final String format) {
         final Workbook workbook = createWorkBook(format);
-        final Set<String> prefLabelLanguages = resolveCodeSchemePrefLabelLanguages(codeSchemes);
-        final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
-        final Set<String> descriptionLanguages = resolveCodeSchemeDescriptionLanguages(codeSchemes);
-        final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
+        final Set<String> prefLabelLanguages = resolveCodeSchemeDTOPrefLabelLanguages(codeSchemes);
+        final Set<String> definitionLanguages = resolveCodeSchemeDTODefinitionLanguages(codeSchemes);
+        final Set<String> descriptionLanguages = resolveCodeSchemeDTODescriptionLanguages(codeSchemes);
+        final Set<String> changeNoteLanguages = resolveCodeSchemeDTOChangeNoteLanguages(codeSchemes);
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Sheet sheet = workbook.createSheet(EXCEL_SHEET_CODESCHEMES);
         final Row rowhead = sheet.createRow((short) 0);
@@ -93,7 +93,7 @@ public class CodeSchemeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
         int i = 1;
-        for (final CodeScheme codeScheme : codeSchemes) {
+        for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Row row = sheet.createRow(i++);
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getCodeValue()));
@@ -122,46 +122,46 @@ public class CodeSchemeExporter extends BaseExporter {
         return workbook;
     }
 
-    private Set<String> resolveCodeSchemePrefLabelLanguages(final Set<CodeScheme> codeSchemes) {
+    private Set<String> resolveCodeSchemeDTOPrefLabelLanguages(final Set<CodeSchemeDTO> codeSchemes) {
         final Set<String> languages = new LinkedHashSet<>();
-        for (final CodeScheme codeScheme : codeSchemes) {
+        for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Map<String, String> prefLabel = codeScheme.getPrefLabel();
             languages.addAll(prefLabel.keySet());
         }
         return languages;
     }
 
-    private Set<String> resolveCodeSchemeDefinitionLanguages(final Set<CodeScheme> codeSchemes) {
+    private Set<String> resolveCodeSchemeDTODefinitionLanguages(final Set<CodeSchemeDTO> codeSchemes) {
         final Set<String> languages = new LinkedHashSet<>();
-        for (final CodeScheme codeScheme : codeSchemes) {
+        for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Map<String, String> definition = codeScheme.getDefinition();
             languages.addAll(definition.keySet());
         }
         return languages;
     }
 
-    private Set<String> resolveCodeSchemeDescriptionLanguages(final Set<CodeScheme> codeSchemes) {
+    private Set<String> resolveCodeSchemeDTODescriptionLanguages(final Set<CodeSchemeDTO> codeSchemes) {
         final Set<String> languages = new LinkedHashSet<>();
-        for (final CodeScheme codeScheme : codeSchemes) {
+        for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Map<String, String> description = codeScheme.getDescription();
             languages.addAll(description.keySet());
         }
         return languages;
     }
 
-    private Set<String> resolveCodeSchemeChangeNoteLanguages(final Set<CodeScheme> codeSchemes) {
+    private Set<String> resolveCodeSchemeDTOChangeNoteLanguages(final Set<CodeSchemeDTO> codeSchemes) {
         final Set<String> languages = new LinkedHashSet<>();
-        for (final CodeScheme codeScheme : codeSchemes) {
+        for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Map<String, String> changeNote = codeScheme.getChangeNote();
             languages.addAll(changeNote.keySet());
         }
         return languages;
     }
 
-    private String formatDataClassificationsToString(final Set<Code> classifications) {
+    private String formatDataClassificationsToString(final Set<CodeDTO> classifications) {
         final StringBuilder csvClassifications = new StringBuilder();
         int i = 0;
-        for (final Code code : classifications) {
+        for (final CodeDTO code : classifications) {
             i++;
             csvClassifications.append(code.getCodeValue().trim());
             if (i < classifications.size()) {

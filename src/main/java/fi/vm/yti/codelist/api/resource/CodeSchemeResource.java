@@ -23,7 +23,7 @@ import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.api.export.CodeSchemeExporter;
-import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.model.Meta;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -32,7 +32,7 @@ import io.swagger.annotations.ApiResponse;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 /**
- * REST resources for CodeSchemes.
+ * REST resources for CodeSchemeDTOs.
  */
 @Component
 @Path("/v1/codeschemes")
@@ -52,17 +52,17 @@ public class CodeSchemeResource extends AbstractBaseResource {
     }
 
     @GET
-    @ApiOperation(value = "Return list of available CodeSchemes.", response = CodeScheme.class, responseContainer = "List")
-    @ApiResponse(code = 200, message = "Returns all CodeSchemes in JSON format.")
+    @ApiOperation(value = "Return list of available CodeSchemeDTOs.", response = CodeSchemeDTO.class, responseContainer = "List")
+    @ApiResponse(code = 200, message = "Returns all CodeSchemeDTOs in JSON format.")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN})
-    public Response getCodeSchemes(@ApiParam(value = "CodeRegistry CodeValue.") @QueryParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
-                                   @ApiParam(value = "CodeRegistry Name.") @QueryParam("codeRegistryName") final String codeRegistryPrefLabel,
+    public Response getCodeSchemes(@ApiParam(value = "CodeRegistryDTO CodeValue.") @QueryParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                   @ApiParam(value = "CodeRegistryDTO Name.") @QueryParam("codeRegistryName") final String codeRegistryPrefLabel,
                                    @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                    @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                    @ApiParam(value = "Service classifications in CSL format.") @QueryParam("dataClassification") final String dataClassification,
                                    @ApiParam(value = "Organization id for content filtering.") @QueryParam("organizationId") final String organizationId,
-                                   @ApiParam(value = "CodeScheme codeValue as string value.") @QueryParam("codeValue") final String codeSchemeCodeValue,
-                                   @ApiParam(value = "CodeScheme PrefLabel as string value.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
+                                   @ApiParam(value = "CodeSchemeDTO codeValue as string value.") @QueryParam("codeValue") final String codeSchemeCodeValue,
+                                   @ApiParam(value = "CodeSchemeDTO PrefLabel as string value.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
                                    @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
                                    @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
@@ -71,19 +71,19 @@ public class CodeSchemeResource extends AbstractBaseResource {
         final List<String> dataClassificationList = parseDataClassifications(dataClassification);
         final List<String> statusList = parseStatus(status);
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
             final String csv = codeSchemeExporter.createCsv(codeSchemes);
-            return streamCsvCodeSchemesOutput(csv);
+            return streamCsvCodeSchemeDTOsOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
             final Workbook workbook = codeSchemeExporter.createExcel(codeSchemes, format);
-            return streamExcelCodeSchemesOutput(workbook);
+            return streamExcelCodeSchemeDTOsOutput(workbook);
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-            final Set<CodeScheme> codeSchemes = domain.getCodeSchemes(pageSize, from, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, meta.getAfter(), meta);
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, statusList, dataClassificationList, meta.getAfter(), meta);
             meta.setResultCount(codeSchemes.size());
-            final ResponseWrapper<CodeScheme> wrapper = new ResponseWrapper<>();
+            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(codeSchemes);
             wrapper.setMeta(meta);
             return Response.ok(wrapper).build();
@@ -92,14 +92,14 @@ public class CodeSchemeResource extends AbstractBaseResource {
 
     @GET
     @Path("{codeSchemeId}")
-    @ApiOperation(value = "Return one specific CodeScheme.", response = CodeScheme.class)
-    @ApiResponse(code = 200, message = "Returns one specific CodeScheme in JSON format.")
+    @ApiOperation(value = "Return one specific CodeSchemeDTO.", response = CodeSchemeDTO.class)
+    @ApiResponse(code = 200, message = "Returns one specific CodeSchemeDTO in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getCodeScheme(@ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeId") final String codeSchemeId,
+    public Response getCodeScheme(@ApiParam(value = "CodeSchemeDTO CodeValue.", required = true) @PathParam("codeSchemeId") final String codeSchemeId,
                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODESCHEMES + "/" + codeSchemeId + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-        final CodeScheme codeScheme = domain.getCodeScheme(codeSchemeId);
+        final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeSchemeId);
         if (codeScheme != null) {
             return Response.ok(codeScheme).build();
         } else {

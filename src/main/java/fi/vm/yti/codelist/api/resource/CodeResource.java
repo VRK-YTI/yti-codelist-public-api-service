@@ -16,8 +16,8 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.domain.Domain;
-import fi.vm.yti.codelist.common.model.Code;
-import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.dto.CodeDTO;
+import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -43,14 +43,14 @@ public class CodeResource extends AbstractBaseResource {
 
     @GET
     @Path("{codeId}")
-    @ApiOperation(value = "Return one specific Code.", response = Code.class)
+    @ApiOperation(value = "Return one specific Code.", response = CodeDTO.class)
     @ApiResponse(code = 200, message = "Returns one specific Code in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCode(@ApiParam(value = "Code Id.", required = true) @PathParam("codeId") final String codeId,
                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODES + "/" + codeId + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-        final CodeScheme codeScheme = domain.getCodeScheme(codeId);
+        final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeId);
         if (codeScheme != null) {
             return Response.ok(codeScheme).build();
         } else {

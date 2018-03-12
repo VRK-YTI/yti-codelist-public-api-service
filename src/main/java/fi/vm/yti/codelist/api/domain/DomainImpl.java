@@ -24,12 +24,12 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
-import fi.vm.yti.codelist.common.model.Code;
-import fi.vm.yti.codelist.common.model.CodeRegistry;
-import fi.vm.yti.codelist.common.model.CodeScheme;
-import fi.vm.yti.codelist.common.model.ExternalReference;
+import fi.vm.yti.codelist.common.dto.CodeDTO;
+import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
+import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
+import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
+import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
 import fi.vm.yti.codelist.common.model.Meta;
-import fi.vm.yti.codelist.common.model.PropertyType;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.lang.Math.toIntExact;
 import static org.elasticsearch.index.query.QueryBuilders.*;
@@ -48,7 +48,7 @@ public class DomainImpl implements Domain {
         this.client = client;
     }
 
-    public CodeRegistry getCodeRegistry(final String codeRegistryCodeValue) {
+    public CodeRegistryDTO getCodeRegistry(final String codeRegistryCodeValue) {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODEREGISTRY).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -66,7 +66,7 @@ public class DomainImpl implements Domain {
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(), CodeRegistry.class);
+                        return mapper.readValue(hit.getSourceAsString(), CodeRegistryDTO.class);
                     }
                 } catch (IOException e) {
                     LOG.error("getCodeRegistry reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage(), e);
@@ -76,18 +76,18 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<CodeRegistry> getCodeRegistries() {
+    public Set<CodeRegistryDTO> getCodeRegistries() {
         return getCodeRegistries(MAX_SIZE, 0, null, null, null, null, null);
     }
 
-    public Set<CodeRegistry> getCodeRegistries(final Integer pageSize,
-                                               final Integer from,
-                                               final String codeRegistryCodeValue,
-                                               final String codeRegistryPrefLabel,
-                                               final Date after,
-                                               final Meta meta,
-                                               final List<String> organizations) {
-        final Set<CodeRegistry> codeRegistries = new LinkedHashSet<>();
+    public Set<CodeRegistryDTO> getCodeRegistries(final Integer pageSize,
+                                                  final Integer from,
+                                                  final String codeRegistryCodeValue,
+                                                  final String codeRegistryPrefLabel,
+                                                  final Date after,
+                                                  final Meta meta,
+                                                  final List<String> organizations) {
+        final Set<CodeRegistryDTO> codeRegistries = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODEREGISTRY).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -107,7 +107,7 @@ public class DomainImpl implements Domain {
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
                 try {
-                    codeRegistries.add(mapper.readValue(hit.getSourceAsString(), CodeRegistry.class));
+                    codeRegistries.add(mapper.readValue(hit.getSourceAsString(), CodeRegistryDTO.class));
                 } catch (IOException e) {
                     LOG.error("getCodeRegistries reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
                 }
@@ -116,7 +116,7 @@ public class DomainImpl implements Domain {
         return codeRegistries;
     }
 
-    public CodeScheme getCodeScheme(final String codeSchemeId) {
+    public CodeSchemeDTO getCodeScheme(final String codeSchemeId) {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -129,11 +129,11 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
-                LOG.info("Found " + response.getHits().getTotalHits() + " CodeSchemes");
+                LOG.info("Found " + response.getHits().getTotalHits() + " CodeSchemeDTOs");
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(), CodeScheme.class);
+                        return mapper.readValue(hit.getSourceAsString(), CodeSchemeDTO.class);
                     }
                 } catch (IOException e) {
                     LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
@@ -143,8 +143,8 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public CodeScheme getCodeScheme(final String codeRegistryCodeValue,
-                                    final String codeSchemeCodeValue) {
+    public CodeSchemeDTO getCodeScheme(final String codeRegistryCodeValue,
+                                       final String codeSchemeCodeValue) {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -160,11 +160,11 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
-                LOG.info("Found " + response.getHits().getTotalHits() + " CodeSchemes");
+                LOG.info("Found " + response.getHits().getTotalHits() + " CodeSchemeDTOs");
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(), CodeScheme.class);
+                        return mapper.readValue(hit.getSourceAsString(), CodeSchemeDTO.class);
                     }
                 } catch (IOException e) {
                     LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
@@ -174,22 +174,22 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<CodeScheme> getCodeSchemes() {
+    public Set<CodeSchemeDTO> getCodeSchemes() {
         return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, null, null);
     }
 
-    public Set<CodeScheme> getCodeSchemes(final Integer pageSize,
-                                          final Integer from,
-                                          final String organizationId,
-                                          final String codeRegistryCodeValue,
-                                          final String codeRegistryPrefLabel,
-                                          final String codeSchemeCodeValue,
-                                          final String codeSchemePrefLabel,
-                                          final List<String> statuses,
-                                          final List<String> dataClassifications,
-                                          final Date after,
-                                          final Meta meta) {
-        final Set<CodeScheme> codeSchemes = new LinkedHashSet<>();
+    public Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
+                                             final Integer from,
+                                             final String organizationId,
+                                             final String codeRegistryCodeValue,
+                                             final String codeRegistryPrefLabel,
+                                             final String codeSchemeCodeValue,
+                                             final String codeSchemePrefLabel,
+                                             final List<String> statuses,
+                                             final List<String> dataClassifications,
+                                             final Date after,
+                                             final Meta meta) {
+        final Set<CodeSchemeDTO> codeSchemes = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -220,7 +220,7 @@ public class DomainImpl implements Domain {
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
                 try {
-                    codeSchemes.add(mapper.readValue(hit.getSourceAsString(), CodeScheme.class));
+                    codeSchemes.add(mapper.readValue(hit.getSourceAsString(), CodeSchemeDTO.class));
                 } catch (IOException e) {
                     LOG.error("getCodeSchemes reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
                 }
@@ -229,9 +229,9 @@ public class DomainImpl implements Domain {
         return codeSchemes;
     }
 
-    public Code getCode(final String codeRegistryCodeValue,
-                        final String codeSchemeCodeValue,
-                        final String codeCodeValue) {
+    public CodeDTO getCode(final String codeRegistryCodeValue,
+                           final String codeSchemeCodeValue,
+                           final String codeCodeValue) {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -255,7 +255,7 @@ public class DomainImpl implements Domain {
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(), Code.class);
+                        return mapper.readValue(hit.getSourceAsString(), CodeDTO.class);
                     }
                 } catch (IOException e) {
                     LOG.error("getCode reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
@@ -267,21 +267,21 @@ public class DomainImpl implements Domain {
         }
     }
 
-    public Set<Code> getCodes(final Integer pageSize,
-                              final Integer from,
-                              final String codeRegistryCodeValue,
-                              final String codeSchemeCodeValue,
-                              final String codeCodeValue,
-                              final String prefLabel,
-                              final Integer hierarchyLevel,
-                              final String broaderCodeId,
-                              final List<String> statuses,
-                              final Date after,
-                              final Meta meta) {
+    public Set<CodeDTO> getCodes(final Integer pageSize,
+                                 final Integer from,
+                                 final String codeRegistryCodeValue,
+                                 final String codeSchemeCodeValue,
+                                 final String codeCodeValue,
+                                 final String prefLabel,
+                                 final Integer hierarchyLevel,
+                                 final String broaderCodeId,
+                                 final List<String> statuses,
+                                 final Date after,
+                                 final Meta meta) {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
-            final Set<Code> codes = new LinkedHashSet<>();
+            final Set<CodeDTO> codes = new LinkedHashSet<>();
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE)
@@ -309,7 +309,7 @@ public class DomainImpl implements Domain {
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
                 try {
-                    codes.add(mapper.readValue(hit.getSourceAsString(), Code.class));
+                    codes.add(mapper.readValue(hit.getSourceAsString(), CodeDTO.class));
                 } catch (IOException e) {
                     LOG.error("getCodes reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
                 }
@@ -319,7 +319,7 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public PropertyType getPropertyType(final String propertyTypeId) {
+    public PropertyTypeDTO getPropertyType(final String propertyTypeId) {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_PROPERTYTYPE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -334,7 +334,7 @@ public class DomainImpl implements Domain {
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(), PropertyType.class);
+                        return mapper.readValue(hit.getSourceAsString(), PropertyTypeDTO.class);
                     }
                 } catch (IOException e) {
                     LOG.error("getPropertyType reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
@@ -344,17 +344,17 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<PropertyType> getPropertyTypes() {
+    public Set<PropertyTypeDTO> getPropertyTypes() {
         return getPropertyTypes(MAX_SIZE, 0, null, null, null, null);
     }
 
-    public Set<PropertyType> getPropertyTypes(final Integer pageSize,
-                                              final Integer from,
-                                              final String propertyTypePrefLabel,
-                                              final String context,
-                                              final Date after,
-                                              final Meta meta) {
-        final Set<PropertyType> propertyTypes = new LinkedHashSet<>();
+    public Set<PropertyTypeDTO> getPropertyTypes(final Integer pageSize,
+                                                 final Integer from,
+                                                 final String propertyTypePrefLabel,
+                                                 final String context,
+                                                 final Date after,
+                                                 final Meta meta) {
+        final Set<PropertyTypeDTO> propertyTypes = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_PROPERTYTYPE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -372,7 +372,7 @@ public class DomainImpl implements Domain {
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
                 try {
-                    final PropertyType propertyType = mapper.readValue(hit.getSourceAsString(), PropertyType.class);
+                    final PropertyTypeDTO propertyType = mapper.readValue(hit.getSourceAsString(), PropertyTypeDTO.class);
                     propertyTypes.add(propertyType);
                 } catch (IOException e) {
                     LOG.error("getPropertyTypes reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
@@ -382,7 +382,7 @@ public class DomainImpl implements Domain {
         return propertyTypes;
     }
 
-    public ExternalReference getExternalReference(final String externalReferenceId) {
+    public ExternalReferenceDTO getExternalReference(final String externalReferenceId) {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTERNALREFERENCE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -397,7 +397,7 @@ public class DomainImpl implements Domain {
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(), ExternalReference.class);
+                        return mapper.readValue(hit.getSourceAsString(), ExternalReferenceDTO.class);
                     }
                 } catch (IOException e) {
                     LOG.error("getExternalReference reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
@@ -407,17 +407,17 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<ExternalReference> getExternalReferences() {
+    public Set<ExternalReferenceDTO> getExternalReferences() {
         return getExternalReferences(MAX_SIZE, 0, null, null, null, null);
     }
 
-    public Set<ExternalReference> getExternalReferences(final Integer pageSize,
-                                                        final Integer from,
-                                                        final String externalReferencePrefLabel,
-                                                        final CodeScheme codeScheme,
-                                                        final Date after,
-                                                        final Meta meta) {
-        final Set<ExternalReference> externalReferences = new LinkedHashSet<>();
+    public Set<ExternalReferenceDTO> getExternalReferences(final Integer pageSize,
+                                                           final Integer from,
+                                                           final String externalReferencePrefLabel,
+                                                           final CodeSchemeDTO codeScheme,
+                                                           final Date after,
+                                                           final Meta meta) {
+        final Set<ExternalReferenceDTO> externalReferences = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTERNALREFERENCE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -431,8 +431,8 @@ public class DomainImpl implements Domain {
             if (codeScheme != null) {
                 builder.should(boolQuery()
                     .should(boolQuery()
-                        .must(matchQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()).analyzer(ANALYZER_KEYWORD))
-                        .must(matchQuery("parentCodeScheme.id", codeScheme.getId().toString().toLowerCase())))
+                        .must(matchQuery("parentCodeSchemeDTO.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()).analyzer(ANALYZER_KEYWORD))
+                        .must(matchQuery("parentCodeSchemeDTO.id", codeScheme.getId().toString().toLowerCase())))
                     .should(boolQuery()
                         .must(matchQuery("global", true))));
 
@@ -441,7 +441,7 @@ public class DomainImpl implements Domain {
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
                 try {
-                    final ExternalReference externalReference = mapper.readValue(hit.getSourceAsString(), ExternalReference.class);
+                    final ExternalReferenceDTO externalReference = mapper.readValue(hit.getSourceAsString(), ExternalReferenceDTO.class);
                     externalReferences.add(externalReference);
                 } catch (IOException e) {
                     LOG.error("getExternalReferences reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());

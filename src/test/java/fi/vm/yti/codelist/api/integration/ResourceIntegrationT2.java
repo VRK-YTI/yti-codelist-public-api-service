@@ -23,9 +23,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import fi.vm.yti.codelist.api.AbstractTestBase;
 import fi.vm.yti.codelist.api.PublicApiServiceApplication;
-import fi.vm.yti.codelist.common.model.Code;
-import fi.vm.yti.codelist.common.model.CodeRegistry;
-import fi.vm.yti.codelist.common.model.CodeScheme;
+import fi.vm.yti.codelist.common.dto.CodeDTO;
+import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
+import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static org.junit.Assert.assertEquals;
 
@@ -66,7 +66,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
         try {
-            final CodeRegistry codeRegistry = mapper.readValue(response.getBody().toString(), CodeRegistry.class);
+            final CodeRegistryDTO codeRegistry = mapper.readValue(response.getBody().toString(), CodeRegistryDTO.class);
             assertEquals(TEST_CODEREGISTRY_CODEVALUE, codeRegistry.getCodeValue());
         } catch (IOException e) {
             Assert.fail("Exception " + e);
@@ -74,7 +74,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
     }
 
     @Test
-    public void getCodeSchemesTest() {
+    public void getCodeSchemeDTOsTest() {
         final String apiUrl = createApiUrl(randomServerPort, API_PATH_CODEREGISTRIES) + "/" + TEST_CODEREGISTRY_CODEVALUE + API_PATH_CODESCHEMES + "/";
         final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
         final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<LinkedMultiValueMap<String, Object>>(parameters, null);
@@ -91,7 +91,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
     }
 
     @Test
-    public void getCodeSchemeTest() {
+    public void getCodeSchemeDTOTest() {
         final String apiUrl = createApiUrl(randomServerPort, API_PATH_CODEREGISTRIES) + "/" + TEST_CODEREGISTRY_CODEVALUE + API_PATH_CODESCHEMES + "/" + TEST_CODESCHEME_CODEVALUE + "/";
         final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
         final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<LinkedMultiValueMap<String, Object>>(parameters, null);
@@ -99,7 +99,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
         try {
-            final CodeScheme codeScheme = mapper.readValue(response.getBody().toString(), CodeScheme.class);
+            final CodeSchemeDTO codeScheme = mapper.readValue(response.getBody().toString(), CodeSchemeDTO.class);
             assertEquals(TEST_CODESCHEME_CODEVALUE, codeScheme.getCodeValue());
         } catch (IOException e) {
             Assert.fail("Exception " + e);
@@ -132,7 +132,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
         try {
-            final Code code = mapper.readValue(response.getBody().toString(), Code.class);
+            final CodeDTO code = mapper.readValue(response.getBody().toString(), CodeDTO.class);
             assertEquals(TEST_CODE_CODEVALUE, code.getCodeValue());
         } catch (IOException e) {
             Assert.fail("Exception " + e);

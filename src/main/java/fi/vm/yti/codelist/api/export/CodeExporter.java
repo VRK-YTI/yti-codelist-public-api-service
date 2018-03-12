@@ -13,15 +13,15 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Component;
 
-import fi.vm.yti.codelist.common.model.Code;
+import fi.vm.yti.codelist.common.dto.CodeDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 public class CodeExporter extends BaseExporter {
 
-    public String createCsv(final Set<Code> codes) {
+    public String createCsv(final Set<CodeDTO> codes) {
         final Map<UUID, String> codeValueIdMap = new HashMap<>();
-        for (final Code code : codes) {
+        for (final CodeDTO code : codes) {
             codeValueIdMap.put(code.getId(), code.getCodeValue());
         }
         final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codes);
@@ -41,7 +41,7 @@ public class CodeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_HIERARCHYLEVEL);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
-        for (final Code code : codes) {
+        for (final CodeDTO code : codes) {
             appendValue(csv, csvSeparator, code.getCodeValue());
             appendValue(csv, csvSeparator, codeValueIdMap.get(code.getBroaderCodeId()));
             appendValue(csv, csvSeparator, code.getId().toString());
@@ -57,10 +57,10 @@ public class CodeExporter extends BaseExporter {
         return csv.toString();
     }
 
-    public Workbook createExcel(final Set<Code> codes,
+    public Workbook createExcel(final Set<CodeDTO> codes,
                                 final String format) {
         final Map<UUID, String> codeValueIdMap = new HashMap<>();
-        for (final Code code : codes) {
+        for (final CodeDTO code : codes) {
             codeValueIdMap.put(code.getId(), code.getCodeValue());
         }
         final Workbook workbook = createWorkBook(format);
@@ -89,7 +89,7 @@ public class CodeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
         int i = 1;
-        for (final Code code : codes) {
+        for (final CodeDTO code : codes) {
             final Row row = sheet.createRow(i++);
             int k = 0;
             row.createCell(k++).setCellValue(code.getCodeValue());
@@ -113,27 +113,27 @@ public class CodeExporter extends BaseExporter {
         return workbook;
     }
 
-    private Set<String> resolveCodePrefLabelLanguages(final Set<Code> codes) {
+    private Set<String> resolveCodePrefLabelLanguages(final Set<CodeDTO> codes) {
         final Set<String> languages = new LinkedHashSet<>();
-        for (final Code code : codes) {
+        for (final CodeDTO code : codes) {
             final Map<String, String> prefLabel = code.getPrefLabel();
             languages.addAll(prefLabel.keySet());
         }
         return languages;
     }
 
-    private Set<String> resolveCodeDefinitionLanguages(final Set<Code> codes) {
+    private Set<String> resolveCodeDefinitionLanguages(final Set<CodeDTO> codes) {
         final Set<String> languages = new LinkedHashSet<>();
-        for (final Code code : codes) {
+        for (final CodeDTO code : codes) {
             final Map<String, String> definition = code.getDefinition();
             languages.addAll(definition.keySet());
         }
         return languages;
     }
 
-    private Set<String> resolveCodeDescriptionLanguages(final Set<Code> codes) {
+    private Set<String> resolveCodeDescriptionLanguages(final Set<CodeDTO> codes) {
         final Set<String> languages = new LinkedHashSet<>();
-        for (final Code code : codes) {
+        for (final CodeDTO code : codes) {
             final Map<String, String> description = code.getDescription();
             languages.addAll(description.keySet());
         }

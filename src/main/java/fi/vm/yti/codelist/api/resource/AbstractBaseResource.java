@@ -130,7 +130,7 @@ abstract class AbstractBaseResource {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_CODES);
     }
 
-    public Response streamCsvCodeSchemesOutput(final String csv) {
+    public Response streamCsvCodeSchemeDTOsOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_CODESCHEMES);
     }
 
@@ -138,11 +138,11 @@ abstract class AbstractBaseResource {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_CODEREGISTRIES);
     }
 
-    public Response streamCsvExternalReferencesOutput(final String csv) {
+    public Response streamCsvExternalReferenceDTOsOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_EXTERNALREFERENCES);
     }
 
-    public Response streamCsvPropertyTypesOutput(final String csv) {
+    public Response streamCsvPropertyTypeDTOsOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_PROPERTYTYPES);
     }
 
@@ -162,7 +162,7 @@ abstract class AbstractBaseResource {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_CODES);
     }
 
-    public Response streamExcelCodeSchemesOutput(final Workbook workbook) {
+    public Response streamExcelCodeSchemeDTOsOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_CODESCHEMES);
     }
 
@@ -170,11 +170,11 @@ abstract class AbstractBaseResource {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_CODEREGISTRIES);
     }
 
-    public Response streamExcelExternalReferencesOutput(final Workbook workbook) {
+    public Response streamExcelExternalReferenceDTOsOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_EXTERNALREFERENCES);
     }
 
-    public Response streamExcelPropertyTypesOutput(final Workbook workbook) {
+    public Response streamExcelPropertyTypeDTOsOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_PROPERTYTYPES);
     }
 

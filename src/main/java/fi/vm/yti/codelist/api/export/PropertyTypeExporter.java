@@ -9,15 +9,15 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Component;
 
-import fi.vm.yti.codelist.common.model.PropertyType;
+import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 public class PropertyTypeExporter extends BaseExporter {
 
-    public String createCsv(final Set<PropertyType> propertyTypes) {
-        final Set<String> prefLabelLanguages = resolvePropertyTypePrefLabelLanguages(propertyTypes);
-        final Set<String> definitionLanguages = resolvePropertyTypeDefinitionLanguages(propertyTypes);
+    public String createCsv(final Set<PropertyTypeDTO> propertyTypes) {
+        final Set<String> prefLabelLanguages = resolvePropertyTypeDTOPrefLabelLanguages(propertyTypes);
+        final Set<String> definitionLanguages = resolvePropertyTypeDTODefinitionLanguages(propertyTypes);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
@@ -28,7 +28,7 @@ public class PropertyTypeExporter extends BaseExporter {
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
         csv.append("\n");
-        for (final PropertyType propertyType : propertyTypes) {
+        for (final PropertyTypeDTO propertyType : propertyTypes) {
             appendValue(csv, csvSeparator, propertyType.getId().toString());
             appendValue(csv, csvSeparator, propertyType.getLocalName());
             appendValue(csv, csvSeparator, propertyType.getType());
@@ -41,11 +41,11 @@ public class PropertyTypeExporter extends BaseExporter {
         return csv.toString();
     }
 
-    public Workbook createExcel(final Set<PropertyType> propertyTypes,
+    public Workbook createExcel(final Set<PropertyTypeDTO> propertyTypes,
                                 final String format) {
         final Workbook workbook = createWorkBook(format);
-        final Set<String> prefLabelLanguages = resolvePropertyTypePrefLabelLanguages(propertyTypes);
-        final Set<String> definitionLanguages = resolvePropertyTypeDefinitionLanguages(propertyTypes);
+        final Set<String> prefLabelLanguages = resolvePropertyTypeDTOPrefLabelLanguages(propertyTypes);
+        final Set<String> definitionLanguages = resolvePropertyTypeDTODefinitionLanguages(propertyTypes);
         final Sheet sheet = workbook.createSheet(EXCEL_SHEET_PROPERTYTYPES);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
@@ -61,7 +61,7 @@ public class PropertyTypeExporter extends BaseExporter {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase());
         }
         int i = 1;
-        for (final PropertyType propertyType : propertyTypes) {
+        for (final PropertyTypeDTO propertyType : propertyTypes) {
             final Row row = sheet.createRow(i++);
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getId().toString()));
@@ -79,18 +79,18 @@ public class PropertyTypeExporter extends BaseExporter {
         return workbook;
     }
 
-    private Set<String> resolvePropertyTypePrefLabelLanguages(final Set<PropertyType> propertyTypes) {
+    private Set<String> resolvePropertyTypeDTOPrefLabelLanguages(final Set<PropertyTypeDTO> propertyTypes) {
         final Set<String> languages = new LinkedHashSet<>();
-        for (final PropertyType propertyType : propertyTypes) {
+        for (final PropertyTypeDTO propertyType : propertyTypes) {
             final Map<String, String> prefLabel = propertyType.getPrefLabel();
             languages.addAll(prefLabel.keySet());
         }
         return languages;
     }
 
-    private Set<String> resolvePropertyTypeDefinitionLanguages(final Set<PropertyType> propertyTypes) {
+    private Set<String> resolvePropertyTypeDTODefinitionLanguages(final Set<PropertyTypeDTO> propertyTypes) {
         final Set<String> languages = new LinkedHashSet<>();
-        for (final PropertyType propertyType : propertyTypes) {
+        for (final PropertyTypeDTO propertyType : propertyTypes) {
             final Map<String, String> definition = propertyType.getDefinition();
             languages.addAll(definition.keySet());
         }
