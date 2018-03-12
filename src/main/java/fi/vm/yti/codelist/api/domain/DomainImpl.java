@@ -129,7 +129,7 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
-                LOG.info("Found " + response.getHits().getTotalHits() + " CodeSchemeDTOs");
+                LOG.info("Found " + response.getHits().getTotalHits() + " CodeSchemes");
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
@@ -160,7 +160,7 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
-                LOG.info("Found " + response.getHits().getTotalHits() + " CodeSchemeDTOs");
+                LOG.info("Found " + response.getHits().getTotalHits() + " CodeSchemes");
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
