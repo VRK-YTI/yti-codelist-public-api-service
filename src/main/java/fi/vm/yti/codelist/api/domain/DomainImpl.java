@@ -175,7 +175,7 @@ public class DomainImpl implements Domain {
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes() {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, null, null);
+        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, null, null, null);
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
@@ -185,6 +185,7 @@ public class DomainImpl implements Domain {
                                              final String codeRegistryPrefLabel,
                                              final String codeSchemeCodeValue,
                                              final String codeSchemePrefLabel,
+                                             final String searchTerm,
                                              final List<String> statuses,
                                              final List<String> dataClassifications,
                                              final Date after,
@@ -199,7 +200,7 @@ public class DomainImpl implements Domain {
                 .addSort("codeValue.raw", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
-            final BoolQueryBuilder builder = constructSearchQuery(codeSchemeCodeValue, codeSchemePrefLabel, after);
+            final BoolQueryBuilder builder = constructCombinedSearchQuery(searchTerm, codeSchemeCodeValue, codeSchemePrefLabel, after);
             if (organizationId != null) {
                 builder.must(nestedQuery("codeRegistry.organizations", matchQuery("codeRegistry.organizations.id", organizationId.toLowerCase()), ScoreMode.None));
             }
@@ -449,6 +450,32 @@ public class DomainImpl implements Domain {
             });
         }
         return externalReferences;
+    }
+
+    private BoolQueryBuilder constructCombinedSearchQuery(final String searchQuery,
+                                                          final String codeValue,
+                                                          final String prefLabel,
+                                                          final Date after) {
+        final BoolQueryBuilder builder = boolQuery();
+        final BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+        if (searchQuery != null) {
+            boolQueryBuilder.should(prefixQuery("codeValue", searchQuery.toLowerCase()));
+            boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchQuery.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            boolQueryBuilder.minimumShouldMatch(1);
+            builder.must(boolQueryBuilder);
+        }
+        if (codeValue != null) {
+            builder.must(prefixQuery("codeValue", codeValue.toLowerCase()));
+        }
+        if (prefLabel != null) {
+            builder.must(nestedQuery("prefLabel", multiMatchQuery(prefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+        }
+        if (after != null) {
+            final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
+            final String afterString = dateFormat.format(after);
+            builder.must(rangeQuery("modified").gt(afterString));
+        }
+        return builder;
     }
 
     private BoolQueryBuilder constructSearchQuery(final String codeValue,
