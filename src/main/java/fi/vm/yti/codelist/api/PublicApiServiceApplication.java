@@ -13,12 +13,9 @@ import org.springframework.context.annotation.ComponentScan;
 @ComponentScan("fi.vm.yti.codelist.api")
 public class PublicApiServiceApplication {
 
-    public PublicApiServiceApplication() { }
-
     public static void main(final String[] args) {
         final ApplicationContext context = SpringApplication.run(PublicApiServiceApplication.class, args);
-        final AppInitializer serviceInitializer = (AppInitializer) context.getBean(AppInitializer.class);
+        final AppInitializer serviceInitializer = context.getBean(AppInitializer.class);
         serviceInitializer.initialize();
     }
-
 }

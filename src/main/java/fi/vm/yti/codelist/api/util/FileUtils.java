@@ -8,6 +8,9 @@ import java.io.InputStream;
 
 public abstract class FileUtils {
 
+    private FileUtils() {
+    }
+
     /**
      * Loads a file from classpath inside the application JAR.
      *
@@ -16,9 +19,6 @@ public abstract class FileUtils {
     public static InputStream loadFileFromClassPath(final String fileName) throws IOException {
 
         final ClassPathResource classPathResource = new ClassPathResource(fileName);
-        final InputStream inputStream = classPathResource.getInputStream();
-        return inputStream;
-
+        return classPathResource.getInputStream();
     }
-
 }

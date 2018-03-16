@@ -38,7 +38,6 @@ public class SwaggerResource extends AbstractBaseResource {
     public String getSwaggerJson() throws IOException {
         logApiRequest(LOG, METHOD_GET, "", API_PATH_SWAGGER_JSON);
         final File file = new File(AppInitializer.LOCAL_SWAGGER_DATA_DIR + "swagger.json");
-        final String swaggerJson = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
-        return swaggerJson;
+        return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
     }
 }

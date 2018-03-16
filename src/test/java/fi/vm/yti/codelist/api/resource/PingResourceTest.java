@@ -35,7 +35,7 @@ public class PingResourceTest extends AbstractTestBase {
         final String apiUrl = createApiUrlWithoutVersion(randomServerPort, API_PATH_PING) + "/";
         final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<LinkedMultiValueMap<String, Object>>(null, null);
         final ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class);
-        assertEquals(response.getStatusCode(), HttpStatus.OK);
-        assertEquals(response.getBody(), "pong");
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals("pong", response.getBody());
     }
 }

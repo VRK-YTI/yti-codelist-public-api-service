@@ -45,7 +45,7 @@ import io.swagger.annotations.SwaggerDefinition;
     produces = {MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN, "application/csv", "application/xls", "application/xlsx"},
     schemes = {SwaggerDefinition.Scheme.HTTPS}
 )
-@Api(value = ApiConstants.API_BASE_PATH, description = "Code List Service - Public API Service")
+@Api(value = ApiConstants.API_BASE_PATH)
 @ApplicationPath(ApiConstants.API_BASE_PATH)
 public class JerseyConfig extends ResourceConfig {
 

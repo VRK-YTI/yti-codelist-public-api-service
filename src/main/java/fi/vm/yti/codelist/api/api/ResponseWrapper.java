@@ -15,9 +15,6 @@ public class ResponseWrapper<T> {
 
     private Set<T> results;
 
-    public ResponseWrapper() {
-    }
-
     public Meta getMeta() {
         return meta;
     }

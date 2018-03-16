@@ -88,7 +88,7 @@ abstract class AbstractBaseResource {
                 statusSet.add(status.toString());
             }
         }
-        return new ArrayList<String>(statusSet);
+        return new ArrayList<>(statusSet);
     }
 
     public List<String> parseDataClassifications(final String dataClassificationCsl) {
@@ -98,7 +98,7 @@ abstract class AbstractBaseResource {
                 dataClassificationsSet.add(s.toUpperCase().trim());
             }
         }
-        return new ArrayList<String>(dataClassificationsSet);
+        return new ArrayList<>(dataClassificationsSet);
     }
 
     public void logApiRequest(final Logger logger,
