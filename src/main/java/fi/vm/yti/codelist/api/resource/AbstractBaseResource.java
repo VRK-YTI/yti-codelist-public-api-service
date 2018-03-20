@@ -50,12 +50,12 @@ abstract class AbstractBaseResource {
     public SimpleFilterProvider createSimpleFilterProvider(final List<String> baseFilters,
                                                            final String expand) {
         final SimpleFilterProvider filterProvider = new SimpleFilterProvider();
-        filterProvider.addFilter(FILTER_NAME_CODEREGISTRY, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_CODESCHEME, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_CODE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_CODEREGISTRY, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI, FIELD_NAME_URL));
+        filterProvider.addFilter(FILTER_NAME_CODESCHEME, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI, FIELD_NAME_URL));
+        filterProvider.addFilter(FILTER_NAME_CODE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI, FIELD_NAME_URL));
         filterProvider.addFilter(FILTER_NAME_EXTERNALREFERENCE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
         filterProvider.addFilter(FILTER_NAME_PROPERTYTYPE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
-        filterProvider.addFilter(FILTER_NAME_DATACLASSIFICATION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI));
+        filterProvider.addFilter(FILTER_NAME_DATACLASSIFICATION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URL));
         filterProvider.addFilter(FILTER_NAME_ORGANIZATION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_ID));
         filterProvider.setFailOnUnknownId(false);
         for (final String baseFilter : baseFilters) {
@@ -88,7 +88,7 @@ abstract class AbstractBaseResource {
                 statusSet.add(status.toString());
             }
         }
-        return new ArrayList<String>(statusSet);
+        return new ArrayList<>(statusSet);
     }
 
     public List<String> parseDataClassifications(final String dataClassificationCsl) {
@@ -98,7 +98,7 @@ abstract class AbstractBaseResource {
                 dataClassificationsSet.add(s.toUpperCase().trim());
             }
         }
-        return new ArrayList<String>(dataClassificationsSet);
+        return new ArrayList<>(dataClassificationsSet);
     }
 
     public void logApiRequest(final Logger logger,

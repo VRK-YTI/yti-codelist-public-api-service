@@ -39,6 +39,7 @@ public interface Domain {
                                       final String codeRegistryPrefLabel,
                                       final String codeSchemeCodeValue,
                                       final String codeSchemeCodePrefLabel,
+                                      final String searchTerm,
                                       final List<String> statuses,
                                       final List<String> dataClassifications,
                                       final Date after,
