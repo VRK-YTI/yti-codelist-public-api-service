@@ -20,6 +20,9 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 public class CodeExporter extends BaseExporter {
 
     public String createCsv(final Set<CodeDTO> codes) {
+
+        Integer flatInt = 1;
+
         final Map<UUID, String> codeValueIdMap = new HashMap<>();
         for (final CodeDTO code : codes) {
             codeValueIdMap.put(code.getId(), code.getCodeValue());
@@ -44,7 +47,8 @@ public class CodeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
         for (final CodeDTO code : codes) {
-            appendValue(csv, csvSeparator, code.getFlatOrder().toString());
+            appendValue(csv, csvSeparator, code.getFlatOrder() != null ? code.getFlatOrder().toString(): flatInt.toString());
+            appendValue(csv, csvSeparator, code.getChildOrder() != null ? code.getChildOrder().toString(): null);
             //appendValue(csv, csvSeparator, code.getChildOrder().toString());
             //appendValue(csv, csvSeparator, CONTENT_HEADER_CHILDORDER);
             appendValue(csv, csvSeparator, code.getCodeValue());
@@ -58,6 +62,7 @@ public class CodeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null);
             appendValue(csv, csvSeparator, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             appendValue(csv, csvSeparator, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "", true);
+            flatInt++;
         }
         return csv.toString();
     }
@@ -91,9 +96,11 @@ public class CodeExporter extends BaseExporter {
         }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_SHORTNAME);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_HIERARCHYLEVEL);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_FLATORDER);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
         int i = 1;
+        Integer flatInt = 1;
         for (final CodeDTO code : codes) {
             final Row row = sheet.createRow(i++);
             int k = 0;
@@ -112,8 +119,10 @@ public class CodeExporter extends BaseExporter {
             }
             row.createCell(k++).setCellValue(checkEmptyValue(code.getShortName()));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null));
+            row.createCell(k++).setCellValue(checkEmptyValue(code.getFlatOrder() != null ? code.getFlatOrder().toString() : flatInt.toString()));
             row.createCell(k++).setCellValue(code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             row.createCell(k).setCellValue(code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
+            flatInt++;
         }
         return workbook;
     }
