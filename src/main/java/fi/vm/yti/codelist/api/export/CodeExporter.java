@@ -47,10 +47,8 @@ public class CodeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
         for (final CodeDTO code : codes) {
-            appendValue(csv, csvSeparator, code.getFlatOrder() != null ? code.getFlatOrder().toString(): flatInt.toString());
-            appendValue(csv, csvSeparator, code.getChildOrder() != null ? code.getChildOrder().toString(): null);
-            //appendValue(csv, csvSeparator, code.getChildOrder().toString());
-            //appendValue(csv, csvSeparator, CONTENT_HEADER_CHILDORDER);
+            appendValue(csv, csvSeparator, code.getFlatOrder() != null ? code.getFlatOrder().toString() : flatInt.toString());
+            appendValue(csv, csvSeparator, code.getChildOrder() != null ? code.getChildOrder().toString() : null);
             appendValue(csv, csvSeparator, code.getCodeValue());
             appendValue(csv, csvSeparator, codeValueIdMap.get(code.getBroaderCodeId()));
             appendValue(csv, csvSeparator, code.getId().toString());
