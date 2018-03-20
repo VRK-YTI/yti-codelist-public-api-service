@@ -1,6 +1,6 @@
 package fi.vm.yti.codelist.api.api;
 
-import fi.vm.yti.codelist.common.model.Meta;
+import fi.vm.yti.codelist.common.dto.Meta;
 
 public class ErrorWrapper {
 

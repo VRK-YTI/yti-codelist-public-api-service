@@ -26,7 +26,7 @@ import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier;
 
 import fi.vm.yti.codelist.api.api.ErrorWrapper;
-import fi.vm.yti.codelist.common.model.Meta;
+import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.model.Status;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 

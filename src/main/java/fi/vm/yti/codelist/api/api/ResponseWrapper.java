@@ -5,7 +5,7 @@ import java.util.Set;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import fi.vm.yti.codelist.common.model.Meta;
+import fi.vm.yti.codelist.common.dto.Meta;
 
 @XmlRootElement
 @XmlType(propOrder = {"meta", "results"})
