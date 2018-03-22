@@ -432,8 +432,8 @@ public class DomainImpl implements Domain {
             if (codeScheme != null) {
                 builder.should(boolQuery()
                     .should(boolQuery()
-                        .must(matchQuery("parentCodeSchemeDTO.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()).analyzer(ANALYZER_KEYWORD))
-                        .must(matchQuery("parentCodeSchemeDTO.id", codeScheme.getId().toString().toLowerCase())))
+                        .must(matchQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()).analyzer(ANALYZER_KEYWORD))
+                        .must(matchQuery("parentCodeScheme.id", codeScheme.getId().toString().toLowerCase())))
                     .should(boolQuery()
                         .must(matchQuery("global", true))));
 
