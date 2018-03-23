@@ -107,11 +107,15 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @ApiResponse(code = 200, message = "Returns one specific CodeRegistry in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeRegistry(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
-                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                    @ApiParam(value = "Boolean that controls whether to embed CodeSchemes in payload or not.") @QueryParam("embedCodeSchemes") @DefaultValue("false") final Boolean embedCodeSchemes) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand)));
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
+            if (embedCodeSchemes) {
+                codeRegistry.setCodeSchemes(domain.getCodeSchemesByCodeRegistryCodeValue(codeRegistryCodeValue));
+            }
             return Response.ok(codeRegistry).build();
         } else {
             return Response.status(Response.Status.NOT_FOUND).build();
@@ -174,13 +178,21 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeRegistryCodeScheme(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                               @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                              @ApiParam(value = "Boolean that controls whether to embed Codes in payload or not.") @QueryParam("embedCodes") @DefaultValue("false") final Boolean embedCodes) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
             final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-            return Response.ok(codeScheme).build();
+            if (codeScheme != null) {
+                if (embedCodes) {
+                    codeScheme.setCodes(domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeRegistryCodeValue, codeSchemeCodeValue));
+                }
+                return Response.ok(codeScheme).build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND).build();
+            }
         } else {
             return Response.status(Response.Status.NOT_FOUND).build();
         }

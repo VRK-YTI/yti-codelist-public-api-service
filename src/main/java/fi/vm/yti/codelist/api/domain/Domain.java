@@ -32,6 +32,8 @@ public interface Domain {
 
     Set<CodeSchemeDTO> getCodeSchemes();
 
+    Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue);
+
     Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
                                       final Integer from,
                                       final String organizationId,
@@ -48,6 +50,9 @@ public interface Domain {
     CodeDTO getCode(final String codeRegistryCodeValue,
                     final String codeSchemeCodeValue,
                     final String codeCodeValue);
+
+    Set<CodeDTO> getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(final String codeRegistryCodeValue,
+                                                                       final String codeSchemeCodeValue);
 
     Set<CodeDTO> getCodes(final Integer pageSize,
                           final Integer from,
