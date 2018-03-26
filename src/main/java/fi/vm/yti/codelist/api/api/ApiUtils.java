@@ -10,7 +10,7 @@ import javax.inject.Inject;
 import org.springframework.stereotype.Component;
 
 import fi.vm.yti.codelist.api.configuration.PublicApiServiceProperties;
-import fi.vm.yti.codelist.common.constants.ApiConstants;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 public class ApiUtils {
@@ -54,7 +54,7 @@ public class ApiUtils {
             builder.append(port);
         }
         builder.append(publicApiServiceProperties.getContextPath());
-        builder.append(ApiConstants.API_BASE_PATH);
+        builder.append(API_BASE_PATH);
         builder.append("/");
         builder.append(apiVersion);
         builder.append(apiPath);
@@ -89,7 +89,7 @@ public class ApiUtils {
             builder.append(port);
         }
         builder.append(publicApiServiceProperties.getContextPath());
-        builder.append(ApiConstants.API_BASE_PATH);
+        builder.append(API_BASE_PATH);
         builder.append("/");
         builder.append(apiVersion);
         builder.append(apiPath);
@@ -104,6 +104,21 @@ public class ApiUtils {
         }
 
         return builder.toString();
+    }
+
+    public String createCodeRegistryUrl(final String codeRegistryCodeValue) {
+        return createResourceUrl(API_PATH_CODEREGISTRIES, codeRegistryCodeValue);
+    }
+
+    public String createCodeSchemeUrl(final String codeRegistryCodeValue,
+                                      final String codeSchemeCodeValue) {
+        return createResourceUrl(API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES, codeSchemeCodeValue);
+    }
+
+    public String createCodeUrl(final String codeRegistryCodeValue,
+                                final String codeSchemeCodeValue,
+                                final String codeCodeValue) {
+        return createResourceUrl(API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES, codeCodeValue);
     }
 
     /**
@@ -136,9 +151,9 @@ public class ApiUtils {
             builder.append(port);
         }
         builder.append(publicApiServiceProperties.getContextPath());
-        builder.append(ApiConstants.API_BASE_PATH);
+        builder.append(API_BASE_PATH);
         builder.append("/");
-        builder.append(ApiConstants.API_VERSION);
+        builder.append(API_VERSION);
         builder.append(apiPath);
         builder.append("/");
         if (resourceId != null && !resourceId.isEmpty()) {
