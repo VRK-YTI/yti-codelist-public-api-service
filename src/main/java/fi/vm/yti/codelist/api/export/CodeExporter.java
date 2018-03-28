@@ -33,10 +33,8 @@ public class CodeExporter extends BaseExporter {
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        UUID previousBroaderId = null;
         String previousCodeValue = null;
         Integer childOrderindex = 1;
-        Map<Integer, Integer> childOrderMap = new HashMap<>();
         appendValue(csv, csvSeparator, CONTENT_HEADER_FLATORDER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CHILDORDER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
@@ -66,8 +64,7 @@ public class CodeExporter extends BaseExporter {
                         childOrderindex = 1;
                         appendValue(csv, csvSeparator, "1");
                     }
-                }
-                else {
+                } else {
                     childOrderindex = 1;
                     appendValue(csv, csvSeparator, "1");
                 }
@@ -87,7 +84,6 @@ public class CodeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             appendValue(csv, csvSeparator, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "", true);
 
-            previousBroaderId = code.getBroaderCodeId();
             previousCodeValue = code.getCodeValue();
 
             flatInt++;
