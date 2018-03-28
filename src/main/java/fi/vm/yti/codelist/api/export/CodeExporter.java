@@ -33,6 +33,10 @@ public class CodeExporter extends BaseExporter {
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
+        UUID previousBroaderId = null;
+        String previousCodeValue = null;
+        Integer childOrderindex = 1;
+        Map<Integer, Integer> childOrderMap = new HashMap<>();
         appendValue(csv, csvSeparator, CONTENT_HEADER_FLATORDER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CHILDORDER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
@@ -48,7 +52,31 @@ public class CodeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
         for (final CodeDTO code : codes) {
             appendValue(csv, csvSeparator, code.getFlatOrder() != null ? code.getFlatOrder().toString() : flatInt.toString());
-            appendValue(csv, csvSeparator, code.getChildOrder() != null ? code.getChildOrder().toString() : null);
+
+            String childOrder;
+
+            childOrder = code.getChildOrder() != null ? code.getChildOrder().toString() : null;
+            if (childOrder == null || childOrder.isEmpty()) { // No childorder set, generate one
+                UUID broaderCode = code.getBroaderCodeId();
+                if (broaderCode != null) {
+                    if (broaderCode.toString() == previousCodeValue)
+                    {
+                        appendValue(csv, csvSeparator, new String(childOrderindex.toString()));
+                        childOrderindex++;
+                    }
+                    else {
+                        childOrderindex = 1;
+                        appendValue(csv, csvSeparator, "1");
+                    }
+                }
+                else {
+                    childOrderindex = 1;
+                    appendValue(csv, csvSeparator, "1");
+                }
+            } else {
+                appendValue(csv, csvSeparator, childOrder);
+            }
+
             appendValue(csv, csvSeparator, code.getCodeValue());
             appendValue(csv, csvSeparator, codeValueIdMap.get(code.getBroaderCodeId()));
             appendValue(csv, csvSeparator, code.getId().toString());
@@ -60,6 +88,10 @@ public class CodeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null);
             appendValue(csv, csvSeparator, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             appendValue(csv, csvSeparator, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "", true);
+
+            previousBroaderId = code.getBroaderCodeId();
+            previousCodeValue = code.getCodeValue();
+
             flatInt++;
         }
         return csv.toString();
