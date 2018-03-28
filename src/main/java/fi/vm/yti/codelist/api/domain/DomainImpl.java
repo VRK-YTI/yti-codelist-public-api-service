@@ -174,6 +174,10 @@ public class DomainImpl implements Domain {
         return null;
     }
 
+    public Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue) {
+        return getCodeSchemes(MAX_SIZE, 0, null, codeRegistryCodeValue, null, null, null, null, null, null, null, null);
+    }
+
     public Set<CodeSchemeDTO> getCodeSchemes() {
         return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, null, null, null);
     }
@@ -268,6 +272,11 @@ public class DomainImpl implements Domain {
         }
     }
 
+    public Set<CodeDTO> getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(final String codeRegistryCodeValue,
+                                                                              final String codeSchemeCodeValue) {
+        return getCodes(MAX_SIZE, 0, codeRegistryCodeValue, codeSchemeCodeValue, null, null, null, null, null, null, null);
+    }
+
     public Set<CodeDTO> getCodes(final Integer pageSize,
                                  final Integer from,
                                  final String codeRegistryCodeValue,
@@ -303,7 +312,7 @@ public class DomainImpl implements Domain {
             if (broaderCodeId != null && !broaderCodeId.isEmpty()) {
                 builder.must(matchQuery("broaderCodeId", broaderCodeId.toLowerCase()));
             }
-            if (!statuses.isEmpty()) {
+            if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }
             final SearchResponse response = searchRequest.execute().actionGet();
