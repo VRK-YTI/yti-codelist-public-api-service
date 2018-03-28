@@ -39,8 +39,8 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 public class DomainImpl implements Domain {
 
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
-    private static int MAX_SIZE = 10000;
-    private static String ANALYZER_KEYWORD = "analyzer_keyword";
+    private static final int MAX_SIZE = 10000;
+    private static final String ANALYZER_KEYWORD = "analyzer_keyword";
     private Client client;
 
     @Inject
