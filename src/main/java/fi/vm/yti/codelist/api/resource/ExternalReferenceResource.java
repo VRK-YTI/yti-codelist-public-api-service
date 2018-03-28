@@ -55,13 +55,13 @@ public class ExternalReferenceResource extends AbstractBaseResource {
     @ApiOperation(value = "Return a list of available ExternalReferences.", response = ExternalReferenceDTO.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns all ExternalReferences in specified format.")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
-    public Response getExternalReferenceDTOs(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
-                                             @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                             @ApiParam(value = "ExternalReference name as string value.") @QueryParam("name") final String name,
-                                             @ApiParam(value = "CodeSchemeDTO id.") @QueryParam("codeSchemeId") final String codeSchemeId,
-                                             @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
-                                             @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+    public Response getExternalReferences(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
+                                          @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
+                                          @ApiParam(value = "ExternalReference name as string value.") @QueryParam("name") final String name,
+                                          @ApiParam(value = "CodeSchemeDTO id.") @QueryParam("codeSchemeId") final String codeSchemeId,
+                                          @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
+                                          @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
+                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_EXTERNALREFERENCES);
         CodeSchemeDTO codeScheme = null;
         if (codeSchemeId != null && !codeSchemeId.isEmpty()) {
@@ -78,11 +78,11 @@ public class ExternalReferenceResource extends AbstractBaseResource {
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
             final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, Meta.parseAfterFromString(after), null);
             final String csv = externalReferenceExporter.createCsv(externalReferences);
-            return streamCsvExternalReferenceDTOsOutput(csv);
+            return streamCsvExternalReferencesOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
             final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, Meta.parseAfterFromString(after), null);
             final Workbook workbook = externalReferenceExporter.createExcel(externalReferences, format);
-            return streamExcelExternalReferenceDTOsOutput(workbook);
+            return streamExcelExternalReferencesOutput(workbook);
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand)));
@@ -100,8 +100,8 @@ public class ExternalReferenceResource extends AbstractBaseResource {
     @ApiOperation(value = "Return one specific ExternalReference.", response = ExternalReferenceDTO.class)
     @ApiResponse(code = 200, message = "Returns one specific ExternalReference in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getExternalReferenceDTO(@ApiParam(value = "ExternalReference CodeValue.", required = true) @PathParam("externalReferenceId") final String externalReferenceId,
-                                            @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+    public Response getExternalReference(@ApiParam(value = "ExternalReference CodeValue.", required = true) @PathParam("externalReferenceId") final String externalReferenceId,
+                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_EXTERNALREFERENCES + "/" + externalReferenceId + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand)));
         final ExternalReferenceDTO externalReference = domain.getExternalReference(externalReferenceId);

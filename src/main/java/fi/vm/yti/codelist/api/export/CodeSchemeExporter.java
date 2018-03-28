@@ -19,10 +19,10 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 public class CodeSchemeExporter extends BaseExporter {
 
     public String createCsv(final Set<CodeSchemeDTO> codeSchemes) {
-        final Set<String> prefLabelLanguages = resolveCodeSchemeDTOPrefLabelLanguages(codeSchemes);
-        final Set<String> definitionLanguages = resolveCodeSchemeDTODefinitionLanguages(codeSchemes);
-        final Set<String> descriptionLanguages = resolveCodeSchemeDTODescriptionLanguages(codeSchemes);
-        final Set<String> changeNoteLanguages = resolveCodeSchemeDTOChangeNoteLanguages(codeSchemes);
+        final Set<String> prefLabelLanguages = resolveCodeSchemePrefLabelLanguages(codeSchemes);
+        final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
+        final Set<String> descriptionLanguages = resolveCodeSchemeDescriptionLanguages(codeSchemes);
+        final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
@@ -62,10 +62,10 @@ public class CodeSchemeExporter extends BaseExporter {
     public Workbook createExcel(final Set<CodeSchemeDTO> codeSchemes,
                                 final String format) {
         final Workbook workbook = createWorkBook(format);
-        final Set<String> prefLabelLanguages = resolveCodeSchemeDTOPrefLabelLanguages(codeSchemes);
-        final Set<String> definitionLanguages = resolveCodeSchemeDTODefinitionLanguages(codeSchemes);
-        final Set<String> descriptionLanguages = resolveCodeSchemeDTODescriptionLanguages(codeSchemes);
-        final Set<String> changeNoteLanguages = resolveCodeSchemeDTOChangeNoteLanguages(codeSchemes);
+        final Set<String> prefLabelLanguages = resolveCodeSchemePrefLabelLanguages(codeSchemes);
+        final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
+        final Set<String> descriptionLanguages = resolveCodeSchemeDescriptionLanguages(codeSchemes);
+        final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Sheet sheet = workbook.createSheet(EXCEL_SHEET_CODESCHEMES);
         final Row rowhead = sheet.createRow((short) 0);
@@ -122,7 +122,7 @@ public class CodeSchemeExporter extends BaseExporter {
         return workbook;
     }
 
-    private Set<String> resolveCodeSchemeDTOPrefLabelLanguages(final Set<CodeSchemeDTO> codeSchemes) {
+    private Set<String> resolveCodeSchemePrefLabelLanguages(final Set<CodeSchemeDTO> codeSchemes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Map<String, String> prefLabel = codeScheme.getPrefLabel();
@@ -131,7 +131,7 @@ public class CodeSchemeExporter extends BaseExporter {
         return languages;
     }
 
-    private Set<String> resolveCodeSchemeDTODefinitionLanguages(final Set<CodeSchemeDTO> codeSchemes) {
+    private Set<String> resolveCodeSchemeDefinitionLanguages(final Set<CodeSchemeDTO> codeSchemes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Map<String, String> definition = codeScheme.getDefinition();
@@ -140,7 +140,7 @@ public class CodeSchemeExporter extends BaseExporter {
         return languages;
     }
 
-    private Set<String> resolveCodeSchemeDTODescriptionLanguages(final Set<CodeSchemeDTO> codeSchemes) {
+    private Set<String> resolveCodeSchemeDescriptionLanguages(final Set<CodeSchemeDTO> codeSchemes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Map<String, String> description = codeScheme.getDescription();
@@ -149,7 +149,7 @@ public class CodeSchemeExporter extends BaseExporter {
         return languages;
     }
 
-    private Set<String> resolveCodeSchemeDTOChangeNoteLanguages(final Set<CodeSchemeDTO> codeSchemes) {
+    private Set<String> resolveCodeSchemeChangeNoteLanguages(final Set<CodeSchemeDTO> codeSchemes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Map<String, String> changeNote = codeScheme.getChangeNote();

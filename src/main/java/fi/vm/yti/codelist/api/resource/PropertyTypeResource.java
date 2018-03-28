@@ -65,11 +65,11 @@ public class PropertyTypeResource extends AbstractBaseResource {
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
             final Set<PropertyTypeDTO> propertyTypes = domain.getPropertyTypes(pageSize, from, name, context, Meta.parseAfterFromString(after), null);
             final String csv = propertyTypeExporter.createCsv(propertyTypes);
-            return streamCsvPropertyTypeDTOsOutput(csv);
+            return streamCsvPropertyTypesOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
             final Set<PropertyTypeDTO> propertyTypes = domain.getPropertyTypes(pageSize, from, name, context, Meta.parseAfterFromString(after), null);
             final Workbook workbook = propertyTypeExporter.createExcel(propertyTypes, format);
-            return streamExcelPropertyTypeDTOsOutput(workbook);
+            return streamExcelPropertyTypesOutput(workbook);
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand)));
@@ -87,8 +87,8 @@ public class PropertyTypeResource extends AbstractBaseResource {
     @ApiOperation(value = "Return one specific PropertyType.", response = PropertyTypeDTO.class)
     @ApiResponse(code = 200, message = "Returns one specific PropertyType in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getPropertyTypeDTO(@ApiParam(value = "PropertyType CodeValue.", required = true) @PathParam("propertyTypeId") final String propertyTypeId,
-                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+    public Response getPropertyType(@ApiParam(value = "PropertyType CodeValue.", required = true) @PathParam("propertyTypeId") final String propertyTypeId,
+                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_PROPERTYTYPES + "/" + propertyTypeId + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand)));
         final PropertyTypeDTO propertyType = domain.getPropertyType(propertyTypeId);

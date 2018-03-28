@@ -164,7 +164,7 @@ abstract public class AbstractTestBase {
 
     public void createAndIndexMockData() {
         createAndIndexMockCodeRegistries();
-        createAndIndexMockCodeSchemeDTOs(domain.getCodeRegistries());
+        createAndIndexMockCodeSchemes(domain.getCodeRegistries());
         createAndIndexMockCodes(domain.getCodeSchemes());
         LOG.info("Mock data indexed!");
     }
@@ -180,7 +180,7 @@ abstract public class AbstractTestBase {
         LOG.info("Indexed " + codeRegistries.size() + " CodeRegistries.");
     }
 
-    private void createAndIndexMockCodeSchemeDTOs(final Set<CodeRegistryDTO> codeRegistries) {
+    private void createAndIndexMockCodeSchemes(final Set<CodeRegistryDTO> codeRegistries) {
         createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODESCHEME, ELASTIC_TYPE_CODESCHEME);
         final Set<CodeSchemeDTO> codeSchemes = new HashSet<>();
         for (final CodeRegistryDTO codeRegistry : codeRegistries) {

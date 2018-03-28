@@ -38,7 +38,7 @@ abstract class AbstractBaseResource {
     public static final String DOWNLOAD_FILENAME_EXTERNALREFERENCES = "externalreferences";
     public static final String DOWNLOAD_FILENAME_PROPERTYTYPES = "propertytypes";
 
-    public static final String HEADER_CONTENT_DISPOSITION = "content-disposition";
+    private static final String HEADER_CONTENT_DISPOSITION = "content-disposition";
 
     public SimpleFilterProvider createSimpleFilterProvider(final String baseFilter,
                                                            final String expand) {
@@ -130,7 +130,7 @@ abstract class AbstractBaseResource {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_CODES);
     }
 
-    public Response streamCsvCodeSchemeDTOsOutput(final String csv) {
+    public Response streamCsvCodeSchemesOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_CODESCHEMES);
     }
 
@@ -138,11 +138,11 @@ abstract class AbstractBaseResource {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_CODEREGISTRIES);
     }
 
-    public Response streamCsvExternalReferenceDTOsOutput(final String csv) {
+    public Response streamCsvExternalReferencesOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_EXTERNALREFERENCES);
     }
 
-    public Response streamCsvPropertyTypeDTOsOutput(final String csv) {
+    public Response streamCsvPropertyTypesOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_PROPERTYTYPES);
     }
 
@@ -162,7 +162,7 @@ abstract class AbstractBaseResource {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_CODES);
     }
 
-    public Response streamExcelCodeSchemeDTOsOutput(final Workbook workbook) {
+    public Response streamExcelCodeSchemesOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_CODESCHEMES);
     }
 
@@ -170,11 +170,11 @@ abstract class AbstractBaseResource {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_CODEREGISTRIES);
     }
 
-    public Response streamExcelExternalReferenceDTOsOutput(final Workbook workbook) {
+    public Response streamExcelExternalReferencesOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_EXTERNALREFERENCES);
     }
 
-    public Response streamExcelPropertyTypeDTOsOutput(final Workbook workbook) {
+    public Response streamExcelPropertyTypesOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_PROPERTYTYPES);
     }
 
