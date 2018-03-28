@@ -68,8 +68,8 @@ public class DomainImpl implements Domain {
                     if (hit != null) {
                         return mapper.readValue(hit.getSourceAsString(), CodeRegistryDTO.class);
                     }
-                } catch (IOException e) {
-                    LOG.error("getCodeRegistry reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage(), e);
+                } catch (final IOException e) {
+                    LOG.error("getCodeRegistry reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             }
         }
@@ -108,8 +108,8 @@ public class DomainImpl implements Domain {
             response.getHits().forEach(hit -> {
                 try {
                     codeRegistries.add(mapper.readValue(hit.getSourceAsString(), CodeRegistryDTO.class));
-                } catch (IOException e) {
-                    LOG.error("getCodeRegistries reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                } catch (final IOException e) {
+                    LOG.error("getCodeRegistries reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             });
         }
@@ -135,8 +135,8 @@ public class DomainImpl implements Domain {
                     if (hit != null) {
                         return mapper.readValue(hit.getSourceAsString(), CodeSchemeDTO.class);
                     }
-                } catch (IOException e) {
-                    LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                } catch (final IOException e) {
+                    LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             }
         }
@@ -166,8 +166,8 @@ public class DomainImpl implements Domain {
                     if (hit != null) {
                         return mapper.readValue(hit.getSourceAsString(), CodeSchemeDTO.class);
                     }
-                } catch (IOException e) {
-                    LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                } catch (final IOException e) {
+                    LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             }
         }
@@ -226,8 +226,8 @@ public class DomainImpl implements Domain {
             response.getHits().forEach(hit -> {
                 try {
                     codeSchemes.add(mapper.readValue(hit.getSourceAsString(), CodeSchemeDTO.class));
-                } catch (IOException e) {
-                    LOG.error("getCodeSchemes reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                } catch (final IOException e) {
+                    LOG.error("getCodeSchemes reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             });
         }
@@ -262,8 +262,8 @@ public class DomainImpl implements Domain {
                     if (hit != null) {
                         return mapper.readValue(hit.getSourceAsString(), CodeDTO.class);
                     }
-                } catch (IOException e) {
-                    LOG.error("getCode reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                } catch (final IOException e) {
+                    LOG.error("getCode reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             }
             return null;
@@ -320,8 +320,8 @@ public class DomainImpl implements Domain {
             response.getHits().forEach(hit -> {
                 try {
                     codes.add(mapper.readValue(hit.getSourceAsString(), CodeDTO.class));
-                } catch (IOException e) {
-                    LOG.error("getCodes reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                } catch (final IOException e) {
+                    LOG.error("getCodes reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             });
             return codes;
@@ -346,8 +346,8 @@ public class DomainImpl implements Domain {
                     if (hit != null) {
                         return mapper.readValue(hit.getSourceAsString(), PropertyTypeDTO.class);
                     }
-                } catch (IOException e) {
-                    LOG.error("getPropertyType reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                } catch (final IOException e) {
+                    LOG.error("getPropertyType reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             }
         }
@@ -384,8 +384,8 @@ public class DomainImpl implements Domain {
                 try {
                     final PropertyTypeDTO propertyType = mapper.readValue(hit.getSourceAsString(), PropertyTypeDTO.class);
                     propertyTypes.add(propertyType);
-                } catch (IOException e) {
-                    LOG.error("getPropertyTypes reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                } catch (final IOException e) {
+                    LOG.error("getPropertyTypes reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             });
         }
@@ -409,8 +409,8 @@ public class DomainImpl implements Domain {
                     if (hit != null) {
                         return mapper.readValue(hit.getSourceAsString(), ExternalReferenceDTO.class);
                     }
-                } catch (IOException e) {
-                    LOG.error("getExternalReference reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                } catch (final IOException e) {
+                    LOG.error("getExternalReference reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             }
         }
@@ -453,8 +453,8 @@ public class DomainImpl implements Domain {
                 try {
                     final ExternalReferenceDTO externalReference = mapper.readValue(hit.getSourceAsString(), ExternalReferenceDTO.class);
                     externalReferences.add(externalReference);
-                } catch (IOException e) {
-                    LOG.error("getExternalReferences reading value from JSON string failed: " + hit.getSourceAsString() + ", message: " + e.getMessage());
+                } catch (final IOException e) {
+                    LOG.error("getExternalReferences reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             });
         }

@@ -52,7 +52,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
             final ObjectNode jsonObject = (ObjectNode) mapper.readTree(response.getBody().toString());
             final ArrayNode registriesArray = (ArrayNode) jsonObject.get("results");
             assertEquals(8, registriesArray.size());
-        } catch (IOException e) {
+        } catch (final IOException e) {
             Assert.fail("Exception " + e);
         }
     }
@@ -68,7 +68,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
         try {
             final CodeRegistryDTO codeRegistry = mapper.readValue(response.getBody().toString(), CodeRegistryDTO.class);
             assertEquals(TEST_CODEREGISTRY_CODEVALUE, codeRegistry.getCodeValue());
-        } catch (IOException e) {
+        } catch (final IOException e) {
             Assert.fail("Exception " + e);
         }
     }
@@ -85,7 +85,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
             final ObjectNode jsonObject = (ObjectNode) mapper.readTree(response.getBody().toString());
             final ArrayNode codeSchemesArray = (ArrayNode) jsonObject.get("results");
             assertEquals(8, codeSchemesArray.size());
-        } catch (IOException e) {
+        } catch (final IOException e) {
             Assert.fail("Exception " + e);
         }
     }
@@ -101,7 +101,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
         try {
             final CodeSchemeDTO codeScheme = mapper.readValue(response.getBody().toString(), CodeSchemeDTO.class);
             assertEquals(TEST_CODESCHEME_CODEVALUE, codeScheme.getCodeValue());
-        } catch (IOException e) {
+        } catch (final IOException e) {
             Assert.fail("Exception " + e);
         }
     }
@@ -118,7 +118,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
             final ObjectNode jsonObject = (ObjectNode) mapper.readTree(response.getBody().toString());
             final ArrayNode codesArray = (ArrayNode) jsonObject.get("results");
             assertEquals(8, codesArray.size());
-        } catch (IOException e) {
+        } catch (final IOException e) {
             Assert.fail("Exception " + e);
         }
     }
@@ -134,7 +134,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
         try {
             final CodeDTO code = mapper.readValue(response.getBody().toString(), CodeDTO.class);
             assertEquals(TEST_CODE_CODEVALUE, code.getCodeValue());
-        } catch (IOException e) {
+        } catch (final IOException e) {
             Assert.fail("Exception " + e);
         }
     }

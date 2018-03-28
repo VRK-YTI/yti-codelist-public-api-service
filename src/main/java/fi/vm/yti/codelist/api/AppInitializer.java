@@ -101,8 +101,8 @@ public class AppInitializer {
                 mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
                 fos.write(mapper.writeValueAsString(jsonObject).getBytes(StandardCharsets.UTF_8));                
             }
-        } catch (IOException e) {
-            LOG.error("Swagger JSON parsing failed: " + e.getMessage());
+        } catch (final IOException e) {
+            LOG.error("Swagger JSON parsing failed!", e);
         }
     }
 
