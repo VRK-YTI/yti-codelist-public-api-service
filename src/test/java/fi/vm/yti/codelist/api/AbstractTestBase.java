@@ -280,7 +280,7 @@ abstract public class AbstractTestBase {
         try {
             client.admin().indices().flush(request).get();
             LOG.info("Index flushed successfully: " + indexName);
-        } catch (InterruptedException | ExecutionException e) {
+        } catch (final InterruptedException | ExecutionException e) {
             LOG.error("Index flush failed for index: " + indexName, e);
         }
     }
