@@ -59,12 +59,10 @@ public class CodeExporter extends BaseExporter {
             if (childOrder == null || childOrder.isEmpty()) { // No childorder set, generate one
                 UUID broaderCode = code.getBroaderCodeId();
                 if (broaderCode != null) {
-                    if (broaderCode.toString() == previousCodeValue)
-                    {
-                        appendValue(csv, csvSeparator, new String(childOrderindex.toString()));
+                    if (broaderCode.toString().equalsIgnoreCase(previousCodeValue)) {
+                        appendValue(csv, csvSeparator, childOrderindex.toString());
                         childOrderindex++;
-                    }
-                    else {
+                    } else {
                         childOrderindex = 1;
                         appendValue(csv, csvSeparator, "1");
                     }
