@@ -121,13 +121,17 @@ public class CodeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_SHORTNAME);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_HIERARCHYLEVEL);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_FLATORDER);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CHILDORDER);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
         int i = 1;
         Integer flatInt = 1;
+        Integer childInt = 1;
+        UUID previousBroader = null;
         for (final CodeDTO code : codes) {
             final Row row = sheet.createRow(i++);
             int k = 0;
+            UUID broaderCode;
             row.createCell(k++).setCellValue(code.getCodeValue());
             row.createCell(k++).setCellValue(checkEmptyValue(codeValueIdMap.get(code.getBroaderCodeId())));
             row.createCell(k++).setCellValue(code.getId().toString());
@@ -144,8 +148,23 @@ public class CodeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(code.getShortName()));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getFlatOrder() != null ? code.getFlatOrder().toString() : flatInt.toString()));
+
+            if (code.getChildOrder() != null) {
+                row.createCell(k++).setCellValue(code.getChildOrder());
+            } else { // No childorder, create one
+                broaderCode = code.getBroaderCodeId();
+                if (broaderCode != null  && code.getBroaderCodeId() == previousBroader) {
+                    row.createCell(k++).setCellValue(childInt);
+                    childInt++;
+                } else {
+                    childInt = 1;
+                    row.createCell(k++).setCellValue(childInt);
+                }
+            }
+
             row.createCell(k++).setCellValue(code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             row.createCell(k).setCellValue(code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
+            previousBroader = code.getBroaderCodeId();
             flatInt++;
         }
         return workbook;
