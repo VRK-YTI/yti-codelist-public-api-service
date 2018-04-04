@@ -158,7 +158,6 @@ public class ApiUtils {
         builder.append("/");
         if (resourceId != null && !resourceId.isEmpty()) {
             builder.append(resourceId);
-            builder.append("/");
         }
 
         return builder.toString();
