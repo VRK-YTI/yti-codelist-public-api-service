@@ -2,8 +2,8 @@
 <configuration>
 
     <include resource="org/springframework/boot/logging/logback/base.xml"/>
-    <property name="LOG_PATH" value="/data/logs/yti-codelist-public-api-service"/>
     <property name="SERVICE_NAME" value="yti-codelist-public-api-service"/>
+    <property name="LOG_PATH" value="/data/logs/yti-codelist-public-api-service"/>
 
     <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/${SERVICE_NAME}.log</file>
@@ -23,7 +23,7 @@
                     <pattern>
                         {
                         "severity": "%level",
-                        "service": "${springAppName:-}",
+                        "service": "${SERVICE_NAME:-}",
                         "trace": "%X{X-B3-TraceId:-}",
                         "span": "%X{X-B3-SpanId:-}",
                         "parent": "%X{X-B3-ParentSpanId:-}",
