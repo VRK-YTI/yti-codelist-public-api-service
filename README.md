@@ -38,7 +38,7 @@ When the microservice is running, you can get the Swagger REST API documentation
 
 Add the following Run configurations options:
 
-- Program arguments: `--spring.profiles.active=default --spring.config.location=../yti-codelist-config/application.yml,../yti-codelist-config/yti-codelist-public-api-service.yml`
+- Program arguments: `--spring.profiles.active=local --spring.config.location=../yti-codelist-config/application.yml,../yti-codelist-config/yti-codelist-public-api-service.yml`
 - Workdir: `$MODULE_DIR$`
 
 Add folder for yti project, application writes modified files there:
