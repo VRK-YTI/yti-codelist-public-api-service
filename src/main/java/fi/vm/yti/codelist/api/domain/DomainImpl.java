@@ -129,7 +129,7 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
-                LOG.info("Found " + response.getHits().getTotalHits() + " CodeSchemes");
+                LOG.debug("Found " + response.getHits().getTotalHits() + " CodeSchemes");
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
@@ -160,7 +160,7 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
-                LOG.info("Found " + response.getHits().getTotalHits() + " CodeSchemes");
+                LOG.debug("Found " + response.getHits().getTotalHits() + " CodeSchemes");
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
@@ -255,7 +255,7 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
 
             final SearchResponse response = searchRequest.execute().actionGet();
-            LOG.info("getCode found: " + response.getHits().getTotalHits() + " hits.");
+            LOG.debug("getCode found: " + response.getHits().getTotalHits() + " hits.");
             if (response.getHits().getTotalHits() > 0) {
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
@@ -513,6 +513,6 @@ public class DomainImpl implements Domain {
             meta.setTotalResults(totalResults);
             meta.setResultCount(resultCount);
         }
-        LOG.info("Search found: " + totalResults + " total hits.");
+        LOG.debug("Search found: " + totalResults + " total hits.");
     }
 }

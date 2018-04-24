@@ -100,10 +100,17 @@
             <version>1.2.3</version>
         </dependency>
 
+        <!-- Logging -->
         <dependency>
             <groupId>net.logstash.logback</groupId>
             <artifactId>logstash-logback-encoder</artifactId>
             <version>5.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-core</artifactId>
+            <version>3.2.4</version>
         </dependency>
 
         <dependency>

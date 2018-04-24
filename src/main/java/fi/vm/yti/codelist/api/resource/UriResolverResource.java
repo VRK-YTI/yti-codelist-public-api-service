@@ -25,8 +25,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.API_PATH_VERSION_V1;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.METHOD_GET;
 
 @Component
 @Path("/v1/uris")
@@ -36,8 +34,6 @@ public class UriResolverResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(UriResolverResource.class);
     private static final String SUOMI_URI_HOST = "uri.suomi.fi";
-    private static final String API_PATH_URIRESOURCE = "/uris";
-    private static final String API_PATH_RESOLVE = "/resolve";
     private static final String API_PATH_CODELIST = "/codelist";
 
     private final ApiUtils apiUtils;
@@ -53,7 +49,6 @@ public class UriResolverResource extends AbstractBaseResource {
     @ApiResponse(code = 200, message = "Resolves the API url for the given codelist resource URI.")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN})
     public Response resolveUri(@ApiParam(value = "Resource URI.", required = true) @QueryParam("uri") final String uri) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_URIRESOURCE + API_PATH_RESOLVE);
         final URI resolveUri = parseUriFromString(uri);
         ensureSuomiFiUriHost(resolveUri.getHost());
         final String uriPath = resolveUri.getPath();
@@ -69,7 +64,6 @@ public class UriResolverResource extends AbstractBaseResource {
     @ApiOperation(value = "Redirect URI resource.", response = String.class)
     @ApiResponse(code = 200, message = "Does a redirect from codelist resource URI to codelist API.")
     public Response redirectUri(@ApiParam(value = "Resource URI.", required = true) @QueryParam("uri") final String uri) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_URIRESOURCE + API_PATH_RESOLVE);
         final URI resolveUri = parseUriFromString(uri);
         ensureSuomiFiUriHost(resolveUri.getHost());
         final String uriPath = resolveUri.getPath();
@@ -79,7 +73,7 @@ public class UriResolverResource extends AbstractBaseResource {
 
     private void ensureSuomiFiUriHost(final String host) {
         if (!SUOMI_URI_HOST.equalsIgnoreCase(host)) {
-            LOG.info("This URI is not resolvable as a codelist resource, wrong host.");
+            LOG.error("This URI is not resolvable as a codelist resource, wrong host.");
             throw new WebApplicationException("This URI is not resolvable as a codelist resource.");
         }
     }
@@ -88,7 +82,7 @@ public class UriResolverResource extends AbstractBaseResource {
         if (!uriString.isEmpty()) {
             return URI.create(uriString.replace(" ", "%20"));
         } else {
-            LOG.info("URI string was not valid!");
+            LOG.error("URI string was not valid!");
             throw new WebApplicationException("URI string was not valid!");
         }
     }
@@ -98,10 +92,10 @@ public class UriResolverResource extends AbstractBaseResource {
         final String resourcePath = uriPath.substring(API_PATH_CODELIST.length() + 1);
         final List<String> resourceCodeValues = Arrays.asList(resourcePath.split("/"));
         if (!uriPath.toLowerCase().startsWith(API_PATH_CODELIST)) {
-            LOG.info("Codelist resource URI not resolvable, wrong context path!");
+            LOG.error("Codelist resource URI not resolvable, wrong context path!");
             throw new WebApplicationException("Codelist resource URI not resolvable, wrong context path!");
         } else if (resourceCodeValues.isEmpty()) {
-            LOG.info("Codelist resource URI not resolvable, empty resource path!");
+            LOG.error("Codelist resource URI not resolvable, empty resource path!");
             throw new WebApplicationException("Codelist resource URI not resolvable, empty resource path!");
         } else if (resourceCodeValues.size() == 1) {
             url = apiUtils.createCodeRegistryUrl(checkNotEmpty(resourceCodeValues.get(0)));
@@ -110,7 +104,7 @@ public class UriResolverResource extends AbstractBaseResource {
         } else if (resourceCodeValues.size() == 3) {
             url = apiUtils.createCodeUrl(checkNotEmpty(resourceCodeValues.get(0)), checkNotEmpty(resourceCodeValues.get(1)), checkNotEmpty(resourceCodeValues.get(2)));
         } else {
-            LOG.info("Codelist resource URI not resolvable!");
+            LOG.error("Codelist resource URI not resolvable!");
             throw new WebApplicationException("Codelist resource URI not resolvable!");
         }
         return url;
@@ -120,7 +114,7 @@ public class UriResolverResource extends AbstractBaseResource {
         if (string != null && !string.isEmpty()) {
             return string;
         } else {
-            LOG.info("Resource hook not valid due to empty resource ID.");
+            LOG.error("Resource hook not valid due to empty resource ID.");
             throw new WebApplicationException("Resource hook not valid due to empty resource ID.");
         }
     }

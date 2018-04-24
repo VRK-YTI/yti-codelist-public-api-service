@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 @Configuration
 @PropertySource(value = "classpath", ignoreResourceNotFound = true)
@@ -32,6 +33,15 @@ public class SpringAppConfig {
 
     @Value(value = "${application.contextPath}")
     private String contextPath;
+
+    @Bean
+    public CommonsRequestLoggingFilter requestLoggingFilter() {
+        CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
+        loggingFilter.setIncludeClientInfo(true);
+        loggingFilter.setIncludeQueryString(true);
+        loggingFilter.setIncludePayload(true);
+        return loggingFilter;
+    }
 
     @Bean
     public static PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer() {

@@ -166,7 +166,7 @@ abstract public class AbstractTestBase {
         createAndIndexMockCodeRegistries();
         createAndIndexMockCodeSchemes(domain.getCodeRegistries());
         createAndIndexMockCodes(domain.getCodeSchemes());
-        LOG.info("Mock data indexed!");
+        LOG.debug("Mock data indexed!");
     }
 
     private void createAndIndexMockCodeRegistries() {
@@ -177,7 +177,7 @@ abstract public class AbstractTestBase {
         }
         indexData(codeRegistries, ELASTIC_INDEX_CODEREGISTRY, ELASTIC_TYPE_CODEREGISTRY);
         refreshIndex(ELASTIC_INDEX_CODEREGISTRY);
-        LOG.info("Indexed " + codeRegistries.size() + " CodeRegistries.");
+        LOG.debug("Indexed " + codeRegistries.size() + " CodeRegistries.");
     }
 
     private void createAndIndexMockCodeSchemes(final Set<CodeRegistryDTO> codeRegistries) {
@@ -190,7 +190,7 @@ abstract public class AbstractTestBase {
         }
         indexData(codeSchemes, ELASTIC_INDEX_CODESCHEME, ELASTIC_TYPE_CODESCHEME);
         refreshIndex(ELASTIC_INDEX_CODESCHEME);
-        LOG.info("Indexed " + codeSchemes.size() + " CodeSchemeDTOs.");
+        LOG.debug("Indexed " + codeSchemes.size() + " CodeSchemeDTOs.");
     }
 
     private void createAndIndexMockCodes(final Set<CodeSchemeDTO> codeSchemes) {
@@ -203,7 +203,7 @@ abstract public class AbstractTestBase {
         }
         indexData(codes, ELASTIC_INDEX_CODE, ELASTIC_TYPE_CODE);
         refreshIndex(ELASTIC_INDEX_CODE);
-        LOG.info("Indexed " + codes.size() + " Codes.");
+        LOG.debug("Indexed " + codes.size() + " Codes.");
     }
 
     private void createIndexWithNestedPrefLabel(final String indexName, final String type) {
@@ -279,7 +279,7 @@ abstract public class AbstractTestBase {
         final FlushRequest request = new FlushRequest(indexName);
         try {
             client.admin().indices().flush(request).get();
-            LOG.info("Index flushed successfully: " + indexName);
+            LOG.debug("Index flushed successfully: " + indexName);
         } catch (final InterruptedException | ExecutionException e) {
             LOG.error("Index flush failed for index: " + indexName, e);
         }

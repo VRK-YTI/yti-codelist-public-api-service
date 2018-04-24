@@ -8,6 +8,9 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
+import fi.vm.yti.codelist.api.filter.CacheFilter;
+import fi.vm.yti.codelist.api.filter.CorsFilter;
+import fi.vm.yti.codelist.api.filter.RequestLoggingFilter;
 import fi.vm.yti.codelist.api.resource.CodeRegistryResource;
 import fi.vm.yti.codelist.api.resource.CodeSchemeResource;
 import fi.vm.yti.codelist.api.resource.ExternalReferenceResource;
@@ -59,6 +62,9 @@ public class JerseyConfig extends ResourceConfig {
 
         // Cache control headers to no cache.
         register(CacheFilter.class);
+
+        // Logging
+        register(RequestLoggingFilter.class);
 
         // Health.
         register(PingResource.class);

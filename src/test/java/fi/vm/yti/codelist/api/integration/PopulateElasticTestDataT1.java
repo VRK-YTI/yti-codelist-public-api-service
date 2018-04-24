@@ -22,8 +22,8 @@ public class PopulateElasticTestDataT1 extends AbstractTestBase {
 
     @Test
     public void populateData() {
-        LOG.info("Indexing mock data to data ElasticSearch.");
+        LOG.debug("Indexing mock data to data ElasticSearch.");
         createAndIndexMockData();
-        LOG.info("Indexing done.");
+        LOG.debug("Indexing done.");
     }
 }

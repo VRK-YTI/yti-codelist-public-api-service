@@ -13,8 +13,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.poi.ss.usermodel.Workbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
@@ -40,7 +38,6 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
 public class ExternalReferenceResource extends AbstractBaseResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExternalReferenceResource.class);
     private final Domain domain;
     private final ExternalReferenceExporter externalReferenceExporter;
 
@@ -62,7 +59,6 @@ public class ExternalReferenceResource extends AbstractBaseResource {
                                           @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                           @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                           @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_EXTERNALREFERENCES);
         CodeSchemeDTO codeScheme = null;
         if (codeSchemeId != null && !codeSchemeId.isEmpty()) {
             codeScheme = domain.getCodeScheme(codeSchemeId);
@@ -102,7 +98,6 @@ public class ExternalReferenceResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getExternalReference(@ApiParam(value = "ExternalReference CodeValue.", required = true) @PathParam("externalReferenceId") final String externalReferenceId,
                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_EXTERNALREFERENCES + "/" + externalReferenceId + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand)));
         final ExternalReferenceDTO externalReference = domain.getExternalReference(externalReferenceId);
         if (externalReference != null) {

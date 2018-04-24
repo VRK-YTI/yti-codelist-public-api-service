@@ -14,8 +14,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.poi.ss.usermodel.Workbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
@@ -47,7 +45,6 @@ import static java.util.Arrays.asList;
 @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
 public class CodeRegistryResource extends AbstractBaseResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CodeRegistryResource.class);
     private final ApiUtils apiUtils;
     private final Domain domain;
     private final CodeExporter codeExporter;
@@ -79,7 +76,6 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                       @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                                       @ApiParam(value = "Organizations filtering parameter, results will be registries belonging to these organizations") @QueryParam("organizations") final String organizationsCsv) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES);
         final List<String> organizations = organizationsCsv == null ? null : asList(organizationsCsv.split(","));
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
             final Set<CodeRegistryDTO> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, Meta.parseAfterFromString(after), null, organizations);
@@ -109,7 +105,6 @@ public class CodeRegistryResource extends AbstractBaseResource {
     public Response getCodeRegistry(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                     @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                                     @ApiParam(value = "Boolean that controls whether to embed CodeSchemes in payload or not.") @QueryParam("embedCodeSchemes") @DefaultValue("false") final Boolean embedCodeSchemes) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand)));
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
@@ -139,7 +134,6 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/");
         final Meta meta = new Meta(200, null, null, after);
         final List<String> dataClassificationList = parseDataClassifications(dataClassification);
         final List<String> statusList = parseStatus(status);
@@ -180,7 +174,6 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                               @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                                               @ApiParam(value = "Boolean that controls whether to embed Codes in payload or not.") @QueryParam("embedCodes") @DefaultValue("false") final Boolean embedCodes) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
@@ -215,7 +208,6 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                    @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES + "/");
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         final List<String> statusList = parseStatus(status);
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
@@ -265,7 +257,6 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                                 @ApiParam(value = "ExternalReference PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                                                                 @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTERNALREFERENCES + "/");
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
@@ -301,7 +292,6 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                   @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                   @ApiParam(value = "Code code.", required = true) @PathParam("codeCodeValue") final String codeCodeValue,
                                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES + "/" + codeCodeValue);
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
         final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
         if (code == null) {

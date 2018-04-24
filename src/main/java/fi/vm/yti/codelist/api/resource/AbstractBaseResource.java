@@ -15,7 +15,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.poi.ss.usermodel.Workbook;
-import org.slf4j.Logger;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -101,13 +100,6 @@ abstract class AbstractBaseResource {
         return new ArrayList<>(dataClassificationsSet);
     }
 
-    public void logApiRequest(final Logger logger,
-                              final String method,
-                              final String apiVersionPath,
-                              final String apiPath) {
-        logger.info(method + " " + apiVersionPath + apiPath + " requested!");
-    }
-
     public void appendNotNull(final StringBuilder builder,
                               final String string) {
         if (string != null) {
@@ -179,7 +171,7 @@ abstract class AbstractBaseResource {
     }
 
     private Response streamExcelOutput(final Workbook workbook,
-                                      final String filename) {
+                                       final String filename) {
         final StreamingOutput stream = output -> {
             try {
                 workbook.write(output);

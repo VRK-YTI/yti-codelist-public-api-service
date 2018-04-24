@@ -14,8 +14,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.poi.ss.usermodel.Workbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
@@ -40,7 +38,6 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
 public class CodeSchemeResource extends AbstractBaseResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CodeSchemeResource.class);
     private final Domain domain;
     private final CodeSchemeExporter codeSchemeExporter;
 
@@ -68,7 +65,6 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODESCHEMES + "/");
         final List<String> dataClassificationList = parseDataClassifications(dataClassification);
         final List<String> statusList = parseStatus(status);
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
@@ -98,7 +94,6 @@ public class CodeSchemeResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeScheme(@ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeId") final String codeSchemeId,
                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODESCHEMES + "/" + codeSchemeId + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeSchemeId);
         if (codeScheme != null) {

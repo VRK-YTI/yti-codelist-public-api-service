@@ -9,8 +9,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
@@ -22,7 +20,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_CODE;
 
 /**
  * REST resources for Codes.
@@ -33,7 +31,6 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
 public class CodeResource extends AbstractBaseResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CodeResource.class);
     private final Domain domain;
 
     @Inject
@@ -48,7 +45,6 @@ public class CodeResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCode(@ApiParam(value = "Code Id.", required = true) @PathParam("codeId") final String codeId,
                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        logApiRequest(LOG, METHOD_GET, API_PATH_VERSION_V1, API_PATH_CODES + "/" + codeId + "/");
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeId);
         if (codeScheme != null) {
