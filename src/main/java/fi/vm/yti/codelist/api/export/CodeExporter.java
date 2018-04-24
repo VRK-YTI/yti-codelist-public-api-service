@@ -33,10 +33,8 @@ public class CodeExporter extends BaseExporter {
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        String previousCodeValue = null;
-        Integer childOrderindex = 1;
-        appendValue(csv, csvSeparator, CONTENT_HEADER_FLATORDER);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_CHILDORDER);
+
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_BROADER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
@@ -49,29 +47,7 @@ public class CodeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
         for (final CodeDTO code : codes) {
-            appendValue(csv, csvSeparator, code.getFlatOrder() != null ? code.getFlatOrder().toString() : flatInt.toString());
-
-            String childOrder;
-
-            childOrder = code.getChildOrder() != null ? code.getChildOrder().toString() : null;
-            if (childOrder == null || childOrder.isEmpty()) { // No childorder set, generate one
-                UUID broaderCode = code.getBroaderCodeId();
-                if (broaderCode != null) {
-                    if (broaderCode.toString().equalsIgnoreCase(previousCodeValue)) {
-                        appendValue(csv, csvSeparator, childOrderindex.toString());
-                        childOrderindex++;
-                    } else {
-                        childOrderindex = 1;
-                        appendValue(csv, csvSeparator, "1");
-                    }
-                } else {
-                    childOrderindex = 1;
-                    appendValue(csv, csvSeparator, "1");
-                }
-            } else {
-                appendValue(csv, csvSeparator, childOrder);
-            }
-
+            appendValue(csv, csvSeparator, code.getOrder() != null ? code.getOrder().toString() : flatInt.toString());
             appendValue(csv, csvSeparator, code.getCodeValue());
             appendValue(csv, csvSeparator, codeValueIdMap.get(code.getBroaderCodeId()));
             appendValue(csv, csvSeparator, code.getId().toString());
@@ -83,8 +59,6 @@ public class CodeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null);
             appendValue(csv, csvSeparator, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             appendValue(csv, csvSeparator, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "", true);
-
-            previousCodeValue = code.getCodeValue();
 
             flatInt++;
         }
@@ -120,18 +94,16 @@ public class CodeExporter extends BaseExporter {
         }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_SHORTNAME);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_HIERARCHYLEVEL);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_FLATORDER);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CHILDORDER);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ORDER);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
         int i = 1;
         Integer flatInt = 1;
-        Integer childInt = 1;
-        UUID previousBroader = null;
+
         for (final CodeDTO code : codes) {
             final Row row = sheet.createRow(i++);
             int k = 0;
-            UUID broaderCode;
+
             row.createCell(k++).setCellValue(code.getCodeValue());
             row.createCell(k++).setCellValue(checkEmptyValue(codeValueIdMap.get(code.getBroaderCodeId())));
             row.createCell(k++).setCellValue(code.getId().toString());
@@ -147,24 +119,10 @@ public class CodeExporter extends BaseExporter {
             }
             row.createCell(k++).setCellValue(checkEmptyValue(code.getShortName()));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null));
-            row.createCell(k++).setCellValue(checkEmptyValue(code.getFlatOrder() != null ? code.getFlatOrder().toString() : flatInt.toString()));
-
-            if (code.getChildOrder() != null) {
-                row.createCell(k++).setCellValue(code.getChildOrder());
-            } else { // No childorder, create one
-                broaderCode = code.getBroaderCodeId();
-                if (broaderCode != null  && code.getBroaderCodeId() == previousBroader) {
-                    row.createCell(k++).setCellValue(childInt);
-                    childInt++;
-                } else {
-                    childInt = 1;
-                    row.createCell(k++).setCellValue(childInt);
-                }
-            }
-
+            row.createCell(k++).setCellValue(checkEmptyValue(code.getOrder() != null ? code.getOrder().toString() : flatInt.toString()));
             row.createCell(k++).setCellValue(code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             row.createCell(k).setCellValue(code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
-            previousBroader = code.getBroaderCodeId();
+
             flatInt++;
         }
         return workbook;
