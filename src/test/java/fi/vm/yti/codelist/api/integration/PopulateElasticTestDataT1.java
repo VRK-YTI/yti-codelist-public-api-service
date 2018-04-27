@@ -14,7 +14,7 @@ import fi.vm.yti.codelist.api.PublicApiServiceApplication;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = {PublicApiServiceApplication.class})
-@ActiveProfiles({"test"})
+@ActiveProfiles({"automatedtest"})
 @TestPropertySource(locations = "classpath:test-port.properties")
 public class PopulateElasticTestDataT1 extends AbstractTestBase {
 
