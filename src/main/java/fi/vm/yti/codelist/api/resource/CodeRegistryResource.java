@@ -139,7 +139,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final List<String> statusList = parseStatus(status);
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
-            if (FORMAT_CSV.startsWith(format.toLowerCase())) {
+            if (FORMAT_CSV.equalsIgnoreCase(format.toLowerCase())) {
                 final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
                 final String csv = codeSchemeExporter.createCsv(codeSchemes);
                 return streamCsvCodeSchemesOutput(csv);
