@@ -9,6 +9,7 @@ import javax.inject.Inject;
 
 import org.springframework.stereotype.Component;
 
+import fi.vm.yti.codelist.api.configuration.FrontendProperties;
 import fi.vm.yti.codelist.api.configuration.PublicApiServiceProperties;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
@@ -16,10 +17,13 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 public class ApiUtils {
 
     private final PublicApiServiceProperties publicApiServiceProperties;
+    private final FrontendProperties frontendProperties;
 
     @Inject
-    public ApiUtils(final PublicApiServiceProperties publicApiServiceProperties) {
+    public ApiUtils(final PublicApiServiceProperties publicApiServiceProperties,
+                    final FrontendProperties frontendProperties) {
         this.publicApiServiceProperties = publicApiServiceProperties;
+        this.frontendProperties = frontendProperties;
     }
 
     public String getPublicApiServiceHostname() {
@@ -121,24 +125,39 @@ public class ApiUtils {
         return createResourceUrl(API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES, codeCodeValue);
     }
 
-    /**
-     * Creates a resource URL for given resource id with dynamic hostname, port and API context path mapping.
-     *
-     * @param apiPath API path that serves the resource.
-     * @return Fully concatenated resource URL that can be used in API responses as a link to the resource.
-     */
+    public String createCodeSchemeWebUrl(final String codeRegistryCodeValue,
+                                         final String codeSchemeCodeValue) {
+        return createFrontendBaseUrl() + "/codescheme;registryCode=" + codeRegistryCodeValue + ";schemeCode=" + codeSchemeCodeValue;
+    }
+
+    public String createCodeWebUrl(final String codeRegistryCodeValue,
+                                   final String codeSchemeCodeValue,
+                                   final String codeCodeValue) {
+        return createFrontendBaseUrl() + "/code;registryCode=" + codeRegistryCodeValue + ";schemeCode=" + codeSchemeCodeValue + ";codeCode=" + codeCodeValue;
+    }
+
     public String createResourceUrl(final String apiPath) {
         return createResourceUrl(apiPath, null);
     }
 
-    /**
-     * Creates a resource URL for given resource id with dynamic hostname, port and API context path mapping.
-     *
-     * @param apiPath    API path that serves the resource.
-     * @param resourceId ID of the REST resource.
-     * @return Fully concatenated resource URL that can be used in API responses as a link to the resource.
-     */
     public String createResourceUrl(final String apiPath, final String resourceId) {
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append(createBaseUrl());
+        builder.append(publicApiServiceProperties.getContextPath());
+        builder.append(API_BASE_PATH);
+        builder.append("/");
+        builder.append(API_VERSION);
+        builder.append(apiPath);
+        builder.append("/");
+        if (resourceId != null && !resourceId.isEmpty()) {
+            builder.append(resourceId);
+        }
+
+        return builder.toString();
+    }
+
+    public String createBaseUrl() {
         final String port = publicApiServiceProperties.getPort();
 
         final StringBuilder builder = new StringBuilder();
@@ -150,14 +169,21 @@ public class ApiUtils {
             builder.append(":");
             builder.append(port);
         }
-        builder.append(publicApiServiceProperties.getContextPath());
-        builder.append(API_BASE_PATH);
-        builder.append("/");
-        builder.append(API_VERSION);
-        builder.append(apiPath);
-        builder.append("/");
-        if (resourceId != null && !resourceId.isEmpty()) {
-            builder.append(resourceId);
+
+        return builder.toString();
+    }
+
+    public String createFrontendBaseUrl() {
+        final String port = frontendProperties.getPort();
+
+        final StringBuilder builder = new StringBuilder();
+
+        builder.append(frontendProperties.getScheme());
+        builder.append("://");
+        builder.append(frontendProperties.getHost());
+        if (port != null && port.length() > 0) {
+            builder.append(":");
+            builder.append(port);
         }
 
         return builder.toString();
