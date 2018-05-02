@@ -72,6 +72,7 @@ public class UriResolverResource extends AbstractBaseResource {
     @Path("redirect")
     @ApiOperation(value = "Redirect URI resource.", response = String.class)
     @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
+    @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
     @ApiResponses(value = {
         @ApiResponse(code = 302, message = "Does a redirect from codelist resource URI to codelist API."),
         @ApiResponse(code = 406, message = "Cannot redirect to given URI.")
