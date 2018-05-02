@@ -36,5 +36,9 @@ application:
   contextPath: /codelist-api
   access-log: true
 
+frontend:
+  scheme: http
+  host: localhost
+
 session:
   timeout-mins: 10
