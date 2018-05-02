@@ -24,7 +24,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import fi.vm.yti.codelist.api.api.ApiUtils;
+import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
+import fi.vm.yti.codelist.common.dto.CodeDTO;
+import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
+import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -43,10 +47,13 @@ public class UriResolverResource extends AbstractBaseResource {
     private static final String API_PATH_CODELIST = "/codelist";
 
     private final ApiUtils apiUtils;
+    private final Domain domain;
 
     @Inject
-    public UriResolverResource(final ApiUtils apiUtils) {
+    public UriResolverResource(final ApiUtils apiUtils,
+                               final Domain domain) {
         this.apiUtils = apiUtils;
+        this.domain = domain;
     }
 
     @GET
@@ -70,11 +77,12 @@ public class UriResolverResource extends AbstractBaseResource {
 
     @GET
     @Path("redirect")
-    @ApiOperation(value = "Redirect URI resource.", response = String.class)
+    @ApiOperation(value = "Redirect URI resource.")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
     @ApiResponses(value = {
         @ApiResponse(code = 302, message = "Does a redirect from codelist resource URI to codelist API."),
+        @ApiResponse(code = 406, message = "Resource not found."),
         @ApiResponse(code = 406, message = "Cannot redirect to given URI.")
     })
     public Response redirectUri(@HeaderParam("Accept") String accept,
@@ -117,11 +125,20 @@ public class UriResolverResource extends AbstractBaseResource {
     private String resolveApiResourceUrl(final List<String> resourceCodeValues) {
         final String url;
         if (resourceCodeValues.size() == 1) {
-            url = apiUtils.createCodeRegistryUrl(checkNotEmpty(resourceCodeValues.get(0)));
+            final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+            checkCodeRegistryExists(codeRegistryCodeValue);
+            url = apiUtils.createCodeRegistryUrl(codeRegistryCodeValue);
         } else if (resourceCodeValues.size() == 2) {
-            url = apiUtils.createCodeSchemeUrl(checkNotEmpty(resourceCodeValues.get(0)), checkNotEmpty(resourceCodeValues.get(1)));
+            final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+            final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
+            checkCodeSchemeExists(codeRegistryCodeValue, codeSchemeCodeValue);
+            url = apiUtils.createCodeSchemeUrl(codeRegistryCodeValue, codeSchemeCodeValue);
         } else if (resourceCodeValues.size() == 3) {
-            url = apiUtils.createCodeUrl(checkNotEmpty(resourceCodeValues.get(0)), checkNotEmpty(resourceCodeValues.get(1)), checkNotEmpty(resourceCodeValues.get(2)));
+            final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+            final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
+            final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(2));
+            checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+            url = apiUtils.createCodeUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
         } else {
             LOG.error("Codelist resource URI not resolvable!");
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Codelist resource URI not resolvable!"));
@@ -132,9 +149,16 @@ public class UriResolverResource extends AbstractBaseResource {
     private String resolveWebResourceUrl(final List<String> resourceCodeValues) {
         final String url;
         if (resourceCodeValues.size() == 2) {
-            url = apiUtils.createCodeSchemeWebUrl(checkNotEmpty(resourceCodeValues.get(0)), checkNotEmpty(resourceCodeValues.get(1)));
+            final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+            final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
+            checkCodeSchemeExists(codeRegistryCodeValue, codeSchemeCodeValue);
+            url = apiUtils.createCodeSchemeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue);
         } else if (resourceCodeValues.size() == 3) {
-            url = apiUtils.createCodeWebUrl(checkNotEmpty(resourceCodeValues.get(0)), checkNotEmpty(resourceCodeValues.get(1)), checkNotEmpty(resourceCodeValues.get(2)));
+            final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+            final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
+            final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(2));
+            checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+            url = apiUtils.createCodeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
         } else {
             LOG.error("Codelist resource URI not resolvable!");
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Codelist resource URI not resolvable!"));
@@ -160,6 +184,30 @@ public class UriResolverResource extends AbstractBaseResource {
         } else {
             LOG.error("Resource hook not valid due to empty resource ID.");
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Resource hook not valid due to empty resource ID."));
+        }
+    }
+
+    private void checkCodeRegistryExists(final String codeRegistryCodeValue) {
+        final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
+        if (codeRegistry == null) {
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_FOUND.value(), "Resource not found."));
+        }
+    }
+
+    private void checkCodeSchemeExists(final String codeRegistryCodeValue,
+                                       final String codeSchemeCodeValue) {
+        final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
+        if (codeScheme == null) {
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_FOUND.value(), "Resource not found."));
+        }
+    }
+
+    private void checkCodeExists(final String codeRegistryCodeValue,
+                                       final String codeSchemeCodeValue,
+                                       final String codeCodeValue) {
+        final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+        if (code == null) {
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_FOUND.value(), "Resource not found."));
         }
     }
 }
