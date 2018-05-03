@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import fi.vm.yti.codelist.api.filter.CacheFilter;
-import fi.vm.yti.codelist.api.filter.CorsFilter;
 import fi.vm.yti.codelist.api.filter.RequestLoggingFilter;
 import fi.vm.yti.codelist.api.resource.CodeRegistryResource;
 import fi.vm.yti.codelist.api.resource.CodeSchemeResource;
@@ -56,9 +55,6 @@ public class JerseyConfig extends ResourceConfig {
     public JerseyConfig() {
         final JacksonJaxbJsonProvider provider = new JacksonJaxbJsonProvider();
         provider.setMapper(new CustomObjectMapper());
-
-        // CORS filtering.
-        register(CorsFilter.class);
 
         // Cache control headers to no cache.
         register(CacheFilter.class);
