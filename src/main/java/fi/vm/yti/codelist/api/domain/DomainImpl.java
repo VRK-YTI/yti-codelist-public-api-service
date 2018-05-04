@@ -239,11 +239,11 @@ public class DomainImpl implements Domain {
 
     private void boostStatus(final BoolQueryBuilder builder) {
         builder.should(constantScoreQuery(termQuery("status.keyword", "VALID")).boost(1000f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "SUPERSEDED")).boost(900f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "RETIRED")).boost(808f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "SUBMITTED")).boost(700f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "SUGGESTED")).boost(600f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "DRAFT")).boost(500f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "SUBMITTED")).boost(900f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "DRAFT")).boost(800f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "SUGGESTED")).boost(700f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "SUPERSEDED")).boost(600f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "RETIRED")).boost(500f));
         builder.should(constantScoreQuery(termQuery("status.keyword", "INVALID")).boost(400f));
     }
 
