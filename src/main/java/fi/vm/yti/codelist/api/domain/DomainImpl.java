@@ -201,6 +201,7 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODESCHEME)
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
+                .addSort("status.keyword", SortOrder.DESC)
                 .addSort("codeValue.raw", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
