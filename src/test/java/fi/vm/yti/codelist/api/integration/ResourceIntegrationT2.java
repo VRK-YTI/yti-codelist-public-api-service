@@ -74,7 +74,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
     }
 
     @Test
-    public void getCodeSchemeDTOsTest() {
+    public void getCodeSchemesTest() {
         final String apiUrl = createApiUrl(randomServerPort, API_PATH_CODEREGISTRIES) + "/" + TEST_CODEREGISTRY_CODEVALUE + API_PATH_CODESCHEMES + "/";
         final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
         final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<LinkedMultiValueMap<String, Object>>(parameters, null);
@@ -91,7 +91,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
     }
 
     @Test
-    public void getCodeSchemeDTOTest() {
+    public void getCodeSchemeTest() {
         final String apiUrl = createApiUrl(randomServerPort, API_PATH_CODEREGISTRIES) + "/" + TEST_CODEREGISTRY_CODEVALUE + API_PATH_CODESCHEMES + "/" + TEST_CODESCHEME_CODEVALUE + "/";
         final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
         final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<LinkedMultiValueMap<String, Object>>(parameters, null);

@@ -119,7 +119,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
 
     @GET
     @Path("{codeRegistryCodeValue}/codeschemes")
-    @ApiOperation(value = "Return CodeSchemeDTOs for a CodeRegistry.", response = CodeRegistryDTO.class, responseContainer = "List")
+    @ApiOperation(value = "Return CodeSchemes for a CodeRegistry.", response = CodeRegistryDTO.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns CodeSchemes for a CodeRegistry in specified format.")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
     public Response getCodeRegistryCodeSchemes(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
@@ -248,7 +248,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
 
     @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/externalreferences")
-    @ApiOperation(value = "Return Codes for a CodeSchemeO.", response = CodeDTO.class)
+    @ApiOperation(value = "Return Codes for a CodeScheme.", response = CodeDTO.class)
     @ApiResponse(code = 200, message = "Returns all Codes for CodeScheme in specified format.")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
     public Response getCodeRegistryCodeSchemeExternalReferences(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,

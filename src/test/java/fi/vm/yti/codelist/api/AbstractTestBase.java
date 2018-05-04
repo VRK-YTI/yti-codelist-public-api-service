@@ -143,25 +143,6 @@ abstract public class AbstractTestBase {
     @Inject
     private Domain domain;
 
-    private CodeSchemeDTO createCodeSchemeDTO(final CodeRegistryDTO codeRegistry,
-                                        final String codeValue) {
-        final CodeSchemeDTO codeScheme = new CodeSchemeDTO();
-        codeScheme.setId(UUID.randomUUID());
-        codeScheme.setCodeValue(codeValue);
-        codeScheme.setStatus(Status.VALID.toString());
-        codeScheme.setPrefLabel(LANGUAGE_CODE_FI, "Testikoodisto");
-        codeScheme.setPrefLabel(LANGUAGE_CODE_SV, "Test kodlist");
-        codeScheme.setPrefLabel(LANGUAGE_CODE_EN, "Test scheme");
-        codeScheme.setDefinition(LANGUAGE_CODE_FI, "Testi määritelmä");
-        codeScheme.setDefinition(LANGUAGE_CODE_SV, "Test upplösning");
-        codeScheme.setDefinition(LANGUAGE_CODE_EN, "Test definition");
-        codeScheme.setUri("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeRegistry.getCodeValue() + "/codeschemes/" + codeScheme.getCodeValue() + "/");
-        codeScheme.setCodeRegistry(codeRegistry);
-        codeScheme.setSource(SOURCE_TEST);
-        codeScheme.setModified(new Date(System.currentTimeMillis()));
-        return codeScheme;
-    }
-
     public void createAndIndexMockData() {
         createAndIndexMockCodeRegistries();
         createAndIndexMockCodeSchemes(domain.getCodeRegistries());
@@ -173,7 +154,7 @@ abstract public class AbstractTestBase {
         createIndexWithNestedPrefLabel(ELASTIC_INDEX_CODEREGISTRY, ELASTIC_TYPE_CODEREGISTRY);
         final Set<CodeRegistryDTO> codeRegistries = new HashSet<>();
         for (int i = 0; i < 8; i++) {
-            codeRegistries.add(createCodeRegistryDTO("testregistry" + (i + 1)));
+            codeRegistries.add(createCodeRegistry("testregistry" + (i + 1)));
         }
         indexData(codeRegistries, ELASTIC_INDEX_CODEREGISTRY, ELASTIC_TYPE_CODEREGISTRY);
         refreshIndex(ELASTIC_INDEX_CODEREGISTRY);
@@ -185,12 +166,12 @@ abstract public class AbstractTestBase {
         final Set<CodeSchemeDTO> codeSchemes = new HashSet<>();
         for (final CodeRegistryDTO codeRegistry : codeRegistries) {
             for (int i = 0; i < 8; i++) {
-                codeSchemes.add(createCodeSchemeDTO(codeRegistry, "testscheme" + (i + 1)));
+                codeSchemes.add(createCodeScheme(codeRegistry, "testscheme" + (i + 1)));
             }
         }
         indexData(codeSchemes, ELASTIC_INDEX_CODESCHEME, ELASTIC_TYPE_CODESCHEME);
         refreshIndex(ELASTIC_INDEX_CODESCHEME);
-        LOG.debug("Indexed " + codeSchemes.size() + " CodeSchemeDTOs.");
+        LOG.debug("Indexed " + codeSchemes.size() + " CodeSchemes.");
     }
 
     private void createAndIndexMockCodes(final Set<CodeSchemeDTO> codeSchemes) {
@@ -206,7 +187,8 @@ abstract public class AbstractTestBase {
         LOG.debug("Indexed " + codes.size() + " Codes.");
     }
 
-    private void createIndexWithNestedPrefLabel(final String indexName, final String type) {
+    private void createIndexWithNestedPrefLabel(final String indexName,
+                                                final String type) {
         final boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
         if (!exists) {
             final CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(indexName);
@@ -285,7 +267,7 @@ abstract public class AbstractTestBase {
         }
     }
 
-    private CodeRegistryDTO createCodeRegistryDTO(final String codeValue) {
+    private CodeRegistryDTO createCodeRegistry(final String codeValue) {
         final CodeRegistryDTO codeRegistry = new CodeRegistryDTO();
         codeRegistry.setId(UUID.randomUUID());
         codeRegistry.setCodeValue(codeValue);
@@ -300,8 +282,27 @@ abstract public class AbstractTestBase {
         return codeRegistry;
     }
 
+    private CodeSchemeDTO createCodeScheme(final CodeRegistryDTO codeRegistry,
+                                           final String codeValue) {
+        final CodeSchemeDTO codeScheme = new CodeSchemeDTO();
+        codeScheme.setId(UUID.randomUUID());
+        codeScheme.setCodeValue(codeValue);
+        codeScheme.setStatus(Status.VALID.toString());
+        codeScheme.setPrefLabel(LANGUAGE_CODE_FI, "Testikoodisto");
+        codeScheme.setPrefLabel(LANGUAGE_CODE_SV, "Test kodlist");
+        codeScheme.setPrefLabel(LANGUAGE_CODE_EN, "Test scheme");
+        codeScheme.setDefinition(LANGUAGE_CODE_FI, "Testi määritelmä");
+        codeScheme.setDefinition(LANGUAGE_CODE_SV, "Test upplösning");
+        codeScheme.setDefinition(LANGUAGE_CODE_EN, "Test definition");
+        codeScheme.setUri("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeRegistry.getCodeValue() + "/codeschemes/" + codeScheme.getCodeValue() + "/");
+        codeScheme.setCodeRegistry(codeRegistry);
+        codeScheme.setSource(SOURCE_TEST);
+        codeScheme.setModified(new Date(System.currentTimeMillis()));
+        return codeScheme;
+    }
+
     private CodeDTO createCode(final CodeSchemeDTO codeScheme,
-                            final String codeValue) {
+                               final String codeValue) {
         final CodeDTO code = new CodeDTO();
         code.setId(UUID.randomUUID());
         code.setCodeValue(codeValue);
