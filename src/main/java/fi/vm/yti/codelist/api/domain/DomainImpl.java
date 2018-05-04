@@ -221,7 +221,7 @@ public class DomainImpl implements Domain {
             if (dataClassifications != null && !dataClassifications.isEmpty()) {
                 builder.must(nestedQuery("dataClassifications", matchQuery("dataClassifications.codeValue", dataClassifications), ScoreMode.None));
             }
-            if (sortMode.equalsIgnoreCase(BOOSTSTATUS)) {
+            if (BOOSTSTATUS.equalsIgnoreCase(sortMode)) {
                 boostStatus(builder);
             }
             if (statuses != null && !statuses.isEmpty()) {
