@@ -133,23 +133,24 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
                                                @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                               @ApiParam(value = "Sort mode for response values.") @QueryParam("sortMode") @DefaultValue("default") final String sortMode) {
         final Meta meta = new Meta(200, null, null, after);
         final List<String> dataClassificationList = parseDataClassifications(dataClassification);
         final List<String> statusList = parseStatus(status);
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
             if (FORMAT_CSV.equalsIgnoreCase(format.toLowerCase())) {
-                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
+                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
                 final String csv = codeSchemeExporter.createCsv(codeSchemes);
                 return streamCsvCodeSchemesOutput(csv);
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
+                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
                 final Workbook workbook = codeSchemeExporter.createExcel(codeSchemes, format);
                 return streamExcelCodeSchemesOutput(workbook);
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, statusList, dataClassificationList, meta.getAfter(), meta);
+                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, statusList, dataClassificationList, meta.getAfter(), meta);
                 meta.setResultCount(codeSchemes.size());
                 final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
                 wrapper.setResults(codeSchemes);

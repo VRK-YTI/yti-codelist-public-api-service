@@ -42,6 +42,7 @@ public class DomainImpl implements Domain {
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
     private static final int MAX_SIZE = 10000;
     private static final String ANALYZER_KEYWORD = "analyzer_keyword";
+    private static final String BOOSTSTATUS = "boostStatus";
     private Client client;
 
     @Inject
@@ -176,15 +177,16 @@ public class DomainImpl implements Domain {
     }
 
     public Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue) {
-        return getCodeSchemes(MAX_SIZE, 0, null, codeRegistryCodeValue, null, null, null, null, null, null, null, null);
+        return getCodeSchemes(MAX_SIZE, 0, null, null, codeRegistryCodeValue, null, null, null, null, null, null, null, null);
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes() {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, null, null, null);
+        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, null, null, null, null);
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
                                              final Integer from,
+                                             final String sortMode,
                                              final String organizationId,
                                              final String codeRegistryCodeValue,
                                              final String codeRegistryPrefLabel,
@@ -219,7 +221,9 @@ public class DomainImpl implements Domain {
             if (dataClassifications != null && !dataClassifications.isEmpty()) {
                 builder.must(nestedQuery("dataClassifications", matchQuery("dataClassifications.codeValue", dataClassifications), ScoreMode.None));
             }
-            boostStatus(builder);
+            if (sortMode.equalsIgnoreCase(BOOSTSTATUS)) {
+                boostStatus(builder);
+            }
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }

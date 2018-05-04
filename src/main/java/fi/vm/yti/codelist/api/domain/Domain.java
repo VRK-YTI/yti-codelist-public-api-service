@@ -36,6 +36,7 @@ public interface Domain {
 
     Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
                                       final Integer from,
+                                      final String sortMode,
                                       final String organizationId,
                                       final String codeRegistryCodeValue,
                                       final String codeRegistryPrefLabel,
