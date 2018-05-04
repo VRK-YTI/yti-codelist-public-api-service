@@ -16,6 +16,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -201,7 +202,7 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODESCHEME)
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
-                .addSort("status.keyword", SortOrder.DESC)
+                .addSort(SortBuilders.scoreSort())
                 .addSort("codeValue.raw", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
@@ -218,6 +219,7 @@ public class DomainImpl implements Domain {
             if (dataClassifications != null && !dataClassifications.isEmpty()) {
                 builder.must(nestedQuery("dataClassifications", matchQuery("dataClassifications.codeValue", dataClassifications), ScoreMode.None));
             }
+            boostStatus(builder);
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }
@@ -233,6 +235,16 @@ public class DomainImpl implements Domain {
             });
         }
         return codeSchemes;
+    }
+
+    private void boostStatus(final BoolQueryBuilder builder) {
+        builder.should(constantScoreQuery(termQuery("status.keyword", "VALID")).boost(1000f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "SUPERSEDED")).boost(900f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "RETIRED")).boost(808f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "SUBMITTED")).boost(700f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "SUGGESTED")).boost(600f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "DRAFT")).boost(500f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "INVALID")).boost(400f));
     }
 
     public CodeDTO getCode(final String codeRegistryCodeValue,
@@ -462,15 +474,15 @@ public class DomainImpl implements Domain {
         return externalReferences;
     }
 
-    private BoolQueryBuilder constructCombinedSearchQuery(final String searchQuery,
+    private BoolQueryBuilder constructCombinedSearchQuery(final String searchTerm,
                                                           final String codeValue,
                                                           final String prefLabel,
                                                           final Date after) {
         final BoolQueryBuilder builder = boolQuery();
         final BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
-        if (searchQuery != null) {
-            boolQueryBuilder.should(prefixQuery("codeValue", searchQuery.toLowerCase()));
-            boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchQuery.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+        if (searchTerm != null) {
+            boolQueryBuilder.should(prefixQuery("codeValue", searchTerm.toLowerCase()));
+            boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             boolQueryBuilder.minimumShouldMatch(1);
             builder.must(boolQueryBuilder);
         }
