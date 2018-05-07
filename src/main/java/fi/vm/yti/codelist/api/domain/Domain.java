@@ -7,6 +7,8 @@ import java.util.Set;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
+import fi.vm.yti.codelist.common.dto.ExtensionDTO;
+import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
@@ -88,4 +90,17 @@ public interface Domain {
                                                     final CodeSchemeDTO codeScheme,
                                                     final Date after,
                                                     final Meta meta);
+
+    Set<ExtensionSchemeDTO> getExtensionSchemes(final Integer pageSize,
+                                                final Integer from,
+                                                final String extensionSchemePrefLabel,
+                                                final CodeSchemeDTO codeScheme,
+                                                final Date after,
+                                                final Meta meta);
+
+    Set<ExtensionDTO> getExtensions(final Integer pageSize,
+                                    final Integer from,
+                                    final CodeDTO code,
+                                    final Date after,
+                                    final Meta meta);
 }

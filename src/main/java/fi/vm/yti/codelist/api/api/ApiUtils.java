@@ -140,7 +140,8 @@ public class ApiUtils {
         return createResourceUrl(apiPath, null);
     }
 
-    public String createResourceUrl(final String apiPath, final String resourceId) {
+    public String createResourceUrl(final String apiPath,
+                                    final String resourceId) {
         final StringBuilder builder = new StringBuilder();
 
         builder.append(createBaseUrl());

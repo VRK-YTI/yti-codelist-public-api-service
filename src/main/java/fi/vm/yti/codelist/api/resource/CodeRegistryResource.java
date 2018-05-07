@@ -27,6 +27,8 @@ import fi.vm.yti.codelist.api.export.CodeSchemeExporter;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
+import fi.vm.yti.codelist.common.dto.ExtensionDTO;
+import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
 import io.swagger.annotations.Api;
@@ -247,15 +249,53 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes")
+    @ApiOperation(value = "Return ExtensionSchemes for a CodeScheme.", response = ExtensionSchemeDTO.class)
+    @ApiResponse(code = 200, message = "Returns all ExtensionSchemes for CodeScheme.")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
+    public Response getCodeRegistryCodeSchemeExtensionSchemes(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
+                                                              @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
+                                                              @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                                              @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                              @ApiParam(value = "ExternalReference PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
+                                                              @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
+                                                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
+        final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
+        if (codeScheme != null) {
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
+            final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(pageSize, from, prefLabel, codeScheme, meta.getAfter(), meta);
+            if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONSCHEMES, after, pageSize, from + pageSize));
+            }
+            final ResponseWrapper<ExtensionSchemeDTO> wrapper = new ResponseWrapper<>();
+            wrapper.setMeta(meta);
+            if (extensionSchemes == null) {
+                meta.setCode(404);
+                meta.setMessage("No such resource.");
+                return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+            }
+            wrapper.setResults(extensionSchemes);
+            return Response.ok(wrapper).build();
+        } else {
+            final ResponseWrapper<ExtensionSchemeDTO> wrapper = new ResponseWrapper<>();
+            wrapper.setMeta(meta);
+            meta.setCode(404);
+            meta.setMessage("No such resource.");
+            return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+        }
+    }
+
+    @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/externalreferences")
     @ApiOperation(value = "Return Codes for a CodeScheme.", response = CodeDTO.class)
-    @ApiResponse(code = 200, message = "Returns all Codes for CodeScheme in specified format.")
+    @ApiResponse(code = 200, message = "Returns all Codes for CodeScheme.")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
     public Response getCodeRegistryCodeSchemeExternalReferences(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                                 @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                                                 @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                                 @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                                @ApiParam(value = "ExternalReference PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
+                                                                @ApiParam(value = "ExtensionScheme PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                                                                 @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
@@ -276,7 +316,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
             wrapper.setResults(externalReferences);
             return Response.ok(wrapper).build();
         } else {
-            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
+            final ResponseWrapper<ExternalReferenceDTO> wrapper = new ResponseWrapper<>();
             wrapper.setMeta(meta);
             meta.setCode(404);
             meta.setMessage("No such resource.");
@@ -299,5 +339,43 @@ public class CodeRegistryResource extends AbstractBaseResource {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
         return Response.ok(code).build();
+    }
+
+    @GET
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes/{codeCodeValue}/extensions")
+    @ApiOperation(value = "Return ExtensionSchemes for a CodeScheme.", response = ExtensionDTO.class)
+    @ApiResponse(code = 200, message = "Returns all ExtensionSchemes for CodeScheme.")
+    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
+    public Response getCodeRegistryCodeSchemeCodeExtensions(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
+                                                            @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
+                                                            @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                                            @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                            @ApiParam(value = "Code code.", required = true) @PathParam("codeCodeValue") final String codeCodeValue,
+                                                            @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
+                                                            @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
+        final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+        if (code != null) {
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
+            final Set<ExtensionDTO> extensionSchemes = domain.getExtensions(pageSize, from, code, meta.getAfter(), meta);
+            if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES + "/" + codeCodeValue + API_PATH_EXTENSIONS, after, pageSize, from + pageSize));
+            }
+            final ResponseWrapper<ExtensionDTO> wrapper = new ResponseWrapper<>();
+            wrapper.setMeta(meta);
+            if (extensionSchemes == null) {
+                meta.setCode(404);
+                meta.setMessage("No such resource.");
+                return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+            }
+            wrapper.setResults(extensionSchemes);
+            return Response.ok(wrapper).build();
+        } else {
+            final ResponseWrapper<ExtensionDTO> wrapper = new ResponseWrapper<>();
+            wrapper.setMeta(meta);
+            meta.setCode(404);
+            meta.setMessage("No such resource.");
+            return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+        }
     }
 }

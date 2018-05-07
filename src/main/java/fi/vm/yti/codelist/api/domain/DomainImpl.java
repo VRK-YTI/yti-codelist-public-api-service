@@ -28,6 +28,8 @@ import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
+import fi.vm.yti.codelist.common.dto.ExtensionDTO;
+import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
@@ -462,7 +464,6 @@ public class DomainImpl implements Domain {
                         .must(matchQuery("parentCodeScheme.id", codeScheme.getId().toString().toLowerCase())))
                     .should(boolQuery()
                         .must(matchQuery("global", true))));
-
             }
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
@@ -478,6 +479,73 @@ public class DomainImpl implements Domain {
         return externalReferences;
     }
 
+    public Set<ExtensionSchemeDTO> getExtensionSchemes(final Integer pageSize,
+                                                       final Integer from,
+                                                       final String extensionSchemePrefLabel,
+                                                       final CodeSchemeDTO codeScheme,
+                                                       final Date after,
+                                                       final Meta meta) {
+        final Set<ExtensionSchemeDTO> extensionSchemes = new LinkedHashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSIONSCHEME).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_EXTENSIONSCHEME)
+                .setTypes(ELASTIC_TYPE_EXTENSIONSCHEME)
+                .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                .setFrom(from != null ? from : 0);
+            final BoolQueryBuilder builder = constructSearchQuery(null, extensionSchemePrefLabel, after);
+            searchRequest.setQuery(builder);
+            if (codeScheme != null) {
+                builder.must(matchQuery("codeScheme.id", codeScheme.getId().toString().toLowerCase()));
+            }
+            final SearchResponse response = searchRequest.execute().actionGet();
+            setResultCounts(meta, response);
+            response.getHits().forEach(hit -> {
+                try {
+                    final ExtensionSchemeDTO extensionScheme = mapper.readValue(hit.getSourceAsString(), ExtensionSchemeDTO.class);
+                    extensionSchemes.add(extensionScheme);
+                } catch (final IOException e) {
+                    LOG.error("getExtensionSchemes reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                }
+            });
+        }
+        return extensionSchemes;
+    }
+
+    public Set<ExtensionDTO> getExtensions(final Integer pageSize,
+                                           final Integer from,
+                                           final CodeDTO code,
+                                           final Date after,
+                                           final Meta meta) {
+        final Set<ExtensionDTO> extensions = new LinkedHashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_EXTENSION)
+                .setTypes(ELASTIC_TYPE_EXTENSION)
+                .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                .setFrom(from != null ? from : 0);
+            final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
+            searchRequest.setQuery(builder);
+            if (code != null) {
+                builder.must(matchQuery("code.id", code.getId().toString().toLowerCase()));
+            }
+            final SearchResponse response = searchRequest.execute().actionGet();
+            setResultCounts(meta, response);
+            response.getHits().forEach(hit -> {
+                try {
+                    final ExtensionDTO extension = mapper.readValue(hit.getSourceAsString(), ExtensionDTO.class);
+                    extensions.add(extension);
+                } catch (final IOException e) {
+                    LOG.error("getExtensions reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                }
+            });
+        }
+        return extensions;
+    }
+
     private BoolQueryBuilder constructCombinedSearchQuery(final String searchTerm,
                                                           final String codeValue,
                                                           final String prefLabel,
@@ -485,8 +553,12 @@ public class DomainImpl implements Domain {
         final BoolQueryBuilder builder = boolQuery();
         final BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
         if (searchTerm != null) {
-            boolQueryBuilder.should(prefixQuery("codeValue", searchTerm.toLowerCase()));
-            boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            if (codeValue != null && !codeValue.isEmpty()) {
+                boolQueryBuilder.should(prefixQuery("codeValue", searchTerm.toLowerCase()));
+            }
+            if (prefLabel != null && !prefLabel.isEmpty()) {
+                boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            }
             boolQueryBuilder.minimumShouldMatch(1);
             builder.must(boolQueryBuilder);
         }
