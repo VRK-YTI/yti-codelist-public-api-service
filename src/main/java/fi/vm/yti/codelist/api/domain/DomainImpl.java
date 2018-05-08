@@ -553,12 +553,8 @@ public class DomainImpl implements Domain {
         final BoolQueryBuilder builder = boolQuery();
         final BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
         if (searchTerm != null) {
-            if (codeValue != null && !codeValue.isEmpty()) {
-                boolQueryBuilder.should(prefixQuery("codeValue", searchTerm.toLowerCase()));
-            }
-            if (prefLabel != null && !prefLabel.isEmpty()) {
-                boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
-            }
+            boolQueryBuilder.should(prefixQuery("codeValue", searchTerm.toLowerCase()));
+            boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             boolQueryBuilder.minimumShouldMatch(1);
             builder.must(boolQueryBuilder);
         }
