@@ -374,13 +374,14 @@ public class DomainImpl implements Domain {
     }
 
     public Set<PropertyTypeDTO> getPropertyTypes() {
-        return getPropertyTypes(MAX_SIZE, 0, null, null, null, null);
+        return getPropertyTypes(MAX_SIZE, 0, null, null,null, null, null);
     }
 
     public Set<PropertyTypeDTO> getPropertyTypes(final Integer pageSize,
                                                  final Integer from,
                                                  final String propertyTypePrefLabel,
                                                  final String context,
+                                                 final String type,
                                                  final Date after,
                                                  final Meta meta) {
         final Set<PropertyTypeDTO> propertyTypes = new LinkedHashSet<>();
@@ -395,6 +396,9 @@ public class DomainImpl implements Domain {
             final BoolQueryBuilder builder = constructSearchQuery(null, propertyTypePrefLabel, after);
             if (context != null) {
                 builder.must(prefixQuery("context", context.toLowerCase()));
+            }
+            if (type != null) {
+                builder.must(prefixQuery("type", type.toLowerCase()));
             }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
