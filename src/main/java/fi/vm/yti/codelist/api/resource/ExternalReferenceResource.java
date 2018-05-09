@@ -55,7 +55,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
     public Response getExternalReferences(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                           @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                           @ApiParam(value = "ExternalReference name as string value.") @QueryParam("name") final String name,
-                                          @ApiParam(value = "CodeSchemeDTO id.") @QueryParam("codeSchemeId") final String codeSchemeId,
+                                          @ApiParam(value = "CodeScheme id.") @QueryParam("codeSchemeId") final String codeSchemeId,
                                           @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                           @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                           @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
