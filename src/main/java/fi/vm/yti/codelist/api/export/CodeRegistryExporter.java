@@ -16,8 +16,8 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 public class CodeRegistryExporter extends BaseExporter {
 
     public String createCsv(final Set<CodeRegistryDTO> registries) {
-        final Set<String> prefLabelLanguages = resolveCodeRegistryDTOPrefLabelLanguages(registries);
-        final Set<String> definitionLanguages = resolveCodeRegistryDTODefinitionLanguages(registries);
+        final Set<String> prefLabelLanguages = resolveCodeRegistryPrefLabelLanguages(registries);
+        final Set<String> definitionLanguages = resolveCodeRegistryDefinitionLanguages(registries);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
@@ -38,8 +38,8 @@ public class CodeRegistryExporter extends BaseExporter {
     public Workbook createExcel(final Set<CodeRegistryDTO> registries,
                                 final String format) {
         final Workbook workbook = createWorkBook(format);
-        final Set<String> prefLabelLanguages = resolveCodeRegistryDTOPrefLabelLanguages(registries);
-        final Set<String> definitionLanguages = resolveCodeRegistryDTODefinitionLanguages(registries);
+        final Set<String> prefLabelLanguages = resolveCodeRegistryPrefLabelLanguages(registries);
+        final Set<String> definitionLanguages = resolveCodeRegistryDefinitionLanguages(registries);
         final Sheet sheet = workbook.createSheet(EXCEL_SHEET_CODEREGISTRIES);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
@@ -67,7 +67,7 @@ public class CodeRegistryExporter extends BaseExporter {
         return workbook;
     }
 
-    private Set<String> resolveCodeRegistryDTOPrefLabelLanguages(final Set<CodeRegistryDTO> registries) {
+    private Set<String> resolveCodeRegistryPrefLabelLanguages(final Set<CodeRegistryDTO> registries) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeRegistryDTO registry : registries) {
             final Map<String, String> prefLabel = registry.getPrefLabel();
@@ -76,7 +76,7 @@ public class CodeRegistryExporter extends BaseExporter {
         return languages;
     }
 
-    private Set<String> resolveCodeRegistryDTODefinitionLanguages(final Set<CodeRegistryDTO> registries) {
+    private Set<String> resolveCodeRegistryDefinitionLanguages(final Set<CodeRegistryDTO> registries) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeRegistryDTO registry : registries) {
             final Map<String, String> definition = registry.getDefinition();

@@ -16,8 +16,8 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 public class PropertyTypeExporter extends BaseExporter {
 
     public String createCsv(final Set<PropertyTypeDTO> propertyTypes) {
-        final Set<String> prefLabelLanguages = resolvePropertyTypeDTOPrefLabelLanguages(propertyTypes);
-        final Set<String> definitionLanguages = resolvePropertyTypeDTODefinitionLanguages(propertyTypes);
+        final Set<String> prefLabelLanguages = resolvePropertyTypePrefLabelLanguages(propertyTypes);
+        final Set<String> definitionLanguages = resolvePropertyTypeDefinitionLanguages(propertyTypes);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
@@ -44,8 +44,8 @@ public class PropertyTypeExporter extends BaseExporter {
     public Workbook createExcel(final Set<PropertyTypeDTO> propertyTypes,
                                 final String format) {
         final Workbook workbook = createWorkBook(format);
-        final Set<String> prefLabelLanguages = resolvePropertyTypeDTOPrefLabelLanguages(propertyTypes);
-        final Set<String> definitionLanguages = resolvePropertyTypeDTODefinitionLanguages(propertyTypes);
+        final Set<String> prefLabelLanguages = resolvePropertyTypePrefLabelLanguages(propertyTypes);
+        final Set<String> definitionLanguages = resolvePropertyTypeDefinitionLanguages(propertyTypes);
         final Sheet sheet = workbook.createSheet(EXCEL_SHEET_PROPERTYTYPES);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
@@ -79,7 +79,7 @@ public class PropertyTypeExporter extends BaseExporter {
         return workbook;
     }
 
-    private Set<String> resolvePropertyTypeDTOPrefLabelLanguages(final Set<PropertyTypeDTO> propertyTypes) {
+    private Set<String> resolvePropertyTypePrefLabelLanguages(final Set<PropertyTypeDTO> propertyTypes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final PropertyTypeDTO propertyType : propertyTypes) {
             final Map<String, String> prefLabel = propertyType.getPrefLabel();
@@ -88,7 +88,7 @@ public class PropertyTypeExporter extends BaseExporter {
         return languages;
     }
 
-    private Set<String> resolvePropertyTypeDTODefinitionLanguages(final Set<PropertyTypeDTO> propertyTypes) {
+    private Set<String> resolvePropertyTypeDefinitionLanguages(final Set<PropertyTypeDTO> propertyTypes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final PropertyTypeDTO propertyType : propertyTypes) {
             final Map<String, String> definition = propertyType.getDefinition();
