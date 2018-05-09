@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
+import fi.vm.yti.codelist.api.exception.exceptionmapping.YtiCodeListExceptionMapper;
 import fi.vm.yti.codelist.api.filter.CacheFilter;
 import fi.vm.yti.codelist.api.filter.RequestLoggingFilter;
 import fi.vm.yti.codelist.api.resource.CodeRegistryResource;
@@ -55,6 +56,9 @@ public class JerseyConfig extends ResourceConfig {
     public JerseyConfig() {
         final JacksonJaxbJsonProvider provider = new JacksonJaxbJsonProvider();
         provider.setMapper(new CustomObjectMapper());
+
+        // ExceptionMappers
+        register(YtiCodeListExceptionMapper.class);
 
         // Cache control headers to no cache.
         register(CacheFilter.class);

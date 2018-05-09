@@ -1,6 +1,7 @@
 package fi.vm.yti.codelist.api.resource;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,7 +12,6 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -93,11 +93,11 @@ public class UriResolverResource extends AbstractBaseResource {
         checkResourceValidity(uriPath);
         final String resourcePath = uriPath.substring(API_PATH_CODELIST.length() + 1);
         final List<String> resourceCodeValues = Arrays.asList(resourcePath.split("/"));
-        final List<String> acceptHeaders = Arrays.asList(accept.split(","));
+        final List<String> acceptHeaders = parseAcceptHeaderValues(accept);
         if (acceptHeaders.contains(MediaType.APPLICATION_JSON)) {
             final URI redirectUrl = URI.create(resolveApiResourceUrl(resourceCodeValues));
             return Response.seeOther(redirectUrl).build();
-        } else if (acceptHeaders.isEmpty() || acceptHeaders.contains(MediaType.TEXT_HTML)){
+        } else if (acceptHeaders.isEmpty() || acceptHeaders.contains(MediaType.TEXT_HTML)) {
             final URI redirectUrl = URI.create(resolveWebResourceUrl(resourceCodeValues));
             return Response.seeOther(redirectUrl).build();
         } else {
@@ -106,10 +106,22 @@ public class UriResolverResource extends AbstractBaseResource {
         }
     }
 
+    private List<String> parseAcceptHeaderValues(final String accept) {
+        final List<String> acceptHeaders = new ArrayList<>();
+        for (final String acceptValue : accept.split("\\s*,\\s*")) {
+            if (acceptValue.contains(";q=")) {
+                acceptHeaders.add(acceptValue.substring(0, acceptValue.indexOf(";q=")));
+            } else {
+                acceptHeaders.add(acceptValue);
+            }
+        }
+        return acceptHeaders;
+    }
+
     private void ensureSuomiFiUriHost(final String host) {
         if (!SUOMI_URI_HOST.equalsIgnoreCase(host)) {
             LOG.error("This URI is not resolvable as a codelist resource, wrong host.");
-            throw new WebApplicationException("This URI is not resolvable as a codelist resource.");
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "This URI is not resolvable as a codelist resource."));
         }
     }
 
@@ -118,7 +130,7 @@ public class UriResolverResource extends AbstractBaseResource {
             return URI.create(uriString.replace(" ", "%20"));
         } else {
             LOG.error("URI string was not valid!");
-            throw new WebApplicationException("URI string was not valid!");
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "URI string was not valid!"));
         }
     }
 
@@ -171,7 +183,7 @@ public class UriResolverResource extends AbstractBaseResource {
         final List<String> resourceCodeValues = Arrays.asList(resourcePath.split("/"));
         if (!uriPath.toLowerCase().startsWith(API_PATH_CODELIST)) {
             LOG.error("Codelist resource URI not resolvable, wrong context path!");
-            throw new WebApplicationException("Codelist resource URI not resolvable, wrong context path!");
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Codelist resource URI not resolvable, wrong context path!"));
         } else if (resourceCodeValues.isEmpty()) {
             LOG.error("Codelist resource URI not resolvable, empty resource path!");
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Codelist resource URI not resolvable, empty resource path!"));
@@ -203,8 +215,8 @@ public class UriResolverResource extends AbstractBaseResource {
     }
 
     private void checkCodeExists(final String codeRegistryCodeValue,
-                                       final String codeSchemeCodeValue,
-                                       final String codeCodeValue) {
+                                 final String codeSchemeCodeValue,
+                                 final String codeCodeValue) {
         final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
         if (code == null) {
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_FOUND.value(), "Resource not found."));

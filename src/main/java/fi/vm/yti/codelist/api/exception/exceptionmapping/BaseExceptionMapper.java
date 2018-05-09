@@ -6,11 +6,11 @@ import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.Meta;
 
-public class BaseExceptionMapper {
+abstract class BaseExceptionMapper {
 
-    protected Response getResponse(final YtiCodeListException ex) {
-        ResponseWrapper wrapper = new ResponseWrapper();
-        Meta meta = new Meta();
+    Response getResponse(final YtiCodeListException ex) {
+        final ResponseWrapper wrapper = new ResponseWrapper();
+        final Meta meta = new Meta();
         meta.setMessage(ex.getErrorModel().getMessage());
         meta.setCode(ex.getErrorModel().getHttpStatusCode());
         meta.setEntityIdentifier(ex.getErrorModel().getEntityIdentifier());

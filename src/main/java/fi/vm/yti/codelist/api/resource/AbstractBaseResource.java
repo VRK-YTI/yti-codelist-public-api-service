@@ -8,13 +8,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -25,6 +25,8 @@ import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier;
 
 import fi.vm.yti.codelist.api.api.ErrorWrapper;
+import fi.vm.yti.codelist.api.exception.YtiCodeListException;
+import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.model.Status;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
@@ -144,7 +146,7 @@ abstract class AbstractBaseResource {
             try {
                 output.write(csv.getBytes(StandardCharsets.UTF_8));
             } catch (final Exception e) {
-                throw new WebApplicationException(e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "CSV output generation failed!"));
             }
         };
         return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(FORMAT_CSV, filename)).build();
@@ -176,7 +178,7 @@ abstract class AbstractBaseResource {
             try {
                 workbook.write(output);
             } catch (final Exception e) {
-                throw new WebApplicationException(e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Excel output generation failed!"));
             }
         };
         return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(FORMAT_EXCEL, filename)).build();
