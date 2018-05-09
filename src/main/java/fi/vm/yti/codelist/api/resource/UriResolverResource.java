@@ -81,7 +81,7 @@ public class UriResolverResource extends AbstractBaseResource {
     @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
     @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
     @ApiResponses(value = {
-        @ApiResponse(code = 302, message = "Does a redirect from codelist resource URI to codelist API."),
+        @ApiResponse(code = 303, message = "Does a redirect from codelist resource URI to codelist API."),
         @ApiResponse(code = 406, message = "Resource not found."),
         @ApiResponse(code = 406, message = "Cannot redirect to given URI.")
     })
@@ -96,10 +96,10 @@ public class UriResolverResource extends AbstractBaseResource {
         final List<String> acceptHeaders = Arrays.asList(accept.split(","));
         if (acceptHeaders.contains(MediaType.APPLICATION_JSON)) {
             final URI redirectUrl = URI.create(resolveApiResourceUrl(resourceCodeValues));
-            return Response.temporaryRedirect(redirectUrl).build();
+            return Response.seeOther(redirectUrl).build();
         } else if (acceptHeaders.isEmpty() || acceptHeaders.contains(MediaType.TEXT_HTML)){
             final URI redirectUrl = URI.create(resolveWebResourceUrl(resourceCodeValues));
-            return Response.temporaryRedirect(redirectUrl).build();
+            return Response.seeOther(redirectUrl).build();
         } else {
             LOG.error("Unknown Accept-header: " + accept);
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Unknown Accept-header: " + accept));
