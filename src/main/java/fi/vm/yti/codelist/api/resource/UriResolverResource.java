@@ -97,12 +97,9 @@ public class UriResolverResource extends AbstractBaseResource {
         if (acceptHeaders.contains(MediaType.APPLICATION_JSON)) {
             final URI redirectUrl = URI.create(resolveApiResourceUrl(resourceCodeValues));
             return Response.seeOther(redirectUrl).build();
-        } else if (acceptHeaders.isEmpty() || acceptHeaders.contains(MediaType.TEXT_HTML)) {
+        } else {
             final URI redirectUrl = URI.create(resolveWebResourceUrl(resourceCodeValues));
             return Response.seeOther(redirectUrl).build();
-        } else {
-            LOG.error("Unknown Accept-header: " + accept);
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Unknown Accept-header: " + accept));
         }
     }
 
