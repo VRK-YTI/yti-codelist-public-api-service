@@ -53,6 +53,7 @@
         <logger name="org.apache" level="WARN"/>
         <logger name="org.springframework" level="INFO"/>
         <logger name="fi.vm" level="DEBUG"/>
+        <logger name="fi.vm.yti.codelist.api.filter" level="INFO"/>
     </springProfile>
 
     <springProfile name="automatedtest">
