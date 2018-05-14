@@ -21,9 +21,12 @@ import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 import fi.vm.yti.codelist.api.api.ApiUtils;
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
+import fi.vm.yti.codelist.api.exception.NotFoundException;
 import fi.vm.yti.codelist.api.export.CodeExporter;
 import fi.vm.yti.codelist.api.export.CodeRegistryExporter;
 import fi.vm.yti.codelist.api.export.CodeSchemeExporter;
+import fi.vm.yti.codelist.api.export.ExtensionExporter;
+import fi.vm.yti.codelist.api.export.ExtensionSchemeExporter;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
@@ -52,18 +55,24 @@ public class CodeRegistryResource extends AbstractBaseResource {
     private final CodeExporter codeExporter;
     private final CodeSchemeExporter codeSchemeExporter;
     private final CodeRegistryExporter codeRegistryExporter;
+    private final ExtensionSchemeExporter extensionSchemeExporter;
+    private final ExtensionExporter extensionExporter;
 
     @Inject
     public CodeRegistryResource(final ApiUtils apiUtils,
                                 final Domain domain,
                                 final CodeExporter codeExporter,
                                 final CodeSchemeExporter codeSchemeExporter,
-                                final CodeRegistryExporter codeRegistryExporter) {
+                                final CodeRegistryExporter codeRegistryExporter,
+                                final ExtensionSchemeExporter extensionSchemeExporter,
+                                final ExtensionExporter extensionExporter) {
         this.apiUtils = apiUtils;
         this.domain = domain;
         this.codeExporter = codeExporter;
         this.codeSchemeExporter = codeSchemeExporter;
         this.codeRegistryExporter = codeRegistryExporter;
+        this.extensionSchemeExporter = extensionSchemeExporter;
+        this.extensionExporter = extensionExporter;
     }
 
     @GET
@@ -160,11 +169,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 return Response.ok(wrapper).build();
             }
         } else {
-            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setMeta(meta);
-            meta.setCode(404);
-            meta.setMessage("No such resource.");
-            return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+            throw new NotFoundException();
         }
     }
 
@@ -232,19 +237,13 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 final ResponseWrapper<CodeDTO> wrapper = new ResponseWrapper<>();
                 wrapper.setMeta(meta);
                 if (codes == null) {
-                    meta.setCode(404);
-                    meta.setMessage("No such resource.");
-                    return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+                    throw new NotFoundException();
                 }
                 wrapper.setResults(codes);
                 return Response.ok(wrapper).build();
             }
         } else {
-            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setMeta(meta);
-            meta.setCode(404);
-            meta.setMessage("No such resource.");
-            return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+            throw new NotFoundException();
         }
     }
 
@@ -257,32 +256,37 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                               @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                                               @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                               @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                              @ApiParam(value = "ExternalReference PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
+                                                              @ApiParam(value = "ExtensionScheme PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
+                                                              @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                               @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-            final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(pageSize, from, prefLabel, codeScheme, meta.getAfter(), meta);
-            if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONSCHEMES, after, pageSize, from + pageSize));
+            if (FORMAT_CSV.startsWith(format.toLowerCase())) {
+                final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(pageSize, from, prefLabel, codeScheme, Meta.parseAfterFromString(after), null);
+                final String csv = extensionSchemeExporter.createCsv(extensionSchemes);
+                return streamCsvExtensionSchemesOutput(csv);
+            } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+                final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(pageSize, from, prefLabel, codeScheme, Meta.parseAfterFromString(after), null);
+                final Workbook workbook = extensionSchemeExporter.createExcel(extensionSchemes, format);
+                return streamExcelExtensionSchemesOutput(workbook);
+            } else {
+                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSIONSCHEME, expand)));
+                final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(pageSize, from, prefLabel, codeScheme, meta.getAfter(), meta);
+                if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+                    meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONSCHEMES, after, pageSize, from + pageSize));
+                }
+                final ResponseWrapper<ExtensionSchemeDTO> wrapper = new ResponseWrapper<>();
+                wrapper.setMeta(meta);
+                if (extensionSchemes == null) {
+                    throw new NotFoundException();
+                }
+                wrapper.setResults(extensionSchemes);
+                return Response.ok(wrapper).build();
             }
-            final ResponseWrapper<ExtensionSchemeDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setMeta(meta);
-            if (extensionSchemes == null) {
-                meta.setCode(404);
-                meta.setMessage("No such resource.");
-                return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
-            }
-            wrapper.setResults(extensionSchemes);
-            return Response.ok(wrapper).build();
         } else {
-            final ResponseWrapper<ExtensionSchemeDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setMeta(meta);
-            meta.setCode(404);
-            meta.setMessage("No such resource.");
-            return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+            throw new NotFoundException();
         }
     }
 
@@ -309,25 +313,19 @@ public class CodeRegistryResource extends AbstractBaseResource {
             final ResponseWrapper<ExternalReferenceDTO> wrapper = new ResponseWrapper<>();
             wrapper.setMeta(meta);
             if (externalReferences == null) {
-                meta.setCode(404);
-                meta.setMessage("No such resource.");
-                return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+                throw new NotFoundException();
             }
             wrapper.setResults(externalReferences);
             return Response.ok(wrapper).build();
         } else {
-            final ResponseWrapper<ExternalReferenceDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setMeta(meta);
-            meta.setCode(404);
-            meta.setMessage("No such resource.");
-            return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+            throw new NotFoundException();
         }
     }
 
     @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes/{codeCodeValue}")
-    @ApiOperation(value = "Return one code from specific codescheme under specific coderegistry.", response = CodeDTO.class)
-    @ApiResponse(code = 200, message = "Returns one registeritem from specific register in JSON format.")
+    @ApiOperation(value = "Return one code from specific CodeScheme under specific coderegistry.", response = CodeDTO.class)
+    @ApiResponse(code = 200, message = "Returns one CodeScheme from specific register in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeRegistryCodeSchemeCode(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                   @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
@@ -344,38 +342,45 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes/{codeCodeValue}/extensions")
     @ApiOperation(value = "Return ExtensionSchemes for a CodeScheme.", response = ExtensionDTO.class)
-    @ApiResponse(code = 200, message = "Returns all ExtensionSchemes for CodeScheme.")
+    @ApiResponse(code = 200, message = "Returns all ExtensionSchemes for Code.")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
     public Response getCodeRegistryCodeSchemeCodeExtensions(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                             @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                                             @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                             @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                            @ApiParam(value = "ExtensionScheme PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                                                             @ApiParam(value = "Code code.", required = true) @PathParam("codeCodeValue") final String codeCodeValue,
+                                                            @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                             @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
         if (code != null) {
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
-            final Set<ExtensionDTO> extensionSchemes = domain.getExtensions(pageSize, from, code, meta.getAfter(), meta);
-            if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES + "/" + codeCodeValue + API_PATH_EXTENSIONS, after, pageSize, from + pageSize));
+            if (FORMAT_CSV.startsWith(format.toLowerCase())) {
+                final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, code, meta.getAfter(), meta);
+                final String csv = extensionExporter.createCsv(extensions);
+                return streamCsvExtensionsOutput(csv);
+            } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+                final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, code, meta.getAfter(), meta);
+                final Workbook workbook = extensionExporter.createExcel(extensions, format);
+                return streamExcelExtensionsOutput(workbook);
+            } else {
+                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
+                final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, code, meta.getAfter(), meta);
+                if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+                    meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES + "/" + codeCodeValue + API_PATH_EXTENSIONS, after, pageSize, from + pageSize));
+                }
+                final ResponseWrapper<ExtensionDTO> wrapper = new ResponseWrapper<>();
+                wrapper.setMeta(meta);
+                if (extensions == null) {
+                    throw new NotFoundException();
+                }
+                wrapper.setResults(extensions);
+                return Response.ok(wrapper).build();
             }
-            final ResponseWrapper<ExtensionDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setMeta(meta);
-            if (extensionSchemes == null) {
-                meta.setCode(404);
-                meta.setMessage("No such resource.");
-                return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
-            }
-            wrapper.setResults(extensionSchemes);
-            return Response.ok(wrapper).build();
         } else {
-            final ResponseWrapper<ExtensionDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setMeta(meta);
-            meta.setCode(404);
-            meta.setMessage("No such resource.");
-            return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+            throw new NotFoundException();
         }
     }
 }

@@ -13,6 +13,8 @@ import fi.vm.yti.codelist.api.filter.CacheFilter;
 import fi.vm.yti.codelist.api.filter.RequestLoggingFilter;
 import fi.vm.yti.codelist.api.resource.CodeRegistryResource;
 import fi.vm.yti.codelist.api.resource.CodeSchemeResource;
+import fi.vm.yti.codelist.api.resource.ExtensionResource;
+import fi.vm.yti.codelist.api.resource.ExtensionSchemeResource;
 import fi.vm.yti.codelist.api.resource.ExternalReferenceResource;
 import fi.vm.yti.codelist.api.resource.PingResource;
 import fi.vm.yti.codelist.api.resource.PropertyTypeResource;
@@ -45,9 +47,9 @@ import io.swagger.annotations.SwaggerDefinition;
     ),
     host = "localhost:9601",
     basePath = ApiConstants.API_CONTEXT_PATH_RESTAPI + ApiConstants.API_BASE_PATH,
-    consumes = {MediaType.APPLICATION_JSON},
-    produces = {MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN, "application/csv", "application/xls", "application/xlsx"},
-    schemes = {SwaggerDefinition.Scheme.HTTPS}
+    consumes = { MediaType.APPLICATION_JSON },
+    produces = { MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN, "application/csv", "application/xls", "application/xlsx" },
+    schemes = { SwaggerDefinition.Scheme.HTTPS }
 )
 @Api(value = ApiConstants.API_BASE_PATH)
 @ApplicationPath(ApiConstants.API_BASE_PATH)
@@ -78,6 +80,8 @@ public class JerseyConfig extends ResourceConfig {
         register(CodeSchemeResource.class);
         register(PropertyTypeResource.class);
         register(ExternalReferenceResource.class);
+        register(ExtensionSchemeResource.class);
+        register(ExtensionResource.class);
 
         // API: URI Resolver
         register(UriResolverResource.class);

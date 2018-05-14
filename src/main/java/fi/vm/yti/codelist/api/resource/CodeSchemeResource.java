@@ -50,7 +50,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
 
     @GET
     @ApiOperation(value = "Return list of available CodeSchemes.", response = CodeSchemeDTO.class, responseContainer = "List")
-    @ApiResponse(code = 200, message = "Returns all CodeSchemes in JSON format.")
+    @ApiResponse(code = 200, message = "Returns all CodeSchemes in specified format.")
     @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN})
     public Response getCodeSchemes(@ApiParam(value = "CodeRegistry CodeValue.") @QueryParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                    @ApiParam(value = "CodeRegistry Name.") @QueryParam("codeRegistryName") final String codeRegistryPrefLabel,

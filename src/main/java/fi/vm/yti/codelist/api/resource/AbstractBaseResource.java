@@ -38,6 +38,8 @@ abstract class AbstractBaseResource {
     public static final String DOWNLOAD_FILENAME_CODES = "codes";
     public static final String DOWNLOAD_FILENAME_EXTERNALREFERENCES = "externalreferences";
     public static final String DOWNLOAD_FILENAME_PROPERTYTYPES = "propertytypes";
+    public static final String DOWNLOAD_FILENAME_EXTENSIONSCHEMES = "extensionschemes";
+    public static final String DOWNLOAD_FILENAME_EXTENSIONS = "extensions";
 
     private static final String HEADER_CONTENT_DISPOSITION = "content-disposition";
 
@@ -58,6 +60,8 @@ abstract class AbstractBaseResource {
         filterProvider.addFilter(FILTER_NAME_PROPERTYTYPE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URL));
         filterProvider.addFilter(FILTER_NAME_DATACLASSIFICATION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URL));
         filterProvider.addFilter(FILTER_NAME_ORGANIZATION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_ID));
+        filterProvider.addFilter(FILTER_NAME_EXTENSIONSCHEME, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URL));
+        filterProvider.addFilter(FILTER_NAME_EXTENSION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URL));
         filterProvider.setFailOnUnknownId(false);
         for (final String baseFilter : baseFilters) {
             filterProvider.removeFilter(baseFilter);
@@ -140,6 +144,14 @@ abstract class AbstractBaseResource {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_PROPERTYTYPES);
     }
 
+    public Response streamCsvExtensionSchemesOutput(final String csv) {
+        return streamCsvOutput(csv, DOWNLOAD_FILENAME_EXTENSIONSCHEMES);
+    }
+
+    public Response streamCsvExtensionsOutput(final String csv) {
+        return streamCsvOutput(csv, DOWNLOAD_FILENAME_EXTENSIONS);
+    }
+
     private Response streamCsvOutput(final String csv,
                                      final String filename) {
         final StreamingOutput stream = output -> {
@@ -170,6 +182,14 @@ abstract class AbstractBaseResource {
 
     public Response streamExcelPropertyTypesOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_PROPERTYTYPES);
+    }
+
+    public Response streamExcelExtensionSchemesOutput(final Workbook workbook) {
+        return streamExcelOutput(workbook, DOWNLOAD_FILENAME_EXTENSIONSCHEMES);
+    }
+
+    public Response streamExcelExtensionsOutput(final Workbook workbook) {
+        return streamExcelOutput(workbook, DOWNLOAD_FILENAME_EXTENSIONS);
     }
 
     private Response streamExcelOutput(final Workbook workbook,

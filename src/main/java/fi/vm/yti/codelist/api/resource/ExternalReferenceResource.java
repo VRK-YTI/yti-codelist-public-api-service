@@ -19,6 +19,7 @@ import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
+import fi.vm.yti.codelist.api.exception.NotFoundException;
 import fi.vm.yti.codelist.api.export.ExternalReferenceExporter;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
@@ -63,12 +64,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
         if (codeSchemeId != null && !codeSchemeId.isEmpty()) {
             codeScheme = domain.getCodeScheme(codeSchemeId);
             if (codeScheme == null) {
-                final ResponseWrapper<ExternalReferenceDTO> wrapper = new ResponseWrapper<>();
-                final Meta meta = new Meta();
-                wrapper.setMeta(meta);
-                meta.setCode(404);
-                meta.setMessage("No such resource.");
-                return Response.status(Response.Status.NOT_FOUND).entity(wrapper).build();
+                throw new NotFoundException();
             }
         }
         if (FORMAT_CSV.equalsIgnoreCase(format)) {

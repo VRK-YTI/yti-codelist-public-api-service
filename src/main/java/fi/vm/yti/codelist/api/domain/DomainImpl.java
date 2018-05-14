@@ -374,7 +374,7 @@ public class DomainImpl implements Domain {
     }
 
     public Set<PropertyTypeDTO> getPropertyTypes() {
-        return getPropertyTypes(MAX_SIZE, 0, null, null,null, null, null);
+        return getPropertyTypes(MAX_SIZE, 0, null, null, null, null, null);
     }
 
     public Set<PropertyTypeDTO> getPropertyTypes(final Integer pageSize,
@@ -517,6 +517,31 @@ public class DomainImpl implements Domain {
         return extensionSchemes;
     }
 
+    public ExtensionSchemeDTO getExtensionScheme(final String extensionSchemeId) {
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSIONSCHEME).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_EXTENSIONSCHEME)
+                .setTypes(ELASTIC_TYPE_EXTENSIONSCHEME);
+            final BoolQueryBuilder builder = boolQuery()
+                .must(matchQuery("id", extensionSchemeId.toLowerCase()));
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            if (response.getHits().getTotalHits() > 0) {
+                final SearchHit hit = response.getHits().getAt(0);
+                try {
+                    if (hit != null) {
+                        return mapper.readValue(hit.getSourceAsString(), ExtensionSchemeDTO.class);
+                    }
+                } catch (final IOException e) {
+                    LOG.error("getExtensionScheme reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                }
+            }
+        }
+        return null;
+    }
+
     public Set<ExtensionDTO> getExtensions(final Integer pageSize,
                                            final Integer from,
                                            final CodeDTO code,
@@ -548,6 +573,31 @@ public class DomainImpl implements Domain {
             });
         }
         return extensions;
+    }
+
+    public ExtensionDTO getExtension(final String extensionId) {
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_EXTENSION)
+                .setTypes(ELASTIC_TYPE_EXTENSION);
+            final BoolQueryBuilder builder = boolQuery()
+                .must(matchQuery("id", extensionId.toLowerCase()));
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            if (response.getHits().getTotalHits() > 0) {
+                final SearchHit hit = response.getHits().getAt(0);
+                try {
+                    if (hit != null) {
+                        return mapper.readValue(hit.getSourceAsString(), ExtensionDTO.class);
+                    }
+                } catch (final IOException e) {
+                    LOG.error("getExtension reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                }
+            }
+        }
+        return null;
     }
 
     private BoolQueryBuilder constructCombinedSearchQuery(final String searchTerm,
