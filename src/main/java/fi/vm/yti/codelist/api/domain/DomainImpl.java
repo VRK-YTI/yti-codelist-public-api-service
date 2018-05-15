@@ -497,7 +497,8 @@ public class DomainImpl implements Domain {
                 .prepareSearch(ELASTIC_INDEX_EXTENSIONSCHEME)
                 .setTypes(ELASTIC_TYPE_EXTENSIONSCHEME)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0);
+                .setFrom(from != null ? from : 0)
+                .addSort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = constructSearchQuery(null, extensionSchemePrefLabel, after);
             searchRequest.setQuery(builder);
             if (codeScheme != null) {
