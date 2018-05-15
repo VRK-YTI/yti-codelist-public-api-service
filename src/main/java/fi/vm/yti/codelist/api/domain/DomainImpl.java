@@ -314,7 +314,7 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE)
-                .addSort("codeValue.raw", SortOrder.ASC)
+                .addSort("order", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
