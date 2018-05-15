@@ -590,7 +590,7 @@ public class DomainImpl implements Domain {
                 .setTypes(ELASTIC_TYPE_EXTENSION)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0)
-                .addSort("extensionOrder", SortOrder.ASC);
+                .addSort("order", SortOrder.ASC);
             final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
             searchRequest.setQuery(builder);
             if (code != null) {
@@ -623,7 +623,7 @@ public class DomainImpl implements Domain {
                 .setTypes(ELASTIC_TYPE_EXTENSION)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0)
-                .addSort("extensionOrder", SortOrder.ASC);
+                .addSort("order", SortOrder.ASC);
             final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -654,7 +654,7 @@ public class DomainImpl implements Domain {
                 .setTypes(ELASTIC_TYPE_EXTENSION)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0)
-                .addSort("extensionOrder", SortOrder.ASC);
+                .addSort("order", SortOrder.ASC);
             final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
             searchRequest.setQuery(builder);
             if (extensionScheme != null) {
