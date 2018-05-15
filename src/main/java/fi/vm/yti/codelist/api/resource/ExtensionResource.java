@@ -56,17 +56,17 @@ public class ExtensionResource extends AbstractBaseResource {
                                   @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-            final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, null, Meta.parseAfterFromString(after), null);
+            final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, Meta.parseAfterFromString(after), null);
             final String csv = extensionExporter.createCsv(extensions);
             return streamCsvExtensionsOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, null, Meta.parseAfterFromString(after), null);
+            final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, Meta.parseAfterFromString(after), null);
             final Workbook workbook = extensionExporter.createExcel(extensions, format);
             return streamExcelExtensionsOutput(workbook);
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
-            final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, null, meta.getAfter(), meta);
+            final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, meta.getAfter(), meta);
             meta.setResultCount(extensions.size());
             final ResponseWrapper<ExtensionDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(extensions);

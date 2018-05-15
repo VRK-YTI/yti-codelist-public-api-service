@@ -517,6 +517,39 @@ public class DomainImpl implements Domain {
         return extensionSchemes;
     }
 
+    public ExtensionSchemeDTO getExtensionScheme(final String codeRegistryCodeValue,
+                                                 final String codeSchemeCodeValue,
+                                                 final String extensionSchemeCodeValue) {
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSIONSCHEME).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_EXTENSIONSCHEME)
+                .setTypes(ELASTIC_TYPE_EXTENSIONSCHEME)
+                .addSort("codeValue.raw", SortOrder.ASC);
+            final BoolQueryBuilder builder = boolQuery()
+                .should(matchQuery("id", extensionSchemeCodeValue.toLowerCase()))
+                .should(matchQuery("codeValue", extensionSchemeCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD))
+                .minimumShouldMatch(1);
+            builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
+            builder.must(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            if (response.getHits().getTotalHits() > 0) {
+                LOG.debug("Found " + response.getHits().getTotalHits() + " ExtensionSchemes");
+                final SearchHit hit = response.getHits().getAt(0);
+                try {
+                    if (hit != null) {
+                        return mapper.readValue(hit.getSourceAsString(), ExtensionSchemeDTO.class);
+                    }
+                } catch (final IOException e) {
+                    LOG.error("getExtensionScheme reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                }
+            }
+        }
+        return null;
+    }
+
     public ExtensionSchemeDTO getExtensionScheme(final String extensionSchemeId) {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSIONSCHEME).execute().actionGet().isExists();
         if (exists) {
@@ -555,11 +588,76 @@ public class DomainImpl implements Domain {
                 .prepareSearch(ELASTIC_INDEX_EXTENSION)
                 .setTypes(ELASTIC_TYPE_EXTENSION)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0);
+                .setFrom(from != null ? from : 0)
+                .addSort("extensionOrder", SortOrder.ASC);
             final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
             searchRequest.setQuery(builder);
             if (code != null) {
                 builder.must(matchQuery("code.id", code.getId().toString().toLowerCase()));
+            }
+            final SearchResponse response = searchRequest.execute().actionGet();
+            setResultCounts(meta, response);
+            response.getHits().forEach(hit -> {
+                try {
+                    final ExtensionDTO extension = mapper.readValue(hit.getSourceAsString(), ExtensionDTO.class);
+                    extensions.add(extension);
+                } catch (final IOException e) {
+                    LOG.error("getExtensions reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                }
+            });
+        }
+        return extensions;
+    }
+
+    public Set<ExtensionDTO> getExtensions(final Integer pageSize,
+                                           final Integer from,
+                                           final Date after,
+                                           final Meta meta) {
+        final Set<ExtensionDTO> extensions = new LinkedHashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_EXTENSION)
+                .setTypes(ELASTIC_TYPE_EXTENSION)
+                .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                .setFrom(from != null ? from : 0)
+                .addSort("extensionOrder", SortOrder.ASC);
+            final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            setResultCounts(meta, response);
+            response.getHits().forEach(hit -> {
+                try {
+                    final ExtensionDTO extension = mapper.readValue(hit.getSourceAsString(), ExtensionDTO.class);
+                    extensions.add(extension);
+                } catch (final IOException e) {
+                    LOG.error("getExtensions reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                }
+            });
+        }
+        return extensions;
+    }
+
+    public Set<ExtensionDTO> getExtensions(final Integer pageSize,
+                                           final Integer from,
+                                           final ExtensionSchemeDTO extensionScheme,
+                                           final Date after,
+                                           final Meta meta) {
+        final Set<ExtensionDTO> extensions = new LinkedHashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_EXTENSION)
+                .setTypes(ELASTIC_TYPE_EXTENSION)
+                .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                .setFrom(from != null ? from : 0)
+                .addSort("extensionOrder", SortOrder.ASC);
+            final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
+            searchRequest.setQuery(builder);
+            if (extensionScheme != null) {
+                builder.must(matchQuery("extensionScheme.id", extensionScheme.getId().toString().toLowerCase()));
             }
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);

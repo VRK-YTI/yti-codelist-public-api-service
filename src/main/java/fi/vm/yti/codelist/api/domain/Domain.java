@@ -99,7 +99,22 @@ public interface Domain {
                                                 final Date after,
                                                 final Meta meta);
 
+    ExtensionSchemeDTO getExtensionScheme(final String codeRegistryCodeValue,
+                                          final String codeSchemeCodeValue,
+                                          final String extensionSchemeCodeValue);
+
     ExtensionSchemeDTO getExtensionScheme(final String extensionSchemeId);
+
+    Set<ExtensionDTO> getExtensions(final Integer pageSize,
+                                    final Integer from,
+                                    final Date after,
+                                    final Meta meta);
+
+    Set<ExtensionDTO> getExtensions(final Integer pageSize,
+                                    final Integer from,
+                                    final ExtensionSchemeDTO code,
+                                    final Date after,
+                                    final Meta meta);
 
     Set<ExtensionDTO> getExtensions(final Integer pageSize,
                                     final Integer from,

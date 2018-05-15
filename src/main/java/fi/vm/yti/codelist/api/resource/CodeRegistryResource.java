@@ -47,7 +47,7 @@ import static java.util.Arrays.asList;
 @Component
 @Path("/v1/coderegistries")
 @Api(value = "coderegistries")
-@Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
 public class CodeRegistryResource extends AbstractBaseResource {
 
     private final ApiUtils apiUtils;
@@ -78,7 +78,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return a list of available CodeRegistries.", response = CodeRegistryDTO.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns all CodeRegistries in specified format.")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
     public Response getCodeRegistries(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                       @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                       @ApiParam(value = "CodeRegistry CodeValue as string value.") @QueryParam("codeValue") final String codeRegistryCodeValue,
@@ -132,7 +132,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Path("{codeRegistryCodeValue}/codeschemes")
     @ApiOperation(value = "Return CodeSchemes for a CodeRegistry.", response = CodeRegistryDTO.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns CodeSchemes for a CodeRegistry in specified format.")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
     public Response getCodeRegistryCodeSchemes(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
@@ -192,10 +192,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 }
                 return Response.ok(codeScheme).build();
             } else {
-                return Response.status(Response.Status.NOT_FOUND).build();
+                throw new NotFoundException();
             }
         } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            throw new NotFoundException();
         }
     }
 
@@ -203,7 +203,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes")
     @ApiOperation(value = "Return Codes for a CodeScheme.", response = CodeDTO.class)
     @ApiResponse(code = 200, message = "Returns all Codes for CodeScheme in specified format.")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
     public Response getCodeRegistryCodeSchemeCodes(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                    @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                                    @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
@@ -248,10 +248,62 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes/{extensionSchemeCodeValue}/extensions/{extensionId}")
+    @ApiOperation(value = "Return Extension for a ExtensionScheme.", response = ExtensionSchemeDTO.class)
+    @ApiResponse(code = 200, message = "Returns single Extenion for ExtensionScheme.")
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
+    public Response getCodeRegistryCodeSchemeExtensionSchemeExtension(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                                                      @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                                      @ApiParam(value = "ExtensionScheme CodeValue.", required = true) @PathParam("extensionSchemeCodeValue") final String extensionSchemeCodeValue,
+                                                                      @ApiParam(value = "Extension ID.", required = true) @PathParam("extensionId") final String extensionId,
+                                                                      @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+        final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
+        if (codeRegistry != null) {
+            final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
+            if (codeScheme != null) {
+                final ExtensionSchemeDTO extensionScheme = domain.getExtensionScheme(codeRegistryCodeValue, codeSchemeCodeValue, extensionSchemeCodeValue);
+                if (extensionScheme != null) {
+                    final ExtensionDTO extension = domain.getExtension(extensionId);
+                    if (extension != null) {
+                        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
+                        return Response.ok(extension).build();
+                    } else {
+                        throw new NotFoundException();
+                    }
+                } else {
+                    throw new NotFoundException();
+                }
+            } else {
+                throw new NotFoundException();
+            }
+        } else {
+            throw new NotFoundException();
+        }
+    }
+
+    @GET
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes/{extensionSchemeCodeValue}")
+    @ApiOperation(value = "Return ExtensionScheme for a CodeScheme.", response = ExtensionSchemeDTO.class)
+    @ApiResponse(code = 200, message = "Returns single ExtensionScheme for CodeScheme.")
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
+    public Response getCodeRegistryCodeSchemeExtensionScheme(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                                             @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                             @ApiParam(value = "ExtensionScheme CodeValue.", required = true) @PathParam("extensionSchemeCodeValue") final String extensionSchemeCodeValue,
+                                                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+        final ExtensionSchemeDTO extensionScheme = domain.getExtensionScheme(codeRegistryCodeValue, codeSchemeCodeValue, extensionSchemeCodeValue);
+        if (extensionScheme != null) {
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSIONSCHEME, expand)));
+            return Response.ok(extensionScheme).build();
+        } else {
+            throw new NotFoundException();
+        }
+    }
+
+    @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes")
     @ApiOperation(value = "Return ExtensionSchemes for a CodeScheme.", response = ExtensionSchemeDTO.class)
     @ApiResponse(code = 200, message = "Returns all ExtensionSchemes for CodeScheme.")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
     public Response getCodeRegistryCodeSchemeExtensionSchemes(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                               @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                                               @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
@@ -291,10 +343,55 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes/{extensionSchemeCodeValue}/extensions")
+    @ApiOperation(value = "Return Extensions for a ExtensionScheme.", response = ExtensionDTO.class)
+    @ApiResponse(code = 200, message = "Returns all Extensions for ExtensionScheme.")
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
+    public Response getCodeRegistryCodeSchemeExtensionSchemeExtensions(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
+                                                                       @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
+                                                                       @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                                                       @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                                       @ApiParam(value = "ExtensionScheme Value.", required = true) @PathParam("extensionSchemeCodeValue") final String extensionSchemeCodeValue,
+                                                                       @ApiParam(value = "ExtensionScheme PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
+                                                                       @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
+                                                                       @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
+                                                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+
+        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
+        final ExtensionSchemeDTO extensionScheme = domain.getExtensionScheme(codeRegistryCodeValue, codeSchemeCodeValue, extensionSchemeCodeValue);
+        if (extensionScheme != null) {
+            if (FORMAT_CSV.startsWith(format.toLowerCase())) {
+                final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, extensionScheme, meta.getAfter(), meta);
+                final String csv = extensionExporter.createCsv(extensions);
+                return streamCsvExtensionsOutput(csv);
+            } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+                final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, extensionScheme, meta.getAfter(), meta);
+                final Workbook workbook = extensionExporter.createExcel(extensions, format);
+                return streamExcelExtensionsOutput(workbook);
+            } else {
+                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
+                final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, extensionScheme, meta.getAfter(), meta);
+                if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+                    meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONSCHEMES + "/" + extensionSchemeCodeValue + API_PATH_EXTENSIONS, after, pageSize, from + pageSize));
+                }
+                final ResponseWrapper<ExtensionDTO> wrapper = new ResponseWrapper<>();
+                wrapper.setMeta(meta);
+                if (extensions == null) {
+                    throw new NotFoundException();
+                }
+                wrapper.setResults(extensions);
+                return Response.ok(wrapper).build();
+            }
+        } else {
+            throw new NotFoundException();
+        }
+    }
+
+    @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/externalreferences")
-    @ApiOperation(value = "Return Codes for a CodeScheme.", response = CodeDTO.class)
-    @ApiResponse(code = 200, message = "Returns all Codes for CodeScheme.")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+    @ApiOperation(value = "Return ExternalReferences for a CodeScheme.", response = ExternalReferenceDTO.class)
+    @ApiResponse(code = 200, message = "Returns all ExternalReferences for CodeScheme.")
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
     public Response getCodeRegistryCodeSchemeExternalReferences(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                                 @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                                                 @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
@@ -324,8 +421,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
 
     @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes/{codeCodeValue}")
-    @ApiOperation(value = "Return one code from specific CodeScheme under specific coderegistry.", response = CodeDTO.class)
-    @ApiResponse(code = 200, message = "Returns one CodeScheme from specific register in JSON format.")
+    @ApiOperation(value = "Return one Code from specific CodeScheme under specific CodeRegistry.", response = CodeDTO.class)
+    @ApiResponse(code = 200, message = "Returns one Code from specific CodeRegistry in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeRegistryCodeSchemeCode(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                   @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
@@ -341,9 +438,9 @@ public class CodeRegistryResource extends AbstractBaseResource {
 
     @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes/{codeCodeValue}/extensions")
-    @ApiOperation(value = "Return ExtensionSchemes for a CodeScheme.", response = ExtensionDTO.class)
-    @ApiResponse(code = 200, message = "Returns all ExtensionSchemes for Code.")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8"})
+    @ApiOperation(value = "Return Extensions for a Code.", response = ExtensionDTO.class)
+    @ApiResponse(code = 200, message = "Returns all Extensions for Code.")
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
     public Response getCodeRegistryCodeSchemeCodeExtensions(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                             @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                                             @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
