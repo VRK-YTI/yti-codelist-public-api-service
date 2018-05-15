@@ -57,7 +57,7 @@ public class ExtensionSchemeExporter extends BaseExporter {
             int j = 0;
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
-            rowhead.createCell(j).setCellValue(CONTENT_HEADER_STATUS);
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STATUS);
             for (final String language : prefLabelLanguages) {
                 rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
             }
