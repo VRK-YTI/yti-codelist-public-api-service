@@ -72,7 +72,7 @@ public class ExtensionExporter extends BaseExporter {
             } else {
                 row.createCell(k++).setCellValue("");
             }
-            if (extension.getExtension() != null) {
+            if (extension.getExtension() != null && extension.getExtension().getCode() != null) {
                 row.createCell(k++).setCellValue(checkEmptyValue(extension.getExtension().getCode().getCodeValue()));
             } else {
                 row.createCell(k++).setCellValue("");
