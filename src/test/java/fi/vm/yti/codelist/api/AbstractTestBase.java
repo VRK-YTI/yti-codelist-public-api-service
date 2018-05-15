@@ -57,7 +57,8 @@ abstract public class AbstractTestBase {
         "    }\n" +
         "  },\n" +
         "  \"id\": {\n" +
-        "    \"type\": \"text\"},\n" +
+        "    \"type\": \"text\"\n" +
+        "  },\n" +
         "  \"prefLabel\": {\n" +
         "    \"type\": \"nested\"\n" +
         "  }\n" +
@@ -75,7 +76,8 @@ abstract public class AbstractTestBase {
         "    }\n" +
         "  },\n" +
         "  \"id\": {\n" +
-        "    \"type\": \"text\"},\n" +
+        "    \"type\": \"text\"\n" +
+        "  },\n" +
         "  \"prefLabel\": {\n" +
         "    \"type\": \"nested\"\n" +
         "  },\n" +
@@ -106,7 +108,11 @@ abstract public class AbstractTestBase {
         "    }\n" +
         "  },\n" +
         "  \"id\": {\n" +
-        "    \"type\": \"text\"},\n" +
+        "    \"type\": \"text\"\n" +
+        "  },\n" +
+        "  \"order\": {\n" +
+        "    \"type\": \"integer\"\n" +
+        "  },\n" +
         "  \"prefLabel\": {\n" +
         "    \"type\": \"nested\"\n" +
         "  },\n" +
@@ -278,7 +284,7 @@ abstract public class AbstractTestBase {
         codeRegistry.setDefinition(LANGUAGE_CODE_SV, "Test upplösning");
         codeRegistry.setDefinition(LANGUAGE_CODE_EN, "Test definition");
         codeRegistry.setModified(new Date(System.currentTimeMillis()));
-        codeRegistry.setUri("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeValue + "/");
+        codeRegistry.setUrl("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeValue + "/");
         return codeRegistry;
     }
 
@@ -294,7 +300,7 @@ abstract public class AbstractTestBase {
         codeScheme.setDefinition(LANGUAGE_CODE_FI, "Testi määritelmä");
         codeScheme.setDefinition(LANGUAGE_CODE_SV, "Test upplösning");
         codeScheme.setDefinition(LANGUAGE_CODE_EN, "Test definition");
-        codeScheme.setUri("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeRegistry.getCodeValue() + "/codeschemes/" + codeScheme.getCodeValue() + "/");
+        codeScheme.setUrl("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeRegistry.getCodeValue() + "/codeschemes/" + codeScheme.getCodeValue() + "/");
         codeScheme.setCodeRegistry(codeRegistry);
         codeScheme.setSource(SOURCE_TEST);
         codeScheme.setModified(new Date(System.currentTimeMillis()));
@@ -319,7 +325,7 @@ abstract public class AbstractTestBase {
         code.setShortName("ABR");
         code.setCodeScheme(codeScheme);
         code.setModified(new Date(System.currentTimeMillis()));
-        code.setUri("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeScheme.getCodeRegistry().getCodeValue() + "/codeschemes/" + codeScheme.getCodeValue() + "/codes/" + code.getCodeValue() + "/");
+        code.setUrl("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeScheme.getCodeRegistry().getCodeValue() + "/codeschemes/" + codeScheme.getCodeValue() + "/codes/" + code.getCodeValue() + "/");
         return code;
     }
 
