@@ -129,7 +129,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/codeschemes")
+    @Path("{codeRegistryCodeValue}/codeschemes/")
     @ApiOperation(value = "Return CodeSchemes for a CodeRegistry.", response = CodeRegistryDTO.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns CodeSchemes for a CodeRegistry in specified format.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
@@ -207,7 +207,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes")
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes/")
     @ApiOperation(value = "Return Codes for a CodeScheme.", response = CodeDTO.class)
     @ApiResponse(code = 200, message = "Returns all Codes for CodeScheme in specified format.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
@@ -307,7 +307,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes")
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes/")
     @ApiOperation(value = "Return ExtensionSchemes for a CodeScheme.", response = ExtensionSchemeDTO.class)
     @ApiResponse(code = 200, message = "Returns all ExtensionSchemes for CodeScheme.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
@@ -350,7 +350,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes/{extensionSchemeCodeValue}/extensions")
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes/{extensionSchemeCodeValue}/extensions/")
     @ApiOperation(value = "Return Extensions for a ExtensionScheme.", response = ExtensionDTO.class)
     @ApiResponse(code = 200, message = "Returns all Extensions for ExtensionScheme.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
@@ -395,7 +395,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/externalreferences")
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/externalreferences/")
     @ApiOperation(value = "Return ExternalReferences for a CodeScheme.", response = ExternalReferenceDTO.class)
     @ApiResponse(code = 200, message = "Returns all ExternalReferences for CodeScheme.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
@@ -444,7 +444,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes/{codeCodeValue}/extensions")
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes/{codeCodeValue}/extensions/")
     @ApiOperation(value = "Return Extensions for a Code.", response = ExtensionDTO.class)
     @ApiResponse(code = 200, message = "Returns all Extensions for Code.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
