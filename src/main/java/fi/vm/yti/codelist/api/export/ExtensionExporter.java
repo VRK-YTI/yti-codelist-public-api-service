@@ -33,7 +33,7 @@ public class ExtensionExporter extends BaseExporter {
             appendValue(csv, csvSeparator, extension.getId().toString());
             appendValue(csv, csvSeparator, extension.getExtensionValue());
             appendValue(csv, csvSeparator, extension.getCode() != null ? extension.getCode().getCodeValue() : "");
-            appendValue(csv, csvSeparator, extension.getExtension() != null ? extension.getExtension().getExtensionValue() : "");
+            appendValue(csv, csvSeparator, extension.getExtension() != null ? extension.getExtension().getCode().getCodeValue() : "");
             appendValue(csv, csvSeparator, extension.getOrder().toString(), true);
         }
         return csv.toString();
@@ -42,36 +42,42 @@ public class ExtensionExporter extends BaseExporter {
     public Workbook createExcel(final Set<ExtensionDTO> extensions,
                                 final String format) {
         try (final Workbook workbook = createWorkBook(format)) {
-            final Sheet sheet = workbook.createSheet(EXCEL_SHEET_EXTENSIONS);
-            final Row rowhead = sheet.createRow((short) 0);
-            int j = 0;
-            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
-            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_EXTENSIONVALUE);
-            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODE);
-            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_RELATION);
-            rowhead.createCell(j).setCellValue(CONTENT_HEADER_ORDER);
-            int i = 1;
-            for (final ExtensionDTO extension : extensions) {
-                final Row row = sheet.createRow(i++);
-                int k = 0;
-                row.createCell(k++).setCellValue(checkEmptyValue(extension.getId().toString()));
-                row.createCell(k++).setCellValue(checkEmptyValue(extension.getExtensionValue()));
-                if (extension.getCode() != null) {
-                    row.createCell(k++).setCellValue(checkEmptyValue(extension.getCode().getCodeValue()));
-                } else {
-                    row.createCell(k++).setCellValue("");
-                }
-                if (extension.getExtension() != null) {
-                    row.createCell(k++).setCellValue(checkEmptyValue(extension.getExtension().getExtensionValue()));
-                } else {
-                    row.createCell(k++).setCellValue("");
-                }
-                row.createCell(k).setCellValue(checkEmptyValue(extension.getOrder().toString()));
-            }
+            addExtensionsSheet(workbook, EXCEL_SHEET_EXTENSIONS, extensions);
             return workbook;
         } catch (final IOException e) {
             LOG.error("Error creating Excel during export!", e);
             throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Excel output generation failed!"));
+        }
+    }
+
+    public void addExtensionsSheet(final Workbook workbook,
+                                    final String sheetName,
+                                    final Set<ExtensionDTO> extensions) {
+        final Sheet sheet = workbook.createSheet(sheetName);
+        final Row rowhead = sheet.createRow((short) 0);
+        int j = 0;
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_EXTENSIONVALUE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_RELATION);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_ORDER);
+        int i = 1;
+        for (final ExtensionDTO extension : extensions) {
+            final Row row = sheet.createRow(i++);
+            int k = 0;
+            row.createCell(k++).setCellValue(checkEmptyValue(extension.getId().toString()));
+            row.createCell(k++).setCellValue(checkEmptyValue(extension.getExtensionValue()));
+            if (extension.getCode() != null) {
+                row.createCell(k++).setCellValue(checkEmptyValue(extension.getCode().getCodeValue()));
+            } else {
+                row.createCell(k++).setCellValue("");
+            }
+            if (extension.getExtension() != null) {
+                row.createCell(k++).setCellValue(checkEmptyValue(extension.getExtension().getCode().getCodeValue()));
+            } else {
+                row.createCell(k++).setCellValue("");
+            }
+            row.createCell(k).setCellValue(checkEmptyValue(extension.getOrder().toString()));
         }
     }
 }

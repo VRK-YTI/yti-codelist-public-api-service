@@ -67,16 +67,23 @@ public class CodeExporter extends BaseExporter {
 
     public Workbook createExcel(final Set<CodeDTO> codes,
                                 final String format) {
+        final Workbook workbook = createWorkBook(format);
+        addCodeSheet(workbook, EXCEL_SHEET_CODES, codes);
+        return workbook;
+    }
+
+    public void addCodeSheet(final Workbook workbook,
+                             final String sheetName,
+                             final Set<CodeDTO> codes) {
         final Map<UUID, String> codeValueIdMap = new HashMap<>();
         for (final CodeDTO code : codes) {
             codeValueIdMap.put(code.getId(), code.getCodeValue());
         }
-        final Workbook workbook = createWorkBook(format);
         final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codes);
         final Set<String> definitionLanguages = resolveCodeDefinitionLanguages(codes);
         final Set<String> descriptionLanguages = resolveCodeDescriptionLanguages(codes);
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
-        final Sheet sheet = workbook.createSheet(EXCEL_SHEET_CODES);
+        final Sheet sheet = workbook.createSheet(sheetName);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
@@ -125,7 +132,6 @@ public class CodeExporter extends BaseExporter {
 
             flatInt++;
         }
-        return workbook;
     }
 
     private Set<String> resolveCodePrefLabelLanguages(final Set<CodeDTO> codes) {

@@ -181,18 +181,25 @@ public class CodeRegistryResource extends AbstractBaseResource {
     public Response getCodeRegistryCodeScheme(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                               @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                              @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                               @ApiParam(value = "Boolean that controls whether to embed Codes in payload or not.") @QueryParam("embedCodes") @DefaultValue("false") final Boolean embedCodes) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
-            final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-            if (codeScheme != null) {
-                if (embedCodes) {
-                    codeScheme.setCodes(domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeRegistryCodeValue, codeSchemeCodeValue));
-                }
-                return Response.ok(codeScheme).build();
+            if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+                final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
+                final Workbook workbook = codeSchemeExporter.createExcel(codeScheme, format);
+                return streamExcelCodesOutput(workbook);
             } else {
-                throw new NotFoundException();
+                final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
+                if (codeScheme != null) {
+                    if (embedCodes) {
+                        codeScheme.setCodes(domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeRegistryCodeValue, codeSchemeCodeValue));
+                    }
+                    return Response.ok(codeScheme).build();
+                } else {
+                    throw new NotFoundException();
+                }
             }
         } else {
             throw new NotFoundException();
