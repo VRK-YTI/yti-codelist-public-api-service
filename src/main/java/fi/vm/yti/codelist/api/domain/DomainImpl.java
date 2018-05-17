@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
+import fi.vm.yti.codelist.api.exception.JsonParsingException;
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
@@ -36,6 +37,7 @@ import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
+import static fi.vm.yti.codelist.api.exception.ErrorConstants.ERR_MSG_USER_406;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.lang.Math.toIntExact;
 import static org.elasticsearch.index.query.QueryBuilders.*;
@@ -71,12 +73,14 @@ public class DomainImpl implements Domain {
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
                 final SearchHit hit = response.getHits().getAt(0);
+                LOG.debug(String.format("Found %d CodeRegistries", response.getHits().getTotalHits()));
                 try {
                     if (hit != null) {
                         return mapper.readValue(hit.getSourceAsString(), CodeRegistryDTO.class);
                     }
                 } catch (final IOException e) {
                     LOG.error("getCodeRegistry reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             }
         }
@@ -114,10 +118,12 @@ public class DomainImpl implements Domain {
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
+                LOG.debug(String.format("Found %d CodeRegistries", response.getHits().getTotalHits()));
                 try {
                     codeRegistries.add(mapper.readValue(hit.getSourceAsString(), CodeRegistryDTO.class));
                 } catch (final IOException e) {
                     LOG.error("getCodeRegistries reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             });
         }
@@ -137,7 +143,7 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
-                LOG.debug("Found " + response.getHits().getTotalHits() + " CodeSchemes");
+                LOG.debug(String.format("Found %d CodeSchemes", response.getHits().getTotalHits()));
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
@@ -145,6 +151,7 @@ public class DomainImpl implements Domain {
                     }
                 } catch (final IOException e) {
                     LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             }
         }
@@ -168,7 +175,7 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
-                LOG.debug("Found " + response.getHits().getTotalHits() + " CodeSchemes");
+                LOG.debug(String.format("Found %d CodeSchemes", response.getHits().getTotalHits()));
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
@@ -176,6 +183,7 @@ public class DomainImpl implements Domain {
                     }
                 } catch (final IOException e) {
                     LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             }
         }
@@ -242,20 +250,11 @@ public class DomainImpl implements Domain {
                     codeSchemes.add(mapper.readValue(hit.getSourceAsString(), CodeSchemeDTO.class));
                 } catch (final IOException e) {
                     LOG.error("getCodeSchemes reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             });
         }
         return codeSchemes;
-    }
-
-    private void boostStatus(final BoolQueryBuilder builder) {
-        builder.should(constantScoreQuery(termQuery("status.keyword", "VALID")).boost(1000f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "SUBMITTED")).boost(900f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "DRAFT")).boost(800f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "SUGGESTED")).boost(700f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "SUPERSEDED")).boost(600f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "RETIRED")).boost(500f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "INVALID")).boost(400f));
     }
 
     public CodeDTO getCode(final String codeRegistryCodeValue,
@@ -279,7 +278,7 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
 
             final SearchResponse response = searchRequest.execute().actionGet();
-            LOG.debug("getCode found: " + response.getHits().getTotalHits() + " hits.");
+            LOG.debug(String.format("getCode found: %d hits.", response.getHits().getTotalHits()));
             if (response.getHits().getTotalHits() > 0) {
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
@@ -288,6 +287,7 @@ public class DomainImpl implements Domain {
                     }
                 } catch (final IOException e) {
                     LOG.error("getCode reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             }
             return null;
@@ -313,10 +313,10 @@ public class DomainImpl implements Domain {
                                  final Date after,
                                  final Meta meta) {
         validatePageSize(pageSize);
+        final Set<CodeDTO> codes = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
-            final Set<CodeDTO> codes = new LinkedHashSet<>();
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE)
@@ -347,11 +347,12 @@ public class DomainImpl implements Domain {
                     codes.add(mapper.readValue(hit.getSourceAsString(), CodeDTO.class));
                 } catch (final IOException e) {
                     LOG.error("getCodes reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             });
             return codes;
         }
-        return null;
+        return codes;
     }
 
     public PropertyTypeDTO getPropertyType(final String propertyTypeId) {
@@ -373,6 +374,7 @@ public class DomainImpl implements Domain {
                     }
                 } catch (final IOException e) {
                     LOG.error("getPropertyType reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             }
         }
@@ -416,6 +418,7 @@ public class DomainImpl implements Domain {
                     propertyTypes.add(propertyType);
                 } catch (final IOException e) {
                     LOG.error("getPropertyTypes reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             });
         }
@@ -441,6 +444,7 @@ public class DomainImpl implements Domain {
                     }
                 } catch (final IOException e) {
                     LOG.error("getExternalReference reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             }
         }
@@ -485,6 +489,7 @@ public class DomainImpl implements Domain {
                     externalReferences.add(externalReference);
                 } catch (final IOException e) {
                     LOG.error("getExternalReferences reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             });
         }
@@ -521,6 +526,7 @@ public class DomainImpl implements Domain {
                     extensionSchemes.add(extensionScheme);
                 } catch (final IOException e) {
                     LOG.error("getExtensionSchemes reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             });
         }
@@ -546,7 +552,7 @@ public class DomainImpl implements Domain {
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
-                LOG.debug("Found " + response.getHits().getTotalHits() + " ExtensionSchemes");
+                LOG.debug(String.format("Found %d ExtensionSchemes", response.getHits().getTotalHits()));
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
@@ -554,6 +560,7 @@ public class DomainImpl implements Domain {
                     }
                 } catch (final IOException e) {
                     LOG.error("getExtensionScheme reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             }
         }
@@ -579,6 +586,7 @@ public class DomainImpl implements Domain {
                     }
                 } catch (final IOException e) {
                     LOG.error("getExtensionScheme reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             }
         }
@@ -614,6 +622,7 @@ public class DomainImpl implements Domain {
                     extensions.add(extension);
                 } catch (final IOException e) {
                     LOG.error("getExtensions reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             });
         }
@@ -766,8 +775,18 @@ public class DomainImpl implements Domain {
         LOG.debug(String.format("Search found: %d total hits.", totalResults));
     }
 
+    private void boostStatus(final BoolQueryBuilder builder) {
+        builder.should(constantScoreQuery(termQuery("status.keyword", "VALID")).boost(1000f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "SUBMITTED")).boost(900f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "DRAFT")).boost(800f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "SUGGESTED")).boost(700f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "SUPERSEDED")).boost(600f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "RETIRED")).boost(500f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "INVALID")).boost(400f));
+    }
+
     private void validatePageSize(final Integer pageSize) {
-        if (pageSize > MAX_SIZE) {
+        if (pageSize != null && pageSize > MAX_SIZE) {
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), String.format("Paging pageSize parameter value %d exceeds max value %d.", pageSize, MAX_SIZE)));
         }
     }
