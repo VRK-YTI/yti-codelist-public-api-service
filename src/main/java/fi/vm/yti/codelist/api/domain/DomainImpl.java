@@ -20,14 +20,17 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
+import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
+import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
@@ -42,7 +45,7 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 public class DomainImpl implements Domain {
 
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
-    private static final int MAX_SIZE = 10000;
+    private static final int MAX_SIZE = 50000;
     private static final String ANALYZER_KEYWORD = "analyzer_keyword";
     private static final String BOOSTSTATUS = "boostStatus";
     private Client client;
@@ -91,6 +94,7 @@ public class DomainImpl implements Domain {
                                                   final Date after,
                                                   final Meta meta,
                                                   final List<String> organizations) {
+        validatePageSize(pageSize);
         final Set<CodeRegistryDTO> codeRegistries = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODEREGISTRY).execute().actionGet().isExists();
         if (exists) {
@@ -199,6 +203,7 @@ public class DomainImpl implements Domain {
                                              final List<String> dataClassifications,
                                              final Date after,
                                              final Meta meta) {
+        validatePageSize(pageSize);
         final Set<CodeSchemeDTO> codeSchemes = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
@@ -307,6 +312,7 @@ public class DomainImpl implements Domain {
                                  final List<String> statuses,
                                  final Date after,
                                  final Meta meta) {
+        validatePageSize(pageSize);
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -384,6 +390,7 @@ public class DomainImpl implements Domain {
                                                  final String type,
                                                  final Date after,
                                                  final Meta meta) {
+        validatePageSize(pageSize);
         final Set<PropertyTypeDTO> propertyTypes = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_PROPERTYTYPE).execute().actionGet().isExists();
         if (exists) {
@@ -450,6 +457,7 @@ public class DomainImpl implements Domain {
                                                            final CodeSchemeDTO codeScheme,
                                                            final Date after,
                                                            final Meta meta) {
+        validatePageSize(pageSize);
         final Set<ExternalReferenceDTO> externalReferences = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTERNALREFERENCE).execute().actionGet().isExists();
         if (exists) {
@@ -489,6 +497,7 @@ public class DomainImpl implements Domain {
                                                        final CodeSchemeDTO codeScheme,
                                                        final Date after,
                                                        final Meta meta) {
+        validatePageSize(pageSize);
         final Set<ExtensionSchemeDTO> extensionSchemes = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSIONSCHEME).execute().actionGet().isExists();
         if (exists) {
@@ -581,6 +590,7 @@ public class DomainImpl implements Domain {
                                            final CodeDTO code,
                                            final Date after,
                                            final Meta meta) {
+        validatePageSize(pageSize);
         final Set<ExtensionDTO> extensions = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
         if (exists) {
@@ -614,6 +624,7 @@ public class DomainImpl implements Domain {
                                            final Integer from,
                                            final Date after,
                                            final Meta meta) {
+        validatePageSize(pageSize);
         final Set<ExtensionDTO> extensions = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
         if (exists) {
@@ -645,6 +656,7 @@ public class DomainImpl implements Domain {
                                            final ExtensionSchemeDTO extensionScheme,
                                            final Date after,
                                            final Meta meta) {
+        validatePageSize(pageSize);
         final Set<ExtensionDTO> extensions = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
         if (exists) {
@@ -751,6 +763,12 @@ public class DomainImpl implements Domain {
             meta.setTotalResults(totalResults);
             meta.setResultCount(resultCount);
         }
-        LOG.debug("Search found: " + totalResults + " total hits.");
+        LOG.debug(String.format("Search found: %d total hits.", totalResults));
+    }
+
+    private void validatePageSize(final Integer pageSize) {
+        if (pageSize > MAX_SIZE) {
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), String.format("Paging pageSize parameter value %d exceeds max value %d.", pageSize, MAX_SIZE)));
+        }
     }
 }
