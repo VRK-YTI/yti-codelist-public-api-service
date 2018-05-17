@@ -33,6 +33,7 @@ public class ExtensionSchemeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_PROPERTYTYPE);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
@@ -40,6 +41,7 @@ public class ExtensionSchemeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, extensionScheme.getId().toString());
             appendValue(csv, csvSeparator, extensionScheme.getCodeValue());
             appendValue(csv, csvSeparator, extensionScheme.getStatus());
+            appendValue(csv, csvSeparator, extensionScheme.getPropertyType().getLocalName());
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, extensionScheme.getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, extensionScheme.getStartDate() != null ? dateFormat.format(extensionScheme.getStartDate()) : "");
             appendValue(csv, csvSeparator, extensionScheme.getEndDate() != null ? dateFormat.format(extensionScheme.getEndDate()) : "", true);
@@ -69,6 +71,7 @@ public class ExtensionSchemeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STATUS);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PROPERTYTYPE);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
@@ -81,6 +84,7 @@ public class ExtensionSchemeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(extensionScheme.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(extensionScheme.getCodeValue()));
             row.createCell(k++).setCellValue(checkEmptyValue(extensionScheme.getStatus()));
+            row.createCell(k++).setCellValue(checkEmptyValue(extensionScheme.getPropertyType().getLocalName()));
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(extensionScheme.getPrefLabel().get(language));
             }
