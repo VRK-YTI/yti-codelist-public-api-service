@@ -2,6 +2,7 @@ package fi.vm.yti.codelist.api.domain;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -191,11 +192,40 @@ public class DomainImpl implements Domain {
     }
 
     public Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue) {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, codeRegistryCodeValue, null, null, null, null, null, null, null, null);
+        return getCodeSchemes(MAX_SIZE, 0, null, null, codeRegistryCodeValue, null, null, null, null, false, null, null, null, null);
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes() {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, null, null, null, null);
+        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, false, null, null, null, null);
+    }
+
+    private Set<String> getCodeSchemesMatchingCodes(final String searchTerm) {
+        final Set<String> codeSchemeUuids = new HashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_CODE)
+                .setTypes(ELASTIC_TYPE_CODE);
+            final BoolQueryBuilder builder = boolQuery();
+            if (searchTerm != null) {
+                builder.should(prefixQuery("codeValue", searchTerm.toLowerCase()));
+                builder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+                builder.minimumShouldMatch(1);
+            }
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            response.getHits().forEach(hit -> {
+                try {
+                    codeSchemeUuids.add(mapper.readValue(hit.getSourceAsString(), CodeDTO.class).getCodeScheme().getId().toString().toLowerCase());
+                } catch (final IOException e) {
+                    LOG.error("getCodeSchemesMatchingCodes reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
+                }
+            });
+            return codeSchemeUuids;
+        }
+        return codeSchemeUuids;
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
@@ -207,11 +237,16 @@ public class DomainImpl implements Domain {
                                              final String codeSchemeCodeValue,
                                              final String codeSchemePrefLabel,
                                              final String searchTerm,
+                                             final boolean searchCodes,
                                              final List<String> statuses,
                                              final List<String> dataClassifications,
                                              final Date after,
                                              final Meta meta) {
         validatePageSize(pageSize);
+        final Set<String> codeSchemeUuids = new HashSet<>();
+        if (searchCodes) {
+            codeSchemeUuids.addAll(getCodeSchemesMatchingCodes(searchTerm));
+        }
         final Set<CodeSchemeDTO> codeSchemes = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
@@ -219,26 +254,45 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODESCHEME)
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
-                .addSort(SortBuilders.scoreSort())
-                .addSort("codeValue.raw", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
-            final BoolQueryBuilder builder = constructCombinedSearchQuery(searchTerm, codeSchemeCodeValue, codeSchemePrefLabel, after);
-            if (organizationId != null) {
+            final BoolQueryBuilder builder = boolQuery();
+            final BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+            if (searchTerm != null && !searchTerm.isEmpty()) {
+                boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+                boolQueryBuilder.should(termsQuery("id.keyword", codeSchemeUuids));
+                boolQueryBuilder.must(termsQuery("id.keyword", codeSchemeUuids));
+                boolQueryBuilder.minimumShouldMatch(1);
+                builder.must(boolQueryBuilder);
+            }
+            if (codeSchemeCodeValue != null && !codeSchemeCodeValue.isEmpty()) {
+                builder.must(prefixQuery("codeValue", codeSchemeCodeValue.toLowerCase()));
+            }
+            if (codeSchemePrefLabel != null && !codeSchemePrefLabel.isEmpty()) {
+                builder.must(nestedQuery("prefLabel", multiMatchQuery(codeSchemePrefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            }
+            if (after != null) {
+                final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
+                final String afterString = dateFormat.format(after);
+                builder.must(rangeQuery("modified").gt(afterString));
+            }
+            if (organizationId != null && !organizationId.isEmpty()) {
                 builder.must(nestedQuery("codeRegistry.organizations", matchQuery("codeRegistry.organizations.id", organizationId.toLowerCase()), ScoreMode.None));
             }
-            if (codeRegistryCodeValue != null) {
+            if (codeRegistryCodeValue != null && !codeRegistryCodeValue.isEmpty()) {
                 builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
             }
-            if (codeRegistryPrefLabel != null) {
+            if (codeRegistryPrefLabel != null && !codeRegistryPrefLabel.isEmpty()) {
                 builder.must(nestedQuery("codeRegistry.prefLabel", multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             }
             if (dataClassifications != null && !dataClassifications.isEmpty()) {
                 builder.must(nestedQuery("dataClassifications", matchQuery("dataClassifications.codeValue", dataClassifications), ScoreMode.None));
             }
             if (BOOSTSTATUS.equalsIgnoreCase(sortMode)) {
+                searchRequest.addSort(SortBuilders.scoreSort());
                 boostStatus(builder);
             }
+            searchRequest.addSort("codeValue.raw", SortOrder.ASC);
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }

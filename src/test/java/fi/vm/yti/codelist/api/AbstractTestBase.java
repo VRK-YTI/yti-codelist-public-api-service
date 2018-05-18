@@ -57,7 +57,7 @@ abstract public class AbstractTestBase {
         "    }\n" +
         "  },\n" +
         "  \"id\": {\n" +
-        "    \"type\": \"text\"\n" +
+        "    \"type\": \"keyword\"\n" +
         "  },\n" +
         "  \"prefLabel\": {\n" +
         "    \"type\": \"nested\"\n" +
@@ -76,7 +76,7 @@ abstract public class AbstractTestBase {
         "    }\n" +
         "  },\n" +
         "  \"id\": {\n" +
-        "    \"type\": \"text\"\n" +
+        "    \"type\": \"keyword\"\n" +
         "  },\n" +
         "  \"prefLabel\": {\n" +
         "    \"type\": \"nested\"\n" +
@@ -108,7 +108,7 @@ abstract public class AbstractTestBase {
         "    }\n" +
         "  },\n" +
         "  \"id\": {\n" +
-        "    \"type\": \"text\"\n" +
+        "    \"type\": \"keyword\"\n" +
         "  },\n" +
         "  \"order\": {\n" +
         "    \"type\": \"integer\"\n" +

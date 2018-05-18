@@ -45,6 +45,7 @@ public interface Domain {
                                       final String codeSchemeCodeValue,
                                       final String codeSchemeCodePrefLabel,
                                       final String searchTerm,
+                                      final boolean searchCodes,
                                       final List<String> statuses,
                                       final List<String> dataClassifications,
                                       final Date after,
