@@ -262,9 +262,11 @@ public class DomainImpl implements Domain {
             final BoolQueryBuilder builder = boolQuery();
             final BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
             if (searchTerm != null && !searchTerm.isEmpty()) {
+                boolQueryBuilder.should(prefixQuery("codeValue", searchTerm.toLowerCase()));
                 boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
-                boolQueryBuilder.should(termsQuery("id.keyword", codeSchemeUuids));
-                boolQueryBuilder.must(termsQuery("id.keyword", codeSchemeUuids));
+                if (!codeSchemeUuids.isEmpty()) {
+                    boolQueryBuilder.should(termsQuery("id", codeSchemeUuids));
+                }
                 boolQueryBuilder.minimumShouldMatch(1);
                 builder.must(boolQueryBuilder);
             }
