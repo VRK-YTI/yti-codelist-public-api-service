@@ -32,9 +32,9 @@ public interface Domain {
     CodeSchemeDTO getCodeScheme(final String codeRegistryCodeValue,
                                 final String codeSchemeCodeValue);
 
-    Set<CodeSchemeDTO> getCodeSchemes();
+    Set<CodeSchemeDTO> getCodeSchemes(final String language);
 
-    Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue);
+    Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue, final String language);
 
     Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
                                       final Integer from,

@@ -192,12 +192,13 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue) {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, codeRegistryCodeValue, null, null, null, null, null, false, null, null, null, null);
+    public Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue,
+                                                                    final String language) {
+        return getCodeSchemes(MAX_SIZE, 0, null, null, codeRegistryCodeValue, null, null, null, language, null, false, null, null, null, null);
     }
 
-    public Set<CodeSchemeDTO> getCodeSchemes() {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, null, false, null, null, null, null);
+    public Set<CodeSchemeDTO> getCodeSchemes(final String language) {
+        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, language, null, false, null, null, null, null);
     }
 
     private Set<String> getCodeSchemesMatchingCodes(final String searchTerm) {
@@ -294,8 +295,11 @@ public class DomainImpl implements Domain {
                 searchRequest.addSort(SortBuilders.scoreSort());
                 boostStatus(builder);
             }
-            final String prefLabelField = "prefLabel." + language;
-            searchRequest.addSort(SortBuilders.fieldSort(prefLabelField).order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("text"));
+            if (language == null || !language.isEmpty()) {
+                searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language).order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+            } else {
+                searchRequest.addSort("prefLabel", SortOrder.ASC);
+            }
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }

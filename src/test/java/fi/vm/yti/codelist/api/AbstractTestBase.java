@@ -79,7 +79,15 @@ abstract public class AbstractTestBase {
         "    \"type\": \"keyword\"\n" +
         "  },\n" +
         "  \"prefLabel\": {\n" +
-        "    \"type\": \"nested\"\n" +
+        "    \"type\": \"nested\",\n" +
+        "    \"properties\": {\n" +
+        "      \"fi\": {\n" +
+        "        \"type\": \"keyword\"\n" +
+        "      },\n" +
+        "      \"en\": {\n" +
+        "        \"type\": \"keyword\"\n" +
+        "      }\n" +
+        "    }\n" +
         "  },\n" +
         "  \"dataClassifications\": {\n" +
         "    \"type\": \"nested\"\n" +
@@ -152,7 +160,7 @@ abstract public class AbstractTestBase {
     public void createAndIndexMockData() {
         createAndIndexMockCodeRegistries();
         createAndIndexMockCodeSchemes(domain.getCodeRegistries());
-        createAndIndexMockCodes(domain.getCodeSchemes());
+        createAndIndexMockCodes(domain.getCodeSchemes(null));
         LOG.debug("Mock data indexed!");
     }
 
