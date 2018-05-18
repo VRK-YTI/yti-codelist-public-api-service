@@ -152,16 +152,16 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
             if (FORMAT_CSV.equalsIgnoreCase(format.toLowerCase())) {
-                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, false, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
+                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, null, searchTerm, false, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
                 final String csv = codeSchemeExporter.createCsv(codeSchemes);
                 return streamCsvCodeSchemesOutput(csv);
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, false, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
+                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, null, searchTerm, false, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
                 final Workbook workbook = codeSchemeExporter.createExcel(codeSchemes, format);
                 return streamExcelCodeSchemesOutput(workbook);
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, false, statusList, dataClassificationList, meta.getAfter(), meta);
+                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, null, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, null, searchTerm, false, statusList, dataClassificationList, meta.getAfter(), meta);
                 meta.setResultCount(codeSchemes.size());
                 final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
                 wrapper.setResults(codeSchemes);

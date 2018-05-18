@@ -17,6 +17,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.NestedSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
@@ -192,11 +193,11 @@ public class DomainImpl implements Domain {
     }
 
     public Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue) {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, codeRegistryCodeValue, null, null, null, null, false, null, null, null, null);
+        return getCodeSchemes(MAX_SIZE, 0, null, null, codeRegistryCodeValue, null, null, null, null, null, false, null, null, null, null);
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes() {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, false, null, null, null, null);
+        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, null, false, null, null, null, null);
     }
 
     private Set<String> getCodeSchemesMatchingCodes(final String searchTerm) {
@@ -236,6 +237,7 @@ public class DomainImpl implements Domain {
                                              final String codeRegistryPrefLabel,
                                              final String codeSchemeCodeValue,
                                              final String codeSchemePrefLabel,
+                                             final String language,
                                              final String searchTerm,
                                              final boolean searchCodes,
                                              final List<String> statuses,
@@ -292,7 +294,8 @@ public class DomainImpl implements Domain {
                 searchRequest.addSort(SortBuilders.scoreSort());
                 boostStatus(builder);
             }
-            searchRequest.addSort("codeValue.raw", SortOrder.ASC);
+            final String prefLabelField = "prefLabel." + language;
+            searchRequest.addSort(SortBuilders.fieldSort(prefLabelField).order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("text"));
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }

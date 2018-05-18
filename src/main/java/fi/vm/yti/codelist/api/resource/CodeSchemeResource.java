@@ -60,6 +60,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @ApiParam(value = "Organization id for content filtering.") @QueryParam("organizationId") final String organizationId,
                                    @ApiParam(value = "CodeScheme codeValue as string value.") @QueryParam("codeValue") final String codeSchemeCodeValue,
                                    @ApiParam(value = "CodeScheme PrefLabel as string value.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
+                                   @ApiParam(value = "Language code for sorting results.") @QueryParam("language") @DefaultValue("fi") final String language,
                                    @ApiParam(value = "Search term for matching codeValue and prefLabel.") @QueryParam("searchTerm") final String searchTerm,
                                    @ApiParam(value = "Boolean that controls is search also matches codes codeValues and prefLabels inside CodeSchemes.") @QueryParam("searchCodes") @DefaultValue("false") final Boolean searchCodes,
                                    @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
@@ -70,17 +71,17 @@ public class CodeSchemeResource extends AbstractBaseResource {
         final List<String> dataClassificationList = parseDataClassifications(dataClassification);
         final List<String> statusList = parseStatus(status);
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, searchCodes, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
             final String csv = codeSchemeExporter.createCsv(codeSchemes);
             return streamCsvCodeSchemesOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, searchCodes, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, statusList, dataClassificationList, Meta.parseAfterFromString(after), null);
             final Workbook workbook = codeSchemeExporter.createExcel(codeSchemes, format);
             return streamExcelCodeSchemesOutput(workbook);
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, searchTerm, searchCodes, statusList, dataClassificationList, meta.getAfter(), meta);
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizationId, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, statusList, dataClassificationList, meta.getAfter(), meta);
             meta.setResultCount(codeSchemes.size());
             final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(codeSchemes);
