@@ -274,7 +274,7 @@ public class DomainImpl implements Domain {
                 builder.must(prefixQuery("codeValue", codeSchemeCodeValue.toLowerCase()));
             }
             if (codeSchemePrefLabel != null && !codeSchemePrefLabel.isEmpty()) {
-                builder.must(nestedQuery("prefLabel", multiMatchQuery(codeSchemePrefLabel.toLowerCase(), "prefLabel.fi").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+                builder.must(nestedQuery("prefLabel", multiMatchQuery(codeSchemePrefLabel.toLowerCase(), "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             }
             if (after != null) {
                 final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
