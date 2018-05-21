@@ -43,7 +43,7 @@ abstract public class AbstractTestBase {
     private static final String SOURCE_TEST = "test";
     private static final Logger LOG = LoggerFactory.getLogger(AbstractTestBase.class);
     private static final String MAX_RESULT_WINDOW = "max_result_window";
-    private static final int MAX_RESULT_WINDOW_SIZE = 500000;
+    private static final int MAX_RESULT_WINDOW_SIZE = 50000;
 
     private static final String NESTED_PREFLABEL_MAPPING_JSON = "{" +
         "\"properties\": {\n" +
@@ -71,7 +71,6 @@ abstract public class AbstractTestBase {
         "      \"path_match\": \"prefLabel.*\",\n" +
         "      \"mapping\": {\n" +
         "        \"type\": \"text\",\n" +
-        "        \"analyzer\": \"analyzer_keyword\",\n" +
         "        \"fields\": {\n" +
         "          \"keyword\": { \n" +
         "            \"type\": \"keyword\"\n" +
