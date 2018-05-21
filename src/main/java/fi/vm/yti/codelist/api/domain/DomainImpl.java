@@ -263,7 +263,7 @@ public class DomainImpl implements Domain {
             final BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
             if (searchTerm != null && !searchTerm.isEmpty()) {
                 boolQueryBuilder.should(prefixQuery("codeValue", searchTerm.toLowerCase()));
-                boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+                boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase(), "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
                 if (!codeSchemeUuids.isEmpty()) {
                     boolQueryBuilder.should(termsQuery("id", codeSchemeUuids));
                 }
@@ -274,7 +274,7 @@ public class DomainImpl implements Domain {
                 builder.must(prefixQuery("codeValue", codeSchemeCodeValue.toLowerCase()));
             }
             if (codeSchemePrefLabel != null && !codeSchemePrefLabel.isEmpty()) {
-                builder.must(nestedQuery("prefLabel", multiMatchQuery(codeSchemePrefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+                builder.must(nestedQuery("prefLabel", multiMatchQuery(codeSchemePrefLabel.toLowerCase(), "prefLabel.fi").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             }
             if (after != null) {
                 final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
@@ -298,7 +298,7 @@ public class DomainImpl implements Domain {
                 boostStatus(builder);
             }
             if (language == null || !language.isEmpty()) {
-                searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language).order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
             } else {
                 searchRequest.addSort("prefLabel", SortOrder.ASC);
             }

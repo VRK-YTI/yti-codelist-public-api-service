@@ -82,13 +82,31 @@ abstract public class AbstractTestBase {
         "    \"type\": \"nested\",\n" +
         "    \"properties\": {\n" +
         "      \"fi\": {\n" +
-        "        \"type\": \"keyword\"\n" +
+        "        \"type\": \"text\",\n" +
+        "        \"analyzer\": \"analyzer_keyword\",\n" +
+        "        \"fields\": {\n" +
+        "          \"keyword\": { \n" +
+        "            \"type\": \"keyword\"\n" +
+        "          }\n" +
+        "        }\n" +
         "      },\n" +
         "      \"sv\": {\n" +
-        "        \"type\": \"keyword\"\n" +
+        "        \"type\": \"text\",\n" +
+        "        \"analyzer\": \"analyzer_keyword\",\n" +
+        "        \"fields\": {\n" +
+        "          \"keyword\": { \n" +
+        "            \"type\": \"keyword\"\n" +
+        "          }\n" +
+        "        }\n" +
         "      },\n" +
         "      \"en\": {\n" +
-        "        \"type\": \"keyword\"\n" +
+        "        \"type\": \"text\",\n" +
+        "        \"analyzer\": \"analyzer_keyword\",\n" +
+        "        \"fields\": {\n" +
+        "          \"keyword\": { \n" +
+        "            \"type\": \"keyword\"\n" +
+        "          }\n" +
+        "        }\n" +
         "      }\n" +
         "    }\n" +
         "  },\n" +
