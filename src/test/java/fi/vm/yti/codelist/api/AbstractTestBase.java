@@ -65,6 +65,22 @@ abstract public class AbstractTestBase {
         "}\n}";
 
     private static final String CODESCHEME_MAPPING = "{" +
+        "\"dynamic_templates\": [\n" +
+        "  {\n" +
+        "    \"prefLabel\": {\n" +
+        "      \"path_match\": \"prefLabel.*\",\n" +
+        "      \"mapping\": {\n" +
+        "        \"type\": \"text\",\n" +
+        "        \"analyzer\": \"analyzer_keyword\",\n" +
+        "        \"fields\": {\n" +
+        "          \"keyword\": { \n" +
+        "            \"type\": \"keyword\"\n" +
+        "          }\n" +
+        "        }\n" +
+        "      }\n" +
+        "    }\n" +
+        "  }\n" +
+        "],\n" +
         "\"properties\": {\n" +
         "  \"codeValue\": {\n" +
         "    \"type\": \"text\"," +
@@ -76,49 +92,28 @@ abstract public class AbstractTestBase {
         "    }\n" +
         "  },\n" +
         "  \"id\": {\n" +
-        "    \"type\": \"keyword\"\n" +
+        "    \"type\": \"keyword\"" +
         "  },\n" +
         "  \"prefLabel\": {\n" +
         "    \"type\": \"nested\",\n" +
-        "    \"properties\": {\n" +
-        "      \"fi\": {\n" +
-        "        \"type\": \"text\",\n" +
-        "        \"analyzer\": \"analyzer_keyword\",\n" +
-        "        \"fields\": {\n" +
-        "          \"keyword\": { \n" +
-        "            \"type\": \"keyword\"\n" +
-        "          }\n" +
-        "        }\n" +
-        "      },\n" +
-        "      \"sv\": {\n" +
-        "        \"type\": \"text\",\n" +
-        "        \"analyzer\": \"analyzer_keyword\",\n" +
-        "        \"fields\": {\n" +
-        "          \"keyword\": { \n" +
-        "            \"type\": \"keyword\"\n" +
-        "          }\n" +
-        "        }\n" +
-        "      },\n" +
-        "      \"en\": {\n" +
-        "        \"type\": \"text\",\n" +
-        "        \"analyzer\": \"analyzer_keyword\",\n" +
-        "        \"fields\": {\n" +
-        "          \"keyword\": { \n" +
-        "            \"type\": \"keyword\"\n" +
-        "          }\n" +
-        "        }\n" +
-        "      }\n" +
-        "    }\n" +
+        "    \"dynamic\": true\n" +
         "  },\n" +
         "  \"dataClassifications\": {\n" +
         "    \"type\": \"nested\"\n" +
         "  },\n" +
         "  \"codeRegistry\": {\n" +
         "    \"properties\": {\n" +
+        "      \"codeValue\": {\n" +
+        "        \"type\": \"text\",\n" +
+        "        \"analyzer\": \"analyzer_keyword\"\n" +
+        "      },\n" +
         "      \"organizations\": {\n" +
         "        \"type\": \"nested\"\n" +
         "      }\n" +
         "    }\n" +
+        "  },\n" +
+        "  \"extensionSchemes\": {\n" +
+        "    \"type\": \"nested\"\n" +
         "  },\n" +
         "  \"externalReferences\": {\n" +
         "    \"type\": \"nested\"\n" +
