@@ -86,6 +86,7 @@ public class UriResolverResource extends AbstractBaseResource {
         @ApiResponse(code = 406, message = "Cannot redirect to given URI.")
     })
     public Response redirectUri(@HeaderParam("Accept") String accept,
+                                @ApiParam(value = "Format for returning content.") @QueryParam("format") final String format,
                                 @ApiParam(value = "Resource URI.", required = true) @QueryParam("uri") final String uri) {
         final URI resolveUri = parseUriFromString(uri);
         ensureSuomiFiUriHost(resolveUri.getHost());
@@ -94,7 +95,10 @@ public class UriResolverResource extends AbstractBaseResource {
         final String resourcePath = uriPath.substring(API_PATH_CODELIST.length() + 1);
         final List<String> resourceCodeValues = Arrays.asList(resourcePath.split("/"));
         final List<String> acceptHeaders = parseAcceptHeaderValues(accept);
-        if (acceptHeaders.contains(MediaType.APPLICATION_JSON)) {
+        if (format != null && !format.isEmpty()) {
+            final URI redirectUrl = URI.create(resolveApiResourceUrl(resourceCodeValues) + "?format=" + format);
+            return Response.seeOther(redirectUrl).build();
+        } else if (acceptHeaders.contains(MediaType.APPLICATION_JSON)) {
             final URI redirectUrl = URI.create(resolveApiResourceUrl(resourceCodeValues));
             return Response.seeOther(redirectUrl).build();
         } else {
