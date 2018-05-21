@@ -49,7 +49,7 @@ abstract public class AbstractTestBase {
         "\"properties\": {\n" +
         "  \"codeValue\": {\n" +
         "    \"type\": \"text\"," +
-        "    \"analyzer\": \"analyzer_keyword\",\n" +
+        "    \"analyzer\": \"text_analyzer\",\n" +
         "    \"fields\": {\n" +
         "      \"raw\": { \n" +
         "        \"type\": \"keyword\"\n" +
@@ -73,7 +73,8 @@ abstract public class AbstractTestBase {
         "        \"type\": \"text\",\n" +
         "        \"fields\": {\n" +
         "          \"keyword\": { \n" +
-        "            \"type\": \"keyword\"\n" +
+        "            \"type\": \"keyword\",\n" +
+        "            \"normalizer\": \"keyword_normalizer\"\n" +
         "          }\n" +
         "        }\n" +
         "      }\n" +
@@ -83,7 +84,7 @@ abstract public class AbstractTestBase {
         "\"properties\": {\n" +
         "  \"codeValue\": {\n" +
         "    \"type\": \"text\"," +
-        "    \"analyzer\": \"analyzer_keyword\",\n" +
+        "    \"analyzer\": \"text_analyzer\",\n" +
         "    \"fields\": {\n" +
         "      \"raw\": { \n" +
         "        \"type\": \"keyword\"\n" +
@@ -104,7 +105,7 @@ abstract public class AbstractTestBase {
         "    \"properties\": {\n" +
         "      \"codeValue\": {\n" +
         "        \"type\": \"text\",\n" +
-        "        \"analyzer\": \"analyzer_keyword\"\n" +
+        "        \"analyzer\": \"text_analyzer\"\n" +
         "      },\n" +
         "      \"organizations\": {\n" +
         "        \"type\": \"nested\"\n" +
@@ -123,7 +124,7 @@ abstract public class AbstractTestBase {
         "\"properties\": {\n" +
         "  \"codeValue\": {\n" +
         "    \"type\": \"text\"," +
-        "    \"analyzer\": \"analyzer_keyword\",\n" +
+        "    \"analyzer\": \"text_analyzer\",\n" +
         "    \"fields\": {\n" +
         "      \"raw\": { \n" +
         "        \"type\": \"keyword\"\n" +
@@ -146,13 +147,13 @@ abstract public class AbstractTestBase {
         "    \"properties\": {\n" +
         "      \"codeValue\": {\n" +
         "        \"type\": \"text\",\n" +
-        "        \"analyzer\": \"analyzer_keyword\"\n" +
+        "        \"analyzer\": \"text_analyzer\"\n" +
         "      },\n" +
         "      \"codeRegistry\": {\n" +
         "        \"properties\": {\n" +
         "          \"codeValue\": {\n" +
         "            \"type\": \"text\",\n" +
-        "            \"analyzer\": \"analyzer_keyword\"\n" +
+        "            \"analyzer\": \"text_analyzer\"\n" +
         "          },\n" +
         "          \"organizations\": {\n" +
         "            \"type\": \"nested\"\n" +
@@ -224,17 +225,25 @@ abstract public class AbstractTestBase {
             try {
                 builder.setSettings(Settings.builder().loadFromSource(jsonBuilder()
                     .startObject()
+                    .startObject("index")
+                    .field(MAX_RESULT_WINDOW, MAX_RESULT_WINDOW_SIZE)
+                    .endObject()
                     .startObject("analysis")
                     .startObject("analyzer")
-                    .startObject("analyzer_keyword")
+                    .startObject("text_analyzer")
                     .field("type", "custom")
                     .field("tokenizer", "keyword")
                     .field("filter", new String[]{"lowercase", "standard"})
                     .endObject()
                     .endObject()
+                    .startObject("normalizer")
+                    .startObject("keyword_normalizer")
+                    .field("type", "custom")
+                    .field("filter", new String[]{"lowercase"})
                     .endObject()
-                    .endObject().string(), XContentType.JSON)
-                    .put(MAX_RESULT_WINDOW, MAX_RESULT_WINDOW_SIZE));
+                    .endObject()
+                    .endObject()
+                    .endObject().string(), XContentType.JSON));
             } catch (final IOException e) {
                 LOG.error("Error parsing index request settings JSON!", e);
             }
