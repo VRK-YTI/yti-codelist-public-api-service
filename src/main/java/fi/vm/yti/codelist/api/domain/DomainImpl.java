@@ -50,7 +50,7 @@ public class DomainImpl implements Domain {
 
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
     private static final int MAX_SIZE = 50000;
-    private static final String ANALYZER_KEYWORD = "analyzer_keyword";
+    private static final String TEXT_ANALYZER = "text_analyzer";
     private static final String BOOSTSTATUS = "boostStatus";
     private Client client;
 
@@ -69,7 +69,7 @@ public class DomainImpl implements Domain {
                 .addSort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
                 .should(matchQuery("id", codeRegistryCodeValue.toLowerCase()))
-                .should(matchQuery("codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD))
+                .should(matchQuery("codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .minimumShouldMatch(1);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -171,9 +171,9 @@ public class DomainImpl implements Domain {
                 .addSort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
                 .should(matchQuery("id", codeSchemeCodeValue.toLowerCase()))
-                .should(matchQuery("codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD))
+                .should(matchQuery("codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .minimumShouldMatch(1);
-            builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
+            builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
@@ -285,7 +285,7 @@ public class DomainImpl implements Domain {
                 builder.must(nestedQuery("codeRegistry.organizations", matchQuery("codeRegistry.organizations.id", organizationId.toLowerCase()), ScoreMode.None));
             }
             if (codeRegistryCodeValue != null && !codeRegistryCodeValue.isEmpty()) {
-                builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
+                builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             }
             if (codeRegistryPrefLabel != null && !codeRegistryPrefLabel.isEmpty()) {
                 builder.must(nestedQuery("codeRegistry.prefLabel", multiMatchQuery(codeRegistryPrefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
@@ -331,13 +331,13 @@ public class DomainImpl implements Domain {
                 .setTypes(ELASTIC_TYPE_CODE);
             final BoolQueryBuilder builder = boolQuery()
                 .should(matchQuery("id", codeCodeValue.toLowerCase()))
-                .should(matchQuery("codeValue", codeCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD))
+                .should(matchQuery("codeValue", codeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .minimumShouldMatch(1);
             builder.must(boolQuery()
                 .should(matchQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase()))
-                .should(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD))
+                .should(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .minimumShouldMatch(1));
-            builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
+            builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             searchRequest.setQuery(builder);
 
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -388,9 +388,9 @@ public class DomainImpl implements Domain {
                 .setFrom(from != null ? from : 0);
 
             final BoolQueryBuilder builder = constructSearchQuery(codeCodeValue, prefLabel, after);
-            builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
+            builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             builder.must(boolQuery()
-                .should(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD))
+                .should(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .should(matchQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase()))
                 .minimumShouldMatch(1));
             searchRequest.setQuery(builder);
@@ -539,7 +539,7 @@ public class DomainImpl implements Domain {
             if (codeScheme != null) {
                 builder.should(boolQuery()
                     .should(boolQuery()
-                        .must(matchQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()).analyzer(ANALYZER_KEYWORD))
+                        .must(matchQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()).analyzer(TEXT_ANALYZER))
                         .must(matchQuery("parentCodeScheme.id", codeScheme.getId().toString().toLowerCase())))
                     .should(boolQuery()
                         .must(matchQuery("global", true))));
@@ -608,10 +608,10 @@ public class DomainImpl implements Domain {
                 .addSort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
                 .should(matchQuery("id", extensionSchemeCodeValue.toLowerCase()))
-                .should(matchQuery("codeValue", extensionSchemeCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD))
+                .should(matchQuery("codeValue", extensionSchemeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .minimumShouldMatch(1);
-            builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
-            builder.must(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(ANALYZER_KEYWORD));
+            builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
+            builder.must(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
