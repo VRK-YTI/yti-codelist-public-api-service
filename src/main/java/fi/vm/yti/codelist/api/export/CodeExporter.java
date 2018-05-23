@@ -20,9 +20,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 public class CodeExporter extends BaseExporter {
 
     public String createCsv(final Set<CodeDTO> codes) {
-
         Integer flatInt = 1;
-
         final Map<UUID, String> codeValueIdMap = new HashMap<>();
         for (final CodeDTO code : codes) {
             codeValueIdMap.put(code.getId(), code.getCodeValue());
@@ -33,7 +31,6 @@ public class CodeExporter extends BaseExporter {
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-
         appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_BROADER);
@@ -106,11 +103,9 @@ public class CodeExporter extends BaseExporter {
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
         int i = 1;
         Integer flatInt = 1;
-
         for (final CodeDTO code : codes) {
             final Row row = sheet.createRow(i++);
             int k = 0;
-
             row.createCell(k++).setCellValue(code.getCodeValue());
             row.createCell(k++).setCellValue(checkEmptyValue(codeValueIdMap.get(code.getBroaderCodeId())));
             row.createCell(k++).setCellValue(code.getId().toString());
@@ -129,7 +124,6 @@ public class CodeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(code.getOrder() != null ? code.getOrder().toString() : flatInt.toString()));
             row.createCell(k++).setCellValue(code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
             row.createCell(k).setCellValue(code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
-
             flatInt++;
         }
     }

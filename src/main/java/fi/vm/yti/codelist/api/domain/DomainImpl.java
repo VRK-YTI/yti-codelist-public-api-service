@@ -579,7 +579,7 @@ public class DomainImpl implements Domain {
             final BoolQueryBuilder builder = constructSearchQuery(null, extensionSchemePrefLabel, after);
             searchRequest.setQuery(builder);
             if (codeScheme != null) {
-                builder.must(matchQuery("codeScheme.id", codeScheme.getId().toString().toLowerCase()));
+                builder.must(matchQuery("parentCodeScheme.id", codeScheme.getId().toString().toLowerCase()));
             }
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);
@@ -610,8 +610,8 @@ public class DomainImpl implements Domain {
                 .should(matchQuery("id", extensionSchemeCodeValue.toLowerCase()))
                 .should(matchQuery("codeValue", extensionSchemeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .minimumShouldMatch(1);
-            builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
-            builder.must(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
+            builder.must(matchQuery("parentCodeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
+            builder.must(matchQuery("parentCodeScheme.codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {

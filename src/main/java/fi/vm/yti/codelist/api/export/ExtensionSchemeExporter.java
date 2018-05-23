@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
+import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
@@ -34,17 +35,21 @@ public class ExtensionSchemeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
         appendValue(csv, csvSeparator, CONTENT_HEADER_PROPERTYTYPE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CODESCHEMES);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_EXTENSIONSSHEET, true);
         for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
             appendValue(csv, csvSeparator, extensionScheme.getId().toString());
             appendValue(csv, csvSeparator, extensionScheme.getCodeValue());
             appendValue(csv, csvSeparator, extensionScheme.getStatus());
             appendValue(csv, csvSeparator, extensionScheme.getPropertyType().getLocalName());
+            appendValue(csv, csvSeparator, getExtensionSchemeUris(extensionScheme.getCodeSchemes()));
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, extensionScheme.getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, extensionScheme.getStartDate() != null ? dateFormat.format(extensionScheme.getStartDate()) : "");
-            appendValue(csv, csvSeparator, extensionScheme.getEndDate() != null ? dateFormat.format(extensionScheme.getEndDate()) : "", true);
+            appendValue(csv, csvSeparator, extensionScheme.getEndDate() != null ? dateFormat.format(extensionScheme.getEndDate()) : "");
+            appendValue(csv, csvSeparator, createExtensionSheetName(extensionScheme));
         }
         return csv.toString();
     }
@@ -72,11 +77,13 @@ public class ExtensionSchemeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STATUS);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PROPERTYTYPE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODESCHEMES);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
-        rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_EXTENSIONSSHEET);
         int i = 1;
         for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
             final Row row = sheet.createRow(i++);
@@ -85,12 +92,28 @@ public class ExtensionSchemeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(extensionScheme.getCodeValue()));
             row.createCell(k++).setCellValue(checkEmptyValue(extensionScheme.getStatus()));
             row.createCell(k++).setCellValue(checkEmptyValue(extensionScheme.getPropertyType().getLocalName()));
+            row.createCell(k++).setCellValue(checkEmptyValue(getExtensionSchemeUris(extensionScheme.getCodeSchemes())));
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(extensionScheme.getPrefLabel().get(language));
             }
             row.createCell(k++).setCellValue(extensionScheme.getStartDate() != null ? dateFormat.format(extensionScheme.getStartDate()) : "");
-            row.createCell(k).setCellValue(extensionScheme.getEndDate() != null ? dateFormat.format(extensionScheme.getEndDate()) : "");
+            row.createCell(k++).setCellValue(extensionScheme.getEndDate() != null ? dateFormat.format(extensionScheme.getEndDate()) : "");
+            row.createCell(k).setCellValue(checkEmptyValue(createExtensionSheetName(extensionScheme)));
         }
+    }
+
+    private String getExtensionSchemeUris(final Set<CodeSchemeDTO> codeSchemes) {
+        final StringBuilder codeSchemeUris = new StringBuilder();
+        int i = 0;
+        for (final CodeSchemeDTO codeScheme : codeSchemes) {
+            i++;
+            codeSchemeUris.append(codeScheme.getUri().trim());
+            if (i < codeSchemes.size()) {
+                codeSchemeUris.append(";");
+            }
+            i++;
+        }
+        return codeSchemeUris.toString();
     }
 
     private Set<String> resolveExtensionSchemePrefLabelLanguages(final Set<ExtensionSchemeDTO> extensionSchemes) {
@@ -100,5 +123,9 @@ public class ExtensionSchemeExporter extends BaseExporter {
             languages.addAll(prefLabel.keySet());
         }
         return languages;
+    }
+
+    private String createExtensionSheetName(final ExtensionSchemeDTO extensionScheme) {
+        return "Extensions_" + extensionScheme.getParentCodeScheme().getCodeValue() + "_" + extensionScheme.getCodeValue();
     }
 }

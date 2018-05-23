@@ -92,11 +92,11 @@ public class CodeSchemeExporter extends BaseExporter {
             final Set<CodeSchemeDTO> codeSchemes = new HashSet<>();
             codeSchemes.add(codeScheme);
             addCodeSchemeSheet(workbook, EXCEL_SHEET_CODESCHEMES, codeSchemes);
-            codeExporter.addCodeSheet(workbook, EXCEL_SHEET_CODES, domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeScheme.getCodeRegistry().getCodeValue(), codeScheme.getCodeValue()));
+            codeExporter.addCodeSheet(workbook, EXCEL_SHEET_CODES + "_" + codeScheme.getCodeValue(), domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeScheme.getCodeRegistry().getCodeValue(), codeScheme.getCodeValue()));
             final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(null, null, null, codeScheme, null, null);
             if (extensionSchemes != null && !extensionSchemes.isEmpty()) {
-                extensionSchemeExporter.addExtensionSchemesSheet(workbook, EXCEL_SHEET_EXTENSIONSCHEMES, extensionSchemes);
-                extensionSchemes.forEach(extensionScheme -> extensionExporter.addExtensionsSheet(workbook, EXCEL_SHEET_EXTENSIONS + "_" + extensionScheme.getCodeValue(), domain.getExtensions(null, null, extensionScheme, null, null)));
+                extensionSchemeExporter.addExtensionSchemesSheet(workbook, EXCEL_SHEET_EXTENSIONSCHEMES + "_" + codeScheme.getCodeValue(), extensionSchemes);
+                extensionSchemes.forEach(extensionScheme -> extensionExporter.addExtensionsSheet(workbook, EXCEL_SHEET_EXTENSIONS + "_" + codeScheme.getCodeValue() + "_" + extensionScheme.getCodeValue(), domain.getExtensions(null, null, extensionScheme, null, null)));
             }
             return workbook;
         } catch (final IOException e) {
@@ -148,7 +148,9 @@ public class CodeSchemeExporter extends BaseExporter {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CHANGENOTE_PREFIX + language.toUpperCase());
         }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
-        rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODESSHEET);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_EXTENSIONSCHEMESSHEET);
         int i = 1;
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Row row = sheet.createRow(i++);
@@ -174,7 +176,9 @@ public class CodeSchemeExporter extends BaseExporter {
                 row.createCell(k++).setCellValue(codeScheme.getChangeNote().get(language));
             }
             row.createCell(k++).setCellValue(codeScheme.getStartDate() != null ? dateFormat.format(codeScheme.getStartDate()) : "");
-            row.createCell(k).setCellValue(codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "");
+            row.createCell(k++).setCellValue(codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "");
+            row.createCell(k++).setCellValue(checkEmptyValue(createCodesSheetName(codeScheme)));
+            row.createCell(k).setCellValue(checkEmptyValue(createExtensionSchemesSheetName(codeScheme)));
         }
     }
 
@@ -226,5 +230,13 @@ public class CodeSchemeExporter extends BaseExporter {
             i++;
         }
         return csvClassifications.toString();
+    }
+
+    private String createExtensionSchemesSheetName(final CodeSchemeDTO codeScheme) {
+        return "ExtensionSchemes_" + codeScheme.getCodeValue();
+    }
+
+    private String createCodesSheetName(final CodeSchemeDTO codeScheme) {
+        return "Codes_" + codeScheme.getCodeValue();
     }
 }

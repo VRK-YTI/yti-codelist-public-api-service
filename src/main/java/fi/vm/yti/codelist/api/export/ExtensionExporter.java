@@ -68,12 +68,12 @@ public class ExtensionExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(extension.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(extension.getExtensionValue()));
             if (extension.getCode() != null) {
-                row.createCell(k++).setCellValue(checkEmptyValue(extension.getCode().getCodeValue()));
+                row.createCell(k++).setCellValue(checkEmptyValue(extension.getCode().getUri()));
             } else {
                 row.createCell(k++).setCellValue("");
             }
             if (extension.getExtension() != null && extension.getExtension().getCode() != null) {
-                row.createCell(k++).setCellValue(checkEmptyValue(extension.getExtension().getCode().getCodeValue()));
+                row.createCell(k++).setCellValue(checkEmptyValue(extension.getExtension().getCode().getUri()));
             } else {
                 row.createCell(k++).setCellValue("");
             }
