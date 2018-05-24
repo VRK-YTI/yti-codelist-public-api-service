@@ -39,6 +39,8 @@ public class ExtensionSchemeExporter extends BaseExporter {
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_EXTENSIONSSHEET, true);
         for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
             appendValue(csv, csvSeparator, extensionScheme.getId().toString());
@@ -49,7 +51,9 @@ public class ExtensionSchemeExporter extends BaseExporter {
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, extensionScheme.getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, extensionScheme.getStartDate() != null ? dateFormat.format(extensionScheme.getStartDate()) : "");
             appendValue(csv, csvSeparator, extensionScheme.getEndDate() != null ? dateFormat.format(extensionScheme.getEndDate()) : "");
-            appendValue(csv, csvSeparator, createExtensionSheetName(extensionScheme));
+            appendValue(csv, csvSeparator, extensionScheme.getCreated() != null ? dateFormat.format(extensionScheme.getCreated()) : "");
+            appendValue(csv, csvSeparator, extensionScheme.getModified() != null ? dateFormat.format(extensionScheme.getModified()) : "");
+            appendValue(csv, csvSeparator, createExtensionSheetName(extensionScheme), true);
         }
         return csv.toString();
     }
@@ -68,8 +72,8 @@ public class ExtensionSchemeExporter extends BaseExporter {
     public void addExtensionSchemesSheet(final Workbook workbook,
                                          final String sheetName,
                                          final Set<ExtensionSchemeDTO> extensionSchemes) {
-        final Set<String> prefLabelLanguages = resolveExtensionSchemePrefLabelLanguages(extensionSchemes);
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
+        final Set<String> prefLabelLanguages = resolveExtensionSchemePrefLabelLanguages(extensionSchemes);
         final Sheet sheet = workbook.createSheet(sheetName);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
@@ -83,6 +87,8 @@ public class ExtensionSchemeExporter extends BaseExporter {
         }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_EXTENSIONSSHEET);
         int i = 1;
         for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
@@ -98,6 +104,8 @@ public class ExtensionSchemeExporter extends BaseExporter {
             }
             row.createCell(k++).setCellValue(extensionScheme.getStartDate() != null ? dateFormat.format(extensionScheme.getStartDate()) : "");
             row.createCell(k++).setCellValue(extensionScheme.getEndDate() != null ? dateFormat.format(extensionScheme.getEndDate()) : "");
+            row.createCell(k++).setCellValue(extensionScheme.getCreated() != null ? dateFormat.format(extensionScheme.getCreated()) : "");
+            row.createCell(k++).setCellValue(extensionScheme.getModified() != null ? dateFormat.format(extensionScheme.getModified()) : "");
             row.createCell(k).setCellValue(checkEmptyValue(createExtensionSheetName(extensionScheme)));
         }
     }

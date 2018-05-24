@@ -66,7 +66,9 @@ public class CodeSchemeExporter extends BaseExporter {
         descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase()));
         changeNoteLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_CHANGENOTE_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             appendValue(csv, csvSeparator, codeScheme.getCodeValue());
             appendValue(csv, csvSeparator, codeScheme.getId().toString());
@@ -81,7 +83,9 @@ public class CodeSchemeExporter extends BaseExporter {
             descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeScheme.getDescription().get(language)));
             changeNoteLanguages.forEach(language -> appendValue(csv, csvSeparator, codeScheme.getChangeNote().get(language)));
             appendValue(csv, csvSeparator, codeScheme.getStartDate() != null ? dateFormat.format(codeScheme.getStartDate()) : "");
-            appendValue(csv, csvSeparator, codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "", true);
+            appendValue(csv, csvSeparator, codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "");
+            appendValue(csv, csvSeparator, codeScheme.getCreated() != null ? dateFormat.format(codeScheme.getCreated()) : "");
+            appendValue(csv, csvSeparator, codeScheme.getModified() != null ? dateFormat.format(codeScheme.getModified()) : "", true);
         }
         return csv.toString();
     }
@@ -149,6 +153,8 @@ public class CodeSchemeExporter extends BaseExporter {
         }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODESSHEET);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_EXTENSIONSCHEMESSHEET);
         int i = 1;
@@ -177,6 +183,8 @@ public class CodeSchemeExporter extends BaseExporter {
             }
             row.createCell(k++).setCellValue(codeScheme.getStartDate() != null ? dateFormat.format(codeScheme.getStartDate()) : "");
             row.createCell(k++).setCellValue(codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "");
+            row.createCell(k++).setCellValue(codeScheme.getCreated() != null ? dateFormat.format(codeScheme.getCreated()) : "");
+            row.createCell(k++).setCellValue(codeScheme.getModified() != null ? dateFormat.format(codeScheme.getModified()) : "");
             row.createCell(k++).setCellValue(checkEmptyValue(createCodesSheetName(codeScheme)));
             row.createCell(k).setCellValue(checkEmptyValue(createExtensionSchemesSheetName(codeScheme)));
         }

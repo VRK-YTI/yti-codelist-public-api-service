@@ -1,5 +1,7 @@
 package fi.vm.yti.codelist.api.export;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +18,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 public class ExternalReferenceExporter extends BaseExporter {
 
     public String createCsv(final Set<ExternalReferenceDTO> externalReferences) {
+        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Set<String> titleLanguages = resolveExternalReferenceTitleLanguages(externalReferences);
         final Set<String> descriptionLanguages = resolveExternalReferenceDescriptionLanguages(externalReferences);
         final String csvSeparator = ",";
@@ -24,12 +27,16 @@ public class ExternalReferenceExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_HREF);
         titleLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
         csv.append("\n");
         for (final ExternalReferenceDTO externalReference : externalReferences) {
             appendValue(csv, csvSeparator, externalReference.getId().toString());
             appendValue(csv, csvSeparator, externalReference.getHref());
             titleLanguages.forEach(language -> appendValue(csv, csvSeparator, externalReference.getTitle().get(language)));
             descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, externalReference.getDescription().get(language)));
+            appendValue(csv, csvSeparator, externalReference.getCreated() != null ? dateFormat.format(externalReference.getCreated()) : "");
+            appendValue(csv, csvSeparator, externalReference.getModified() != null ? dateFormat.format(externalReference.getModified()) : "", true);
             csv.append("\n");
         }
         return csv.toString();
@@ -37,6 +44,7 @@ public class ExternalReferenceExporter extends BaseExporter {
 
     public Workbook createExcel(final Set<ExternalReferenceDTO> externalReferences,
                                 final String format) {
+        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Workbook workbook = createWorkBook(format);
         final Set<String> titleLanguages = resolveExternalReferenceTitleLanguages(externalReferences);
         final Set<String> descriptionLanguages = resolveExternalReferenceDescriptionLanguages(externalReferences);
@@ -51,6 +59,8 @@ public class ExternalReferenceExporter extends BaseExporter {
         for (final String language : descriptionLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase());
         }
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_MODIFIED);
         int i = 1;
         for (final ExternalReferenceDTO externalReference : externalReferences) {
             final Row row = sheet.createRow(i++);
@@ -63,6 +73,8 @@ public class ExternalReferenceExporter extends BaseExporter {
             for (final String language : descriptionLanguages) {
                 row.createCell(k++).setCellValue(externalReference.getDescription().get(language));
             }
+            row.createCell(k++).setCellValue(externalReference.getCreated() != null ? dateFormat.format(externalReference.getCreated()) : "");
+            row.createCell(k).setCellValue(externalReference.getModified() != null ? dateFormat.format(externalReference.getModified()) : "");
         }
         return workbook;
     }

@@ -1,5 +1,7 @@
 package fi.vm.yti.codelist.api.export;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +18,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 public class CodeRegistryExporter extends BaseExporter {
 
     public String createCsv(final Set<CodeRegistryDTO> registries) {
+        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Set<String> prefLabelLanguages = resolveCodeRegistryPrefLabelLanguages(registries);
         final Set<String> definitionLanguages = resolveCodeRegistryDefinitionLanguages(registries);
         final String csvSeparator = ",";
@@ -24,12 +27,16 @@ public class CodeRegistryExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
         csv.append("\n");
         for (final CodeRegistryDTO codeRegistry : registries) {
             appendValue(csv, csvSeparator, codeRegistry.getCodeValue());
             appendValue(csv, csvSeparator, codeRegistry.getId().toString());
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, codeRegistry.getPrefLabel().get(language)));
             definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeRegistry.getDefinition().get(language)));
+            appendValue(csv, csvSeparator, codeRegistry.getCreated() != null ? dateFormat.format(codeRegistry.getCreated()) : "");
+            appendValue(csv, csvSeparator, codeRegistry.getModified() != null ? dateFormat.format(codeRegistry.getModified()) : "", true);
             csv.append("\n");
         }
         return csv.toString();
@@ -37,6 +44,7 @@ public class CodeRegistryExporter extends BaseExporter {
 
     public Workbook createExcel(final Set<CodeRegistryDTO> registries,
                                 final String format) {
+        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Workbook workbook = createWorkBook(format);
         final Set<String> prefLabelLanguages = resolveCodeRegistryPrefLabelLanguages(registries);
         final Set<String> definitionLanguages = resolveCodeRegistryDefinitionLanguages(registries);
@@ -51,6 +59,8 @@ public class CodeRegistryExporter extends BaseExporter {
         for (final String language : definitionLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase());
         }
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_MODIFIED);
         int i = 1;
         for (final CodeRegistryDTO codeRegistry : registries) {
             final Row row = sheet.createRow(i++);
@@ -63,6 +73,8 @@ public class CodeRegistryExporter extends BaseExporter {
             for (final String language : definitionLanguages) {
                 row.createCell(k++).setCellValue(codeRegistry.getDefinition().get(language));
             }
+            row.createCell(k++).setCellValue(codeRegistry.getCreated() != null ? dateFormat.format(codeRegistry.getCreated()) : "");
+            row.createCell(k).setCellValue(codeRegistry.getModified() != null ? dateFormat.format(codeRegistry.getModified()) : "");
         }
         return workbook;
     }

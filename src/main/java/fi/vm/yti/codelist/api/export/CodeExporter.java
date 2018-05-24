@@ -42,7 +42,9 @@ public class CodeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_SHORTNAME);
         appendValue(csv, csvSeparator, CONTENT_HEADER_HIERARCHYLEVEL);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE, true);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
         for (final CodeDTO code : codes) {
             appendValue(csv, csvSeparator, code.getOrder() != null ? code.getOrder().toString() : flatInt.toString());
             appendValue(csv, csvSeparator, code.getCodeValue());
@@ -55,7 +57,9 @@ public class CodeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, code.getShortName());
             appendValue(csv, csvSeparator, code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null);
             appendValue(csv, csvSeparator, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
-            appendValue(csv, csvSeparator, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "", true);
+            appendValue(csv, csvSeparator, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
+            appendValue(csv, csvSeparator, code.getCreated() != null ? dateFormat.format(code.getCreated()) : "");
+            appendValue(csv, csvSeparator, code.getModified() != null ? dateFormat.format(code.getModified()) : "", true);
 
             flatInt++;
         }
@@ -100,7 +104,9 @@ public class CodeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_HIERARCHYLEVEL);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ORDER);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
-        rowhead.createCell(j).setCellValue(CONTENT_HEADER_ENDDATE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_MODIFIED);
         int i = 1;
         Integer flatInt = 1;
         for (final CodeDTO code : codes) {
@@ -123,7 +129,9 @@ public class CodeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getOrder() != null ? code.getOrder().toString() : flatInt.toString()));
             row.createCell(k++).setCellValue(code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
-            row.createCell(k).setCellValue(code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
+            row.createCell(k++).setCellValue(code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
+            row.createCell(k++).setCellValue(code.getCreated() != null ? dateFormat.format(code.getCreated()) : "");
+            row.createCell(k).setCellValue(code.getModified() != null ? dateFormat.format(code.getModified()) : "");
             flatInt++;
         }
     }
