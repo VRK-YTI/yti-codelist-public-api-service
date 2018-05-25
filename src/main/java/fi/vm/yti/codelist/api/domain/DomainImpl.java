@@ -1,6 +1,7 @@
 package fi.vm.yti.codelist.api.domain;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -52,6 +53,7 @@ public class DomainImpl implements Domain {
     private static final int MAX_SIZE = 50000;
     private static final String TEXT_ANALYZER = "text_analyzer";
     private static final String BOOSTSTATUS = "boostStatus";
+    private static final Set<String> sortLanguages = new HashSet<>(Arrays.asList(LANGUAGE_CODE_FI, LANGUAGE_CODE_EN, LANGUAGE_CODE_SV));
     private Client client;
 
     @Inject
@@ -299,6 +301,11 @@ public class DomainImpl implements Domain {
             }
             if (language == null || !language.isEmpty()) {
                 searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                sortLanguages.forEach(sortLanguage -> {
+                    if (!language.equalsIgnoreCase(sortLanguage)) {
+                        searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                    }
+                });
                 searchRequest.addSort("codeValue.raw", SortOrder.ASC);
             } else {
                 searchRequest.addSort("prefLabel", SortOrder.ASC);
@@ -783,32 +790,6 @@ public class DomainImpl implements Domain {
             }
         }
         return null;
-    }
-
-    private BoolQueryBuilder constructCombinedSearchQuery(final String searchTerm,
-                                                          final String codeValue,
-                                                          final String prefLabel,
-                                                          final Date after) {
-        final BoolQueryBuilder builder = boolQuery();
-        final BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
-        if (searchTerm != null) {
-            boolQueryBuilder.should(prefixQuery("codeValue", searchTerm.toLowerCase()));
-            boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
-            boolQueryBuilder.minimumShouldMatch(1);
-            builder.must(boolQueryBuilder);
-        }
-        if (codeValue != null) {
-            builder.must(prefixQuery("codeValue", codeValue.toLowerCase()));
-        }
-        if (prefLabel != null) {
-            builder.must(nestedQuery("prefLabel", multiMatchQuery(prefLabel.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
-        }
-        if (after != null) {
-            final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
-            final String afterString = dateFormat.format(after);
-            builder.must(rangeQuery("modified").gt(afterString));
-        }
-        return builder;
     }
 
     private BoolQueryBuilder constructSearchQuery(final String codeValue,
