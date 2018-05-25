@@ -6,9 +6,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.EXCEL_SHEET_CODES;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.EXCEL_SHEET_EXTENSIONSCHEMES;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.FORMAT_EXCEL_XLSX;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 abstract class BaseExporter {
@@ -47,10 +45,10 @@ abstract class BaseExporter {
     }
 
     Workbook createWorkBook(final String format) {
-        if (FORMAT_EXCEL_XLSX.equals(format)) {
-            return new XSSFWorkbook();
-        } else {
+        if (FORMAT_EXCEL_XLS.equals(format)) {
             return new HSSFWorkbook();
+        } else {
+            return new XSSFWorkbook();
         }
     }
 
