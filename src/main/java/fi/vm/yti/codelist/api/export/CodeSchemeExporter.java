@@ -53,8 +53,8 @@ public class CodeSchemeExporter extends BaseExporter {
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CLASSIFICATION);
         appendValue(csv, csvSeparator, CONTENT_HEADER_VERSION);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
@@ -71,8 +71,8 @@ public class CodeSchemeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
-            appendValue(csv, csvSeparator, codeScheme.getCodeValue());
             appendValue(csv, csvSeparator, codeScheme.getId().toString());
+            appendValue(csv, csvSeparator, codeScheme.getCodeValue());
             appendValue(csv, csvSeparator, formatDataClassificationsToString(codeScheme.getDataClassifications()));
             appendValue(csv, csvSeparator, codeScheme.getVersion());
             appendValue(csv, csvSeparator, codeScheme.getStatus());
@@ -136,8 +136,8 @@ public class CodeSchemeExporter extends BaseExporter {
         final Sheet sheet = workbook.createSheet(sheetName);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CLASSIFICATION);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_VERSION);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STATUS);
@@ -167,8 +167,8 @@ public class CodeSchemeExporter extends BaseExporter {
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Row row = sheet.createRow(i++);
             int k = 0;
-            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getCodeValue()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getId().toString()));
+            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getCodeValue()));
             row.createCell(k++).setCellValue(checkEmptyValue(formatDataClassificationsToString(codeScheme.getDataClassifications())));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getVersion()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getStatus()));

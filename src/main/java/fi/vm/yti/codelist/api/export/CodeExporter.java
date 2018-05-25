@@ -31,10 +31,10 @@ public class CodeExporter extends BaseExporter {
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_BROADER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_BROADER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
@@ -46,10 +46,10 @@ public class CodeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
         for (final CodeDTO code : codes) {
-            appendValue(csv, csvSeparator, code.getOrder() != null ? code.getOrder().toString() : flatInt.toString());
-            appendValue(csv, csvSeparator, code.getCodeValue());
-            appendValue(csv, csvSeparator, codeValueIdMap.get(code.getBroaderCodeId()));
             appendValue(csv, csvSeparator, code.getId().toString());
+            appendValue(csv, csvSeparator, code.getCodeValue());
+            appendValue(csv, csvSeparator, code.getOrder() != null ? code.getOrder().toString() : flatInt.toString());
+            appendValue(csv, csvSeparator, codeValueIdMap.get(code.getBroaderCodeId()));
             appendValue(csv, csvSeparator, code.getStatus());
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, code.getPrefLabel().get(language)));
             definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, code.getDefinition().get(language)));
@@ -87,9 +87,9 @@ public class CodeExporter extends BaseExporter {
         final Sheet sheet = workbook.createSheet(sheetName);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_BROADER);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STATUS);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
@@ -112,9 +112,9 @@ public class CodeExporter extends BaseExporter {
         for (final CodeDTO code : codes) {
             final Row row = sheet.createRow(i++);
             int k = 0;
+            row.createCell(k++).setCellValue(code.getId().toString());
             row.createCell(k++).setCellValue(code.getCodeValue());
             row.createCell(k++).setCellValue(checkEmptyValue(codeValueIdMap.get(code.getBroaderCodeId())));
-            row.createCell(k++).setCellValue(code.getId().toString());
             row.createCell(k++).setCellValue(code.getStatus());
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(code.getPrefLabel().get(language));
