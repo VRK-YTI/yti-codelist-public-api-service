@@ -209,7 +209,7 @@ abstract public class AbstractTestBase {
         final Set<CodeDTO> codes = new HashSet<>();
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             for (int i = 0; i < 8; i++) {
-                codes.add(createCode(codeScheme, "testcode" + (i + 1)));
+                codes.add(createCode(codeScheme, "testcode" + (i + 1), i));
             }
         }
         indexData(codes, ELASTIC_INDEX_CODE, ELASTIC_TYPE_CODE);
@@ -340,7 +340,8 @@ abstract public class AbstractTestBase {
     }
 
     private CodeDTO createCode(final CodeSchemeDTO codeScheme,
-                               final String codeValue) {
+                               final String codeValue,
+                               final int order) {
         final CodeDTO code = new CodeDTO();
         code.setId(UUID.randomUUID());
         code.setCodeValue(codeValue);
@@ -354,6 +355,7 @@ abstract public class AbstractTestBase {
         code.setDescription(LANGUAGE_CODE_FI, "Testi kuvaus");
         code.setDefinition(LANGUAGE_CODE_SV, "Test beskrivning");
         code.setDefinition(LANGUAGE_CODE_EN, "Test description");
+        code.setOrder(order);
         code.setShortName("ABR");
         code.setCodeScheme(codeScheme);
         code.setModified(new Date(System.currentTimeMillis()));
