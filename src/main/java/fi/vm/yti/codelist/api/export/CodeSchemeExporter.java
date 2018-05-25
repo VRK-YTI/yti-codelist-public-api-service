@@ -61,6 +61,7 @@ public class CodeSchemeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_SOURCE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_LEGALBASE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_GOVERNANCEPOLICY);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_DEFAULTCODE);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
         descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase()));
@@ -78,6 +79,7 @@ public class CodeSchemeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, codeScheme.getSource());
             appendValue(csv, csvSeparator, codeScheme.getLegalBase());
             appendValue(csv, csvSeparator, codeScheme.getGovernancePolicy());
+            appendValue(csv, csvSeparator, codeScheme.getDefaultCode() != null ? codeScheme.getDefaultCode().getCodeValue() : "");
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, codeScheme.getPrefLabel().get(language)));
             definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeScheme.getDefinition().get(language)));
             descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeScheme.getDescription().get(language)));
@@ -139,6 +141,7 @@ public class CodeSchemeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_SOURCE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LEGALBASE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_GOVERNANCEPOLICY);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_DEFAULTCODE);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
@@ -169,6 +172,7 @@ public class CodeSchemeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getSource()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getLegalBase()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getGovernancePolicy()));
+            row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getDefaultCode() != null ? codeScheme.getDefaultCode().getCodeValue() : ""));
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(codeScheme.getPrefLabel().get(language));
             }
