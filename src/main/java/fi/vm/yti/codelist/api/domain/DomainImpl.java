@@ -299,7 +299,7 @@ public class DomainImpl implements Domain {
                 searchRequest.addSort(SortBuilders.scoreSort());
                 boostStatus(builder);
             }
-            if (language == null || !language.isEmpty()) {
+            if (language != null && !language.isEmpty()) {
                 searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
                 sortLanguages.forEach(sortLanguage -> {
                     if (!language.equalsIgnoreCase(sortLanguage)) {
@@ -308,7 +308,6 @@ public class DomainImpl implements Domain {
                 });
                 searchRequest.addSort("codeValue.raw", SortOrder.ASC);
             } else {
-                searchRequest.addSort("prefLabel", SortOrder.ASC);
                 searchRequest.addSort("codeValue.raw", SortOrder.ASC);
             }
             if (statuses != null && !statuses.isEmpty()) {
