@@ -299,7 +299,6 @@ public class DomainImpl implements Domain {
             }
             if (language == null || !language.isEmpty()) {
                 searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
-                searchRequest.addSort(SortBuilders.fieldSort("prefLabel.keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
                 searchRequest.addSort("codeValue.raw", SortOrder.ASC);
             } else {
                 searchRequest.addSort("prefLabel", SortOrder.ASC);
