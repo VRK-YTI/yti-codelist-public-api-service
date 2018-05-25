@@ -41,7 +41,6 @@ public class ExtensionSchemeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_EXTENSIONSSHEET, true);
         for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
             appendValue(csv, csvSeparator, extensionScheme.getId().toString());
             appendValue(csv, csvSeparator, extensionScheme.getCodeValue());
@@ -53,7 +52,6 @@ public class ExtensionSchemeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, extensionScheme.getEndDate() != null ? dateFormat.format(extensionScheme.getEndDate()) : "");
             appendValue(csv, csvSeparator, extensionScheme.getCreated() != null ? dateFormat.format(extensionScheme.getCreated()) : "");
             appendValue(csv, csvSeparator, extensionScheme.getModified() != null ? dateFormat.format(extensionScheme.getModified()) : "");
-            appendValue(csv, csvSeparator, createExtensionSheetName(extensionScheme), true);
         }
         return csv.toString();
     }
@@ -90,9 +88,9 @@ public class ExtensionSchemeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_EXTENSIONSSHEET);
-        int i = 1;
+        int i = 0;
         for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
-            final Row row = sheet.createRow(i++);
+            final Row row = sheet.createRow(++i);
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(extensionScheme.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(extensionScheme.getCodeValue()));
@@ -106,7 +104,7 @@ public class ExtensionSchemeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(extensionScheme.getEndDate() != null ? dateFormat.format(extensionScheme.getEndDate()) : "");
             row.createCell(k++).setCellValue(extensionScheme.getCreated() != null ? dateFormat.format(extensionScheme.getCreated()) : "");
             row.createCell(k++).setCellValue(extensionScheme.getModified() != null ? dateFormat.format(extensionScheme.getModified()) : "");
-            row.createCell(k).setCellValue(checkEmptyValue(createExtensionSheetName(extensionScheme)));
+            row.createCell(k).setCellValue(checkEmptyValue(truncateSheetNameWithIndex(EXCEL_SHEET_EXTENSIONS + "_" + extensionScheme.getParentCodeScheme().getCodeValue() + "_" + extensionScheme.getCodeValue(), i)));
         }
     }
 
@@ -131,9 +129,5 @@ public class ExtensionSchemeExporter extends BaseExporter {
             languages.addAll(prefLabel.keySet());
         }
         return languages;
-    }
-
-    private String createExtensionSheetName(final ExtensionSchemeDTO extensionScheme) {
-        return "Extensions_" + extensionScheme.getParentCodeScheme().getCodeValue() + "_" + extensionScheme.getCodeValue();
     }
 }

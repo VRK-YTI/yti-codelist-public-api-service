@@ -102,7 +102,10 @@ public class CodeSchemeExporter extends BaseExporter {
             final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(null, null, null, codeScheme, null, null);
             if (extensionSchemes != null && !extensionSchemes.isEmpty()) {
                 extensionSchemeExporter.addExtensionSchemesSheet(workbook, EXCEL_SHEET_EXTENSIONSCHEMES + "_" + codeScheme.getCodeValue(), extensionSchemes);
-                extensionSchemes.forEach(extensionScheme -> extensionExporter.addExtensionsSheet(workbook, EXCEL_SHEET_EXTENSIONS + "_" + codeScheme.getCodeValue() + "_" + extensionScheme.getCodeValue(), domain.getExtensions(null, null, extensionScheme, null, null)));
+                int i = 0;
+                for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
+                    extensionExporter.addExtensionsSheet(workbook, truncateSheetNameWithIndex(EXCEL_SHEET_EXTENSIONS + "_" + codeScheme.getCodeValue() + "_" + extensionScheme.getCodeValue(), ++i), domain.getExtensions(null, null, extensionScheme, null, null));
+                }
             }
             return workbook;
         } catch (final IOException e) {
@@ -242,13 +245,5 @@ public class CodeSchemeExporter extends BaseExporter {
             i++;
         }
         return csvClassifications.toString();
-    }
-
-    private String createExtensionSchemesSheetName(final CodeSchemeDTO codeScheme) {
-        return "ExtensionSchemes_" + codeScheme.getCodeValue();
-    }
-
-    private String createCodesSheetName(final CodeSchemeDTO codeScheme) {
-        return "Codes_" + codeScheme.getCodeValue();
     }
 }
