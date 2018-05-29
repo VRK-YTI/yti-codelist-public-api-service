@@ -115,10 +115,10 @@ abstract class AbstractBaseResource {
 
     public String createDownloadFilename(final String format,
                                          final String filename) {
-        if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format)) {
-            return filename + "." + FORMAT_EXCEL_XLS;
-        } else if (FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+        if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
             return filename + "." + FORMAT_EXCEL_XLSX;
+        } else if (FORMAT_EXCEL_XLS.equalsIgnoreCase(format)) {
+            return filename + "." + FORMAT_EXCEL_XLS;
         } else {
             return filename + "." + FORMAT_CSV;
         }
