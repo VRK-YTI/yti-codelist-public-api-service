@@ -1,5 +1,9 @@
 package fi.vm.yti.codelist.api.export;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -11,8 +15,9 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Component
 abstract class BaseExporter {
 
-    static final String DATEFORMAT = "yyyy-MM-dd";
-    static final int MAX_SHEETNAME_SIZE = 31;
+    private static final String DATEFORMAT = "yyyy-MM-dd";
+    private static final String DATEFORMAT_WITH_SECONDS = "yyyy-MM-dd hh:ss:mm";
+    private static final int MAX_SHEETNAME_SIZE = 31;
 
     String checkEmptyValue(final String value) {
         if (value == null) {
@@ -76,5 +81,15 @@ abstract class BaseExporter {
         } else {
             return sheetName.substring(0, 26) + "_" + i;
         }
+    }
+
+    String formatDateWithISO8601(final Date date) {
+        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
+        return dateFormat.format(date);
+    }
+
+    String formatDateWithSeconds(final Date date) {
+        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT_WITH_SECONDS);
+        return dateFormat.format(date);
     }
 }

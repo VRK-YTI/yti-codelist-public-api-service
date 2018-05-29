@@ -1,7 +1,5 @@
 package fi.vm.yti.codelist.api.export;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +16,6 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 public class ExternalReferenceExporter extends BaseExporter {
 
     public String createCsv(final Set<ExternalReferenceDTO> externalReferences) {
-        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Set<String> titleLanguages = resolveExternalReferenceTitleLanguages(externalReferences);
         final Set<String> descriptionLanguages = resolveExternalReferenceDescriptionLanguages(externalReferences);
         final String csvSeparator = ",";
@@ -35,8 +32,8 @@ public class ExternalReferenceExporter extends BaseExporter {
             appendValue(csv, csvSeparator, externalReference.getHref());
             titleLanguages.forEach(language -> appendValue(csv, csvSeparator, externalReference.getTitle().get(language)));
             descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, externalReference.getDescription().get(language)));
-            appendValue(csv, csvSeparator, externalReference.getCreated() != null ? dateFormat.format(externalReference.getCreated()) : "");
-            appendValue(csv, csvSeparator, externalReference.getModified() != null ? dateFormat.format(externalReference.getModified()) : "", true);
+            appendValue(csv, csvSeparator, externalReference.getCreated() != null ? formatDateWithSeconds(externalReference.getCreated()) : "");
+            appendValue(csv, csvSeparator, externalReference.getModified() != null ? formatDateWithSeconds(externalReference.getModified()) : "", true);
             csv.append("\n");
         }
         return csv.toString();
@@ -44,7 +41,6 @@ public class ExternalReferenceExporter extends BaseExporter {
 
     public Workbook createExcel(final Set<ExternalReferenceDTO> externalReferences,
                                 final String format) {
-        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Workbook workbook = createWorkBook(format);
         final Set<String> titleLanguages = resolveExternalReferenceTitleLanguages(externalReferences);
         final Set<String> descriptionLanguages = resolveExternalReferenceDescriptionLanguages(externalReferences);
@@ -73,8 +69,8 @@ public class ExternalReferenceExporter extends BaseExporter {
             for (final String language : descriptionLanguages) {
                 row.createCell(k++).setCellValue(externalReference.getDescription().get(language));
             }
-            row.createCell(k++).setCellValue(externalReference.getCreated() != null ? dateFormat.format(externalReference.getCreated()) : "");
-            row.createCell(k).setCellValue(externalReference.getModified() != null ? dateFormat.format(externalReference.getModified()) : "");
+            row.createCell(k++).setCellValue(externalReference.getCreated() != null ? formatDateWithSeconds(externalReference.getCreated()) : "");
+            row.createCell(k).setCellValue(externalReference.getModified() != null ? formatDateWithSeconds(externalReference.getModified()) : "");
         }
         return workbook;
     }

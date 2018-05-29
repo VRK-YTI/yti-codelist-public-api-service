@@ -1,8 +1,5 @@
 package fi.vm.yti.codelist.api.export;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -11,23 +8,16 @@ import java.util.Set;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import fi.vm.yti.codelist.api.domain.Domain;
-import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
-import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 public class CodeSchemeExporter extends BaseExporter {
-
-    private static final Logger LOG = LoggerFactory.getLogger(CodeSchemeExporter.class);
 
     private Domain domain;
     private CodeExporter codeExporter;
@@ -50,7 +40,6 @@ public class CodeSchemeExporter extends BaseExporter {
         final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
         final Set<String> descriptionLanguages = resolveCodeSchemeDescriptionLanguages(codeSchemes);
         final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
-        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
@@ -84,10 +73,10 @@ public class CodeSchemeExporter extends BaseExporter {
             definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeScheme.getDefinition().get(language)));
             descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeScheme.getDescription().get(language)));
             changeNoteLanguages.forEach(language -> appendValue(csv, csvSeparator, codeScheme.getChangeNote().get(language)));
-            appendValue(csv, csvSeparator, codeScheme.getStartDate() != null ? dateFormat.format(codeScheme.getStartDate()) : "");
-            appendValue(csv, csvSeparator, codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "");
-            appendValue(csv, csvSeparator, codeScheme.getCreated() != null ? dateFormat.format(codeScheme.getCreated()) : "");
-            appendValue(csv, csvSeparator, codeScheme.getModified() != null ? dateFormat.format(codeScheme.getModified()) : "", true);
+            appendValue(csv, csvSeparator, codeScheme.getStartDate() != null ? formatDateWithISO8601(codeScheme.getStartDate()) : "");
+            appendValue(csv, csvSeparator, codeScheme.getEndDate() != null ? formatDateWithISO8601(codeScheme.getEndDate()) : "");
+            appendValue(csv, csvSeparator, codeScheme.getCreated() != null ? formatDateWithSeconds(codeScheme.getCreated()) : "");
+            appendValue(csv, csvSeparator, codeScheme.getModified() != null ? formatDateWithSeconds(codeScheme.getModified()) : "", true);
         }
         return csv.toString();
     }
@@ -121,13 +110,12 @@ public class CodeSchemeExporter extends BaseExporter {
     }
 
     private void addCodeSchemeSheet(final Workbook workbook,
-                                   final String sheetName,
-                                   final Set<CodeSchemeDTO> codeSchemes) {
+                                    final String sheetName,
+                                    final Set<CodeSchemeDTO> codeSchemes) {
         final Set<String> prefLabelLanguages = resolveCodeSchemePrefLabelLanguages(codeSchemes);
         final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
         final Set<String> descriptionLanguages = resolveCodeSchemeDescriptionLanguages(codeSchemes);
         final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
-        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Sheet sheet = workbook.createSheet(sheetName);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
@@ -183,10 +171,10 @@ public class CodeSchemeExporter extends BaseExporter {
             for (final String language : changeNoteLanguages) {
                 row.createCell(k++).setCellValue(codeScheme.getChangeNote().get(language));
             }
-            row.createCell(k++).setCellValue(codeScheme.getStartDate() != null ? dateFormat.format(codeScheme.getStartDate()) : "");
-            row.createCell(k++).setCellValue(codeScheme.getEndDate() != null ? dateFormat.format(codeScheme.getEndDate()) : "");
-            row.createCell(k++).setCellValue(codeScheme.getCreated() != null ? dateFormat.format(codeScheme.getCreated()) : "");
-            row.createCell(k++).setCellValue(codeScheme.getModified() != null ? dateFormat.format(codeScheme.getModified()) : "");
+            row.createCell(k++).setCellValue(codeScheme.getStartDate() != null ? formatDateWithISO8601(codeScheme.getStartDate()) : "");
+            row.createCell(k++).setCellValue(codeScheme.getEndDate() != null ? formatDateWithISO8601(codeScheme.getEndDate()) : "");
+            row.createCell(k++).setCellValue(codeScheme.getCreated() != null ? formatDateWithSeconds(codeScheme.getCreated()) : "");
+            row.createCell(k++).setCellValue(codeScheme.getModified() != null ? formatDateWithSeconds(codeScheme.getModified()) : "");
             row.createCell(k++).setCellValue(checkEmptyValue(createCodesSheetName(codeScheme)));
             row.createCell(k).setCellValue(checkEmptyValue(createExtensionSchemesSheetName(codeScheme)));
         }

@@ -1,8 +1,5 @@
 package fi.vm.yti.codelist.api.export;
 
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -10,25 +7,17 @@ import java.util.Set;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
-import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 public class ExtensionSchemeExporter extends BaseExporter {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ExtensionSchemeExporter.class);
-
     public String createCsv(final Set<ExtensionSchemeDTO> extensionSchemes) {
         final Set<String> prefLabelLanguages = resolveExtensionSchemePrefLabelLanguages(extensionSchemes);
-        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
@@ -48,10 +37,10 @@ public class ExtensionSchemeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, extensionScheme.getPropertyType().getLocalName());
             appendValue(csv, csvSeparator, getExtensionSchemeUris(extensionScheme.getCodeSchemes()));
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, extensionScheme.getPrefLabel().get(language)));
-            appendValue(csv, csvSeparator, extensionScheme.getStartDate() != null ? dateFormat.format(extensionScheme.getStartDate()) : "");
-            appendValue(csv, csvSeparator, extensionScheme.getEndDate() != null ? dateFormat.format(extensionScheme.getEndDate()) : "");
-            appendValue(csv, csvSeparator, extensionScheme.getCreated() != null ? dateFormat.format(extensionScheme.getCreated()) : "");
-            appendValue(csv, csvSeparator, extensionScheme.getModified() != null ? dateFormat.format(extensionScheme.getModified()) : "");
+            appendValue(csv, csvSeparator, extensionScheme.getStartDate() != null ? formatDateWithISO8601(extensionScheme.getStartDate()) : "");
+            appendValue(csv, csvSeparator, extensionScheme.getEndDate() != null ? formatDateWithISO8601(extensionScheme.getEndDate()) : "");
+            appendValue(csv, csvSeparator, extensionScheme.getCreated() != null ? formatDateWithSeconds(extensionScheme.getCreated()) : "");
+            appendValue(csv, csvSeparator, extensionScheme.getModified() != null ? formatDateWithSeconds(extensionScheme.getModified()) : "");
         }
         return csv.toString();
     }
@@ -66,7 +55,6 @@ public class ExtensionSchemeExporter extends BaseExporter {
     public void addExtensionSchemesSheet(final Workbook workbook,
                                          final String sheetName,
                                          final Set<ExtensionSchemeDTO> extensionSchemes) {
-        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Set<String> prefLabelLanguages = resolveExtensionSchemePrefLabelLanguages(extensionSchemes);
         final Sheet sheet = workbook.createSheet(sheetName);
         final Row rowhead = sheet.createRow((short) 0);
@@ -96,10 +84,10 @@ public class ExtensionSchemeExporter extends BaseExporter {
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(extensionScheme.getPrefLabel().get(language));
             }
-            row.createCell(k++).setCellValue(extensionScheme.getStartDate() != null ? dateFormat.format(extensionScheme.getStartDate()) : "");
-            row.createCell(k++).setCellValue(extensionScheme.getEndDate() != null ? dateFormat.format(extensionScheme.getEndDate()) : "");
-            row.createCell(k++).setCellValue(extensionScheme.getCreated() != null ? dateFormat.format(extensionScheme.getCreated()) : "");
-            row.createCell(k++).setCellValue(extensionScheme.getModified() != null ? dateFormat.format(extensionScheme.getModified()) : "");
+            row.createCell(k++).setCellValue(extensionScheme.getStartDate() != null ? formatDateWithISO8601(extensionScheme.getStartDate()) : "");
+            row.createCell(k++).setCellValue(extensionScheme.getEndDate() != null ? formatDateWithISO8601(extensionScheme.getEndDate()) : "");
+            row.createCell(k++).setCellValue(extensionScheme.getCreated() != null ? formatDateWithSeconds(extensionScheme.getCreated()) : "");
+            row.createCell(k++).setCellValue(extensionScheme.getModified() != null ? formatDateWithSeconds(extensionScheme.getModified()) : "");
             row.createCell(k).setCellValue(checkEmptyValue(truncateSheetNameWithIndex(EXCEL_SHEET_EXTENSIONS + "_" + extensionScheme.getParentCodeScheme().getCodeValue() + "_" + extensionScheme.getCodeValue(), i)));
         }
     }

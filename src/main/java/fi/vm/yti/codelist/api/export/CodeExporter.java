@@ -1,7 +1,5 @@
 package fi.vm.yti.codelist.api.export;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -28,7 +26,6 @@ public class CodeExporter extends BaseExporter {
         final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codes);
         final Set<String> definitionLanguages = resolveCodeDefinitionLanguages(codes);
         final Set<String> descriptionLanguages = resolveCodeDescriptionLanguages(codes);
-        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
@@ -56,10 +53,10 @@ public class CodeExporter extends BaseExporter {
             descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, code.getDescription().get(language)));
             appendValue(csv, csvSeparator, code.getShortName());
             appendValue(csv, csvSeparator, code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null);
-            appendValue(csv, csvSeparator, code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
-            appendValue(csv, csvSeparator, code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
-            appendValue(csv, csvSeparator, code.getCreated() != null ? dateFormat.format(code.getCreated()) : "");
-            appendValue(csv, csvSeparator, code.getModified() != null ? dateFormat.format(code.getModified()) : "", true);
+            appendValue(csv, csvSeparator, code.getStartDate() != null ? formatDateWithISO8601(code.getStartDate()) : "");
+            appendValue(csv, csvSeparator, code.getEndDate() != null ? formatDateWithISO8601(code.getEndDate()) : "");
+            appendValue(csv, csvSeparator, code.getCreated() != null ? formatDateWithSeconds(code.getCreated()) : "");
+            appendValue(csv, csvSeparator, code.getModified() != null ? formatDateWithSeconds(code.getModified()) : "", true);
 
             flatInt++;
         }
@@ -83,7 +80,6 @@ public class CodeExporter extends BaseExporter {
         final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codes);
         final Set<String> definitionLanguages = resolveCodeDefinitionLanguages(codes);
         final Set<String> descriptionLanguages = resolveCodeDescriptionLanguages(codes);
-        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Sheet sheet = workbook.createSheet(sheetName);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
@@ -128,10 +124,10 @@ public class CodeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(code.getShortName()));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getOrder() != null ? code.getOrder().toString() : flatInt.toString()));
-            row.createCell(k++).setCellValue(code.getStartDate() != null ? dateFormat.format(code.getStartDate()) : "");
-            row.createCell(k++).setCellValue(code.getEndDate() != null ? dateFormat.format(code.getEndDate()) : "");
-            row.createCell(k++).setCellValue(code.getCreated() != null ? dateFormat.format(code.getCreated()) : "");
-            row.createCell(k).setCellValue(code.getModified() != null ? dateFormat.format(code.getModified()) : "");
+            row.createCell(k++).setCellValue(code.getStartDate() != null ? formatDateWithISO8601(code.getStartDate()) : "");
+            row.createCell(k++).setCellValue(code.getEndDate() != null ? formatDateWithISO8601(code.getEndDate()) : "");
+            row.createCell(k++).setCellValue(code.getCreated() != null ? formatDateWithSeconds(code.getCreated()) : "");
+            row.createCell(k).setCellValue(code.getModified() != null ? formatDateWithSeconds(code.getModified()) : "");
             flatInt++;
         }
     }

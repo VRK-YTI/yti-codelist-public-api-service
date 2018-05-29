@@ -1,7 +1,5 @@
 package fi.vm.yti.codelist.api.export;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -18,7 +16,6 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 public class PropertyTypeExporter extends BaseExporter {
 
     public String createCsv(final Set<PropertyTypeDTO> propertyTypes) {
-        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Set<String> prefLabelLanguages = resolvePropertyTypePrefLabelLanguages(propertyTypes);
         final Set<String> definitionLanguages = resolvePropertyTypeDefinitionLanguages(propertyTypes);
         final String csvSeparator = ",";
@@ -41,8 +38,8 @@ public class PropertyTypeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, propertyType.getContext());
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, propertyType.getPrefLabel().get(language)));
             definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, propertyType.getDefinition().get(language)));
-            appendValue(csv, csvSeparator, propertyType.getCreated() != null ? dateFormat.format(propertyType.getCreated()) : "");
-            appendValue(csv, csvSeparator, propertyType.getModified() != null ? dateFormat.format(propertyType.getModified()) : "", true);
+            appendValue(csv, csvSeparator, propertyType.getCreated() != null ? formatDateWithSeconds(propertyType.getCreated()) : "");
+            appendValue(csv, csvSeparator, propertyType.getModified() != null ? formatDateWithSeconds(propertyType.getModified()) : "", true);
             csv.append("\n");
         }
         return csv.toString();
@@ -50,7 +47,6 @@ public class PropertyTypeExporter extends BaseExporter {
 
     public Workbook createExcel(final Set<PropertyTypeDTO> propertyTypes,
                                 final String format) {
-        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         final Workbook workbook = createWorkBook(format);
         final Set<String> prefLabelLanguages = resolvePropertyTypePrefLabelLanguages(propertyTypes);
         final Set<String> definitionLanguages = resolvePropertyTypeDefinitionLanguages(propertyTypes);
@@ -85,8 +81,8 @@ public class PropertyTypeExporter extends BaseExporter {
             for (final String language : definitionLanguages) {
                 row.createCell(k++).setCellValue(propertyType.getDefinition().get(language));
             }
-            row.createCell(k++).setCellValue(propertyType.getCreated() != null ? dateFormat.format(propertyType.getCreated()) : "");
-            row.createCell(k).setCellValue(propertyType.getModified() != null ? dateFormat.format(propertyType.getModified()) : "");
+            row.createCell(k++).setCellValue(propertyType.getCreated() != null ? formatDateWithSeconds(propertyType.getCreated()) : "");
+            row.createCell(k).setCellValue(propertyType.getModified() != null ? formatDateWithSeconds(propertyType.getModified()) : "");
         }
         return workbook;
     }

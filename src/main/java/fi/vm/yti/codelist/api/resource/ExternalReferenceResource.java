@@ -30,9 +30,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
-/**
- * REST resources for ExternalReferenceDTOs.
- */
 @Component
 @Path("/v1/externalreferences")
 @Api(value = "externalreferences")
