@@ -12,6 +12,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 abstract class BaseExporter {
 
     static final String DATEFORMAT = "yyyy-MM-dd";
+    static final int MAX_SHEETNAME_SIZE = 31;
 
     String checkEmptyValue(final String value) {
         if (value == null) {
@@ -61,12 +62,16 @@ abstract class BaseExporter {
     }
 
     String truncateSheetName(final String sheetName) {
-        return sheetName.substring(0, 31);
+        if (sheetName.length() <= MAX_SHEETNAME_SIZE) {
+            return sheetName;
+        } else {
+            return sheetName.substring(0, MAX_SHEETNAME_SIZE);
+        }
     }
 
     String truncateSheetNameWithIndex(final String sheetName,
                                       final int i) {
-        if (sheetName.length() <= 31) {
+        if (sheetName.length() <= MAX_SHEETNAME_SIZE) {
             return sheetName;
         } else {
             return sheetName.substring(0, 26) + "_" + i;

@@ -94,35 +94,30 @@ public class CodeSchemeExporter extends BaseExporter {
 
     public Workbook createExcel(final CodeSchemeDTO codeScheme,
                                 final String format) {
-        try (final Workbook workbook = createWorkBook(format)) {
-            final Set<CodeSchemeDTO> codeSchemes = new HashSet<>();
-            codeSchemes.add(codeScheme);
-            addCodeSchemeSheet(workbook, EXCEL_SHEET_CODESCHEMES, codeSchemes);
-            codeExporter.addCodeSheet(workbook, EXCEL_SHEET_CODES + "_" + codeScheme.getCodeValue(), domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeScheme.getCodeRegistry().getCodeValue(), codeScheme.getCodeValue()));
-            final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(null, null, null, codeScheme, null, null);
-            if (extensionSchemes != null && !extensionSchemes.isEmpty()) {
-                extensionSchemeExporter.addExtensionSchemesSheet(workbook, EXCEL_SHEET_EXTENSIONSCHEMES + "_" + codeScheme.getCodeValue(), extensionSchemes);
-                int i = 0;
-                for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
-                    extensionExporter.addExtensionsSheet(workbook, truncateSheetNameWithIndex(EXCEL_SHEET_EXTENSIONS + "_" + codeScheme.getCodeValue() + "_" + extensionScheme.getCodeValue(), ++i), domain.getExtensions(null, null, extensionScheme, null, null));
-                }
+        final Workbook workbook = createWorkBook(format);
+        final Set<CodeSchemeDTO> codeSchemes = new HashSet<>();
+        codeSchemes.add(codeScheme);
+        addCodeSchemeSheet(workbook, EXCEL_SHEET_CODESCHEMES, codeSchemes);
+        final String codeSheetName = truncateSheetName(EXCEL_SHEET_CODES + "_" + codeScheme.getCodeValue());
+        codeExporter.addCodeSheet(workbook, codeSheetName, domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeScheme.getCodeRegistry().getCodeValue(), codeScheme.getCodeValue()));
+        final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(null, null, null, codeScheme, null, null);
+        if (extensionSchemes != null && !extensionSchemes.isEmpty()) {
+            final String extensionSchemeSheetName = truncateSheetName(EXCEL_SHEET_EXTENSIONSCHEMES + "_" + codeScheme.getCodeValue());
+            extensionSchemeExporter.addExtensionSchemesSheet(workbook, extensionSchemeSheetName, extensionSchemes);
+            int i = 0;
+            for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
+                final String extensionSheetName = truncateSheetNameWithIndex(EXCEL_SHEET_EXTENSIONS + "_" + codeScheme.getCodeValue() + "_" + extensionScheme.getCodeValue(), ++i);
+                extensionExporter.addExtensionsSheet(workbook, extensionSheetName, domain.getExtensions(null, null, extensionScheme, null, null));
             }
-            return workbook;
-        } catch (final IOException e) {
-            LOG.error("Error creating Excel during export!", e);
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Excel output generation failed!"));
         }
+        return workbook;
     }
 
     public Workbook createExcel(final Set<CodeSchemeDTO> codeSchemes,
                                 final String format) {
-        try (final Workbook workbook = createWorkBook(format)) {
-            addCodeSchemeSheet(workbook, EXCEL_SHEET_CODESCHEMES, codeSchemes);
-            return workbook;
-        } catch (final IOException e) {
-            LOG.error("Error creating Excel during export!", e);
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Excel output generation failed!"));
-        }
+        final Workbook workbook = createWorkBook(format);
+        addCodeSchemeSheet(workbook, EXCEL_SHEET_CODESCHEMES, codeSchemes);
+        return workbook;
     }
 
     private void addCodeSchemeSheet(final Workbook workbook,

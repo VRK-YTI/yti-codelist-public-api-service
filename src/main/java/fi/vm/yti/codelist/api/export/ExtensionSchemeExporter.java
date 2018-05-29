@@ -58,13 +58,9 @@ public class ExtensionSchemeExporter extends BaseExporter {
 
     public Workbook createExcel(final Set<ExtensionSchemeDTO> extensionSchemes,
                                 final String format) {
-        try (final Workbook workbook = createWorkBook(format)) {
-            addExtensionSchemesSheet(workbook, EXCEL_SHEET_EXTENSIONSCHEMES, extensionSchemes);
-            return workbook;
-        } catch (final IOException e) {
-            LOG.error("Error creating Excel during export!", e);
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Excel output generation failed!"));
-        }
+        final Workbook workbook = createWorkBook(format);
+        addExtensionSchemesSheet(workbook, EXCEL_SHEET_EXTENSIONSCHEMES, extensionSchemes);
+        return workbook;
     }
 
     public void addExtensionSchemesSheet(final Workbook workbook,
