@@ -90,14 +90,16 @@ public class CodeSchemeExporter extends BaseExporter {
         final String codeSheetName = truncateSheetName(EXCEL_SHEET_CODES + "_" + codeScheme.getCodeValue());
         codeExporter.addCodeSheet(workbook, codeSheetName, domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeScheme.getCodeRegistry().getCodeValue(), codeScheme.getCodeValue()));
         final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(null, null, null, codeScheme, null, null);
+        final String extensionSchemeSheetName = truncateSheetName(EXCEL_SHEET_EXTENSIONSCHEMES + "_" + codeScheme.getCodeValue());
         if (extensionSchemes != null && !extensionSchemes.isEmpty()) {
-            final String extensionSchemeSheetName = truncateSheetName(EXCEL_SHEET_EXTENSIONSCHEMES + "_" + codeScheme.getCodeValue());
             extensionSchemeExporter.addExtensionSchemesSheet(workbook, extensionSchemeSheetName, extensionSchemes);
             int i = 0;
             for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
                 final String extensionSheetName = truncateSheetNameWithIndex(EXCEL_SHEET_EXTENSIONS + "_" + codeScheme.getCodeValue() + "_" + extensionScheme.getCodeValue(), ++i);
                 extensionExporter.addExtensionsSheet(workbook, extensionSheetName, domain.getExtensions(null, null, extensionScheme, null, null));
             }
+        } else {
+            extensionSchemeExporter.addExtensionSchemesSheet(workbook, extensionSchemeSheetName, new HashSet<ExtensionSchemeDTO>());
         }
         return workbook;
     }
