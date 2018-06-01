@@ -20,16 +20,16 @@ public class ExternalReferenceExporter extends BaseExporter {
         final Set<String> descriptionLanguages = resolveExternalReferenceDescriptionLanguages(externalReferences);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_HREF);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         titleLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
         csv.append("\n");
         for (final ExternalReferenceDTO externalReference : externalReferences) {
-            appendValue(csv, csvSeparator, externalReference.getId().toString());
             appendValue(csv, csvSeparator, externalReference.getHref());
+            appendValue(csv, csvSeparator, externalReference.getId().toString());
             titleLanguages.forEach(language -> appendValue(csv, csvSeparator, externalReference.getTitle().get(language)));
             descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, externalReference.getDescription().get(language)));
             appendValue(csv, csvSeparator, externalReference.getCreated() != null ? formatDateWithSeconds(externalReference.getCreated()) : "");

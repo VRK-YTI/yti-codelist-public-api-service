@@ -20,8 +20,8 @@ public class ExtensionSchemeExporter extends BaseExporter {
         final Set<String> prefLabelLanguages = resolveExtensionSchemePrefLabelLanguages(extensionSchemes);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
         appendValue(csv, csvSeparator, CONTENT_HEADER_PROPERTYTYPE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODESCHEMES);
@@ -31,8 +31,8 @@ public class ExtensionSchemeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
         for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
-            appendValue(csv, csvSeparator, extensionScheme.getId().toString());
             appendValue(csv, csvSeparator, extensionScheme.getCodeValue());
+            appendValue(csv, csvSeparator, extensionScheme.getId().toString());
             appendValue(csv, csvSeparator, extensionScheme.getStatus());
             appendValue(csv, csvSeparator, extensionScheme.getPropertyType().getLocalName());
             appendValue(csv, csvSeparator, getExtensionSchemeUris(extensionScheme.getCodeSchemes()));

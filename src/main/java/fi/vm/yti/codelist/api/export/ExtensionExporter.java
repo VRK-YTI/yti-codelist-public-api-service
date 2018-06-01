@@ -16,16 +16,16 @@ public class ExtensionExporter extends BaseExporter {
     public String createCsv(final Set<ExtensionDTO> extensions) {
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_EXTENSIONVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_RELATION);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER, true);
         for (final ExtensionDTO extension : extensions) {
-            appendValue(csv, csvSeparator, extension.getId().toString());
             appendValue(csv, csvSeparator, extension.getExtensionValue());
+            appendValue(csv, csvSeparator, extension.getId().toString());
             appendValue(csv, csvSeparator, extension.getCode() != null ? extension.getCode().getCodeValue() : "");
             appendValue(csv, csvSeparator, extension.getExtension() != null ? extension.getExtension().getCode().getCodeValue() : "");
             appendValue(csv, csvSeparator, extension.getCreated() != null ? formatDateWithSeconds(extension.getExtension().getCode().getCreated()) : "");

@@ -20,16 +20,16 @@ public class CodeRegistryExporter extends BaseExporter {
         final Set<String> definitionLanguages = resolveCodeRegistryDefinitionLanguages(registries);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
         csv.append("\n");
         for (final CodeRegistryDTO codeRegistry : registries) {
-            appendValue(csv, csvSeparator, codeRegistry.getId().toString());
             appendValue(csv, csvSeparator, codeRegistry.getCodeValue());
+            appendValue(csv, csvSeparator, codeRegistry.getId().toString());
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, codeRegistry.getPrefLabel().get(language)));
             definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeRegistry.getDefinition().get(language)));
             appendValue(csv, csvSeparator, codeRegistry.getCreated() != null ? formatDateWithSeconds(codeRegistry.getCreated()) : "");

@@ -28,8 +28,8 @@ public class CodeExporter extends BaseExporter {
         final Set<String> descriptionLanguages = resolveCodeDescriptionLanguages(codes);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_BROADER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
@@ -43,8 +43,8 @@ public class CodeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
         for (final CodeDTO code : codes) {
-            appendValue(csv, csvSeparator, code.getId().toString());
             appendValue(csv, csvSeparator, code.getCodeValue());
+            appendValue(csv, csvSeparator, code.getId().toString());
             appendValue(csv, csvSeparator, code.getOrder() != null ? code.getOrder().toString() : flatInt.toString());
             appendValue(csv, csvSeparator, codeValueIdMap.get(code.getBroaderCodeId()));
             appendValue(csv, csvSeparator, code.getStatus());

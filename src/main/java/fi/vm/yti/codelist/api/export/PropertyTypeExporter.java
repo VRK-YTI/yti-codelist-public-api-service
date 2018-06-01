@@ -20,8 +20,8 @@ public class PropertyTypeExporter extends BaseExporter {
         final Set<String> definitionLanguages = resolvePropertyTypeDefinitionLanguages(propertyTypes);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_LOCALNAME);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_TYPE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_PROPERTYURI);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CONTEXT);
@@ -31,8 +31,8 @@ public class PropertyTypeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
         csv.append("\n");
         for (final PropertyTypeDTO propertyType : propertyTypes) {
-            appendValue(csv, csvSeparator, propertyType.getId().toString());
             appendValue(csv, csvSeparator, propertyType.getLocalName());
+            appendValue(csv, csvSeparator, propertyType.getId().toString());
             appendValue(csv, csvSeparator, propertyType.getType());
             appendValue(csv, csvSeparator, propertyType.getPropertyUri());
             appendValue(csv, csvSeparator, propertyType.getContext());

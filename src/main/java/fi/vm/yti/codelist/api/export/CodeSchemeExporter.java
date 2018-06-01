@@ -42,8 +42,8 @@ public class CodeSchemeExporter extends BaseExporter {
         final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CLASSIFICATION);
         appendValue(csv, csvSeparator, CONTENT_HEADER_VERSION);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
@@ -60,8 +60,8 @@ public class CodeSchemeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
-            appendValue(csv, csvSeparator, codeScheme.getId().toString());
             appendValue(csv, csvSeparator, codeScheme.getCodeValue());
+            appendValue(csv, csvSeparator, codeScheme.getId().toString());
             appendValue(csv, csvSeparator, formatDataClassificationsToString(codeScheme.getDataClassifications()));
             appendValue(csv, csvSeparator, codeScheme.getVersion());
             appendValue(csv, csvSeparator, codeScheme.getStatus());
