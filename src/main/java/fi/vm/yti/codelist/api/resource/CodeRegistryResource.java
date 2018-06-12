@@ -438,7 +438,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                   @ApiParam(value = "Code code.", required = true) @PathParam("codeCodeValue") final String codeCodeValue,
                                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-        final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+        final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeString(codeCodeValue));
         if (code == null) {
             return Response.status(Response.Status.NOT_FOUND).build();
         }
@@ -461,7 +461,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
-        final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+        final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeString(codeCodeValue));
         if (code != null) {
             if (FORMAT_CSV.startsWith(format.toLowerCase())) {
                 final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, code, meta.getAfter(), meta);

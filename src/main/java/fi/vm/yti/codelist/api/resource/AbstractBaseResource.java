@@ -1,6 +1,8 @@
 package fi.vm.yti.codelist.api.resource;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,6 +31,7 @@ import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.model.Status;
+import static fi.vm.yti.codelist.api.exception.ErrorConstants.ERR_MSG_USER_406;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 abstract class AbstractBaseResource {
@@ -202,6 +205,14 @@ abstract class AbstractBaseResource {
             }
         };
         return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(FORMAT_EXCEL, filename)).build();
+    }
+
+    public String urlDecodeString(final String string) {
+        try {
+            return URLDecoder.decode(string, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), ERR_MSG_USER_406));
+        }
     }
 
     static class FilterModifier extends ObjectWriterModifier {
