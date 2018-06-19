@@ -33,7 +33,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Component
 @Path("/v1/extensions")
 @Api(value = "extensions")
-@Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
 public class ExtensionResource extends AbstractBaseResource {
 
     private final Domain domain;
@@ -49,7 +49,7 @@ public class ExtensionResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return list of available Extensions.", response = CodeSchemeDTO.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns all Extensions in specified format.")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN})
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN })
     public Response getExtensions(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                   @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                   @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
@@ -80,8 +80,8 @@ public class ExtensionResource extends AbstractBaseResource {
     @ApiOperation(value = "Return one specific Extension.", response = CodeSchemeDTO.class)
     @ApiResponse(code = 200, message = "Returns one specific Extension in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getCodeScheme(@ApiParam(value = "Extension UUID.", required = true) @PathParam("extensionId") final String extensionId,
-                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+    public Response getExtension(@ApiParam(value = "Extension UUID.", required = true) @PathParam("extensionId") final String extensionId,
+                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
         final ExtensionDTO extension = domain.getExtension(extensionId);
         if (extension != null) {
