@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -602,6 +603,38 @@ public class DomainImpl implements Domain {
             });
         }
         return extensionSchemes;
+    }
+
+    public ExtensionSchemeDTO getExtensionScheme(final UUID codeSchemeUuid,
+                                                 final String extensionSchemeCodeValue) {
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSIONSCHEME).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_EXTENSIONSCHEME)
+                .setTypes(ELASTIC_TYPE_EXTENSIONSCHEME)
+                .addSort("codeValue.raw", SortOrder.ASC);
+            final BoolQueryBuilder builder = boolQuery()
+                .should(matchQuery("id", extensionSchemeCodeValue.toLowerCase()))
+                .should(matchQuery("codeValue", extensionSchemeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER))
+                .minimumShouldMatch(1);
+            builder.must(matchQuery("parentCodeScheme.id", codeSchemeUuid.toString().toLowerCase()));
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            if (response.getHits().getTotalHits() > 0) {
+                LOG.debug(String.format("Found %d ExtensionSchemes", response.getHits().getTotalHits()));
+                final SearchHit hit = response.getHits().getAt(0);
+                try {
+                    if (hit != null) {
+                        return mapper.readValue(hit.getSourceAsString(), ExtensionSchemeDTO.class);
+                    }
+                } catch (final IOException e) {
+                    LOG.error("getExtensionScheme reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
+                }
+            }
+        }
+        return null;
     }
 
     public ExtensionSchemeDTO getExtensionScheme(final String codeRegistryCodeValue,

@@ -3,6 +3,7 @@ package fi.vm.yti.codelist.api.domain;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
@@ -103,6 +104,9 @@ public interface Domain {
 
     ExtensionSchemeDTO getExtensionScheme(final String codeRegistryCodeValue,
                                           final String codeSchemeCodeValue,
+                                          final String extensionSchemeCodeValue);
+
+    ExtensionSchemeDTO getExtensionScheme(final UUID codeSchemeId,
                                           final String extensionSchemeCodeValue);
 
     ExtensionSchemeDTO getExtensionScheme(final String extensionSchemeId);
