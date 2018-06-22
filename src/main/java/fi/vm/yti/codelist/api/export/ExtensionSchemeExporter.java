@@ -1,5 +1,6 @@
 package fi.vm.yti.codelist.api.export;
 
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -9,12 +10,22 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Component;
 
+import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 public class ExtensionSchemeExporter extends BaseExporter {
+
+    private Domain domain;
+    private ExtensionExporter extensionExporter;
+
+    public ExtensionSchemeExporter(final Domain domain,
+                                   final ExtensionExporter extensionExporter) {
+        this.domain = domain;
+        this.extensionExporter = extensionExporter;
+    }
 
     public String createCsv(final Set<ExtensionSchemeDTO> extensionSchemes) {
         final Set<String> prefLabelLanguages = resolveExtensionSchemePrefLabelLanguages(extensionSchemes);
@@ -49,6 +60,17 @@ public class ExtensionSchemeExporter extends BaseExporter {
                                 final String format) {
         final Workbook workbook = createWorkBook(format);
         addExtensionSchemesSheet(workbook, EXCEL_SHEET_EXTENSIONSCHEMES, extensionSchemes);
+        return workbook;
+    }
+
+    public Workbook createExcel(final ExtensionSchemeDTO extensionScheme,
+                                final String format) {
+        final Workbook workbook = createWorkBook(format);
+        final Set<ExtensionSchemeDTO> extensionSchemes = new HashSet<>();
+        extensionSchemes.add(extensionScheme);
+        addExtensionSchemesSheet(workbook, EXCEL_SHEET_EXTENSIONSCHEMES, extensionSchemes);
+        final String extensionSheetName = truncateSheetName(EXCEL_SHEET_EXTENSIONS + "_" + extensionScheme.getCodeValue());
+        extensionExporter.addExtensionsSheet(workbook, extensionSheetName, domain.getExtensions(null, null, extensionScheme, null, null));
         return workbook;
     }
 

@@ -73,7 +73,7 @@ public class ExtensionExporter extends BaseExporter {
             }
             row.createCell(k++).setCellValue(extension.getCreated() != null ? formatDateWithSeconds(extension.getCreated()) : "");
             row.createCell(k++).setCellValue(extension.getModified() != null ? formatDateWithSeconds(extension.getModified()) : "");
-            row.createCell(k).setCellValue(checkEmptyValue(extension.getOrder().toString()));
+            row.createCell(k).setCellValue(checkEmptyValue(extension.getOrder() != null ? extension.getOrder().toString() : ""));
         }
     }
 }

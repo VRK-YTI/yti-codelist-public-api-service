@@ -311,9 +311,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                     final String csv = extensionSchemeExporter.createCsv(extensionSchemes);
                     return streamCsvExtensionSchemesOutput(csv);
                 } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                    final Set<ExtensionSchemeDTO> extensionSchemes = new HashSet<>();
-                    extensionSchemes.add(extensionScheme);
-                    final Workbook workbook = extensionSchemeExporter.createExcel(extensionSchemes, format);
+                    final Workbook workbook = extensionSchemeExporter.createExcel(extensionScheme, format);
                     return streamExcelExtensionSchemesOutput(workbook);
                 } else {
                     ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSIONSCHEME, expand)));

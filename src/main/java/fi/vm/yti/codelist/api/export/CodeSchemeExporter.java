@@ -29,7 +29,6 @@ public class CodeSchemeExporter extends BaseExporter {
                               final ExtensionSchemeExporter extensionSchemeExporter,
                               final ExtensionExporter extensionExporter) {
         this.domain = domain;
-
         this.codeExporter = codeExporter;
         this.extensionSchemeExporter = extensionSchemeExporter;
         this.extensionExporter = extensionExporter;
