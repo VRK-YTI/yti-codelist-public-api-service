@@ -1,5 +1,6 @@
 package fi.vm.yti.codelist.api.resource;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -298,13 +299,26 @@ public class CodeRegistryResource extends AbstractBaseResource {
     public Response getCodeRegistryCodeSchemeExtensionScheme(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                              @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                              @ApiParam(value = "ExtensionScheme CodeValue.", required = true) @PathParam("extensionSchemeCodeValue") final String extensionSchemeCodeValue,
+                                                             @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
             final ExtensionSchemeDTO extensionScheme = domain.getExtensionScheme(codeScheme.getId(), extensionSchemeCodeValue);
             if (extensionScheme != null) {
-                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSIONSCHEME, expand)));
-                return Response.ok(extensionScheme).build();
+                if (FORMAT_CSV.startsWith(format.toLowerCase())) {
+                    final Set<ExtensionSchemeDTO> extensionSchemes = new HashSet<>();
+                    extensionSchemes.add(extensionScheme);
+                    final String csv = extensionSchemeExporter.createCsv(extensionSchemes);
+                    return streamCsvExtensionSchemesOutput(csv);
+                } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+                    final Set<ExtensionSchemeDTO> extensionSchemes = new HashSet<>();
+                    extensionSchemes.add(extensionScheme);
+                    final Workbook workbook = extensionSchemeExporter.createExcel(extensionSchemes, format);
+                    return streamExcelExtensionSchemesOutput(workbook);
+                } else {
+                    ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSIONSCHEME, expand)));
+                    return Response.ok(extensionScheme).build();
+                }
             } else {
                 throw new NotFoundException();
             }
