@@ -69,7 +69,7 @@ public class ExtensionSchemeExporter extends BaseExporter {
         final Set<ExtensionSchemeDTO> extensionSchemes = new HashSet<>();
         extensionSchemes.add(extensionScheme);
         addExtensionSchemesSheet(workbook, EXCEL_SHEET_EXTENSIONSCHEMES, extensionSchemes);
-        final String extensionSheetName = truncateSheetName(EXCEL_SHEET_EXTENSIONS + "_" + extensionScheme.getCodeValue());
+        final String extensionSheetName = truncateSheetName(EXCEL_SHEET_EXTENSIONS + "_" + extensionScheme.getParentCodeScheme().getCodeValue() + "_" + extensionScheme.getCodeValue());
         extensionExporter.addExtensionsSheet(workbook, extensionSheetName, domain.getExtensions(null, null, extensionScheme, null, null));
         return workbook;
     }
