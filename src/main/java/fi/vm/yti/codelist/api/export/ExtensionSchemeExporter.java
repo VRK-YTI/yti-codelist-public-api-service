@@ -69,7 +69,7 @@ public class ExtensionSchemeExporter extends BaseExporter {
         final Set<ExtensionSchemeDTO> extensionSchemes = new HashSet<>();
         extensionSchemes.add(extensionScheme);
         addExtensionSchemesSheet(workbook, EXCEL_SHEET_EXTENSIONSCHEMES, extensionSchemes);
-        final String extensionSheetName = truncateSheetName(EXCEL_SHEET_EXTENSIONS + "_" + extensionScheme.getParentCodeScheme().getCodeValue() + "_" + extensionScheme.getCodeValue());
+        final String extensionSheetName = truncateSheetNameWithIndex(EXCEL_SHEET_EXTENSIONS + "_" + extensionScheme.getParentCodeScheme().getCodeValue() + "_" + extensionScheme.getCodeValue(), 1);
         extensionExporter.addExtensionsSheet(workbook, extensionSheetName, domain.getExtensions(null, null, extensionScheme, null, null));
         return workbook;
     }
@@ -117,13 +117,15 @@ public class ExtensionSchemeExporter extends BaseExporter {
     private String getExtensionSchemeUris(final Set<CodeSchemeDTO> codeSchemes) {
         final StringBuilder codeSchemeUris = new StringBuilder();
         int i = 0;
-        for (final CodeSchemeDTO codeScheme : codeSchemes) {
-            i++;
-            codeSchemeUris.append(codeScheme.getUri().trim());
-            if (i < codeSchemes.size()) {
-                codeSchemeUris.append(";");
+        if (codeSchemes != null) {
+            for (final CodeSchemeDTO codeScheme : codeSchemes) {
+                i++;
+                codeSchemeUris.append(codeScheme.getUri().trim());
+                if (i < codeSchemes.size()) {
+                    codeSchemeUris.append(";");
+                }
+                i++;
             }
-            i++;
         }
         return codeSchemeUris.toString();
     }
