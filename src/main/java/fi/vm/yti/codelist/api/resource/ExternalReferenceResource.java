@@ -54,6 +54,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
                                           @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                           @ApiParam(value = "ExternalReference name as string value.") @QueryParam("name") final String name,
                                           @ApiParam(value = "CodeScheme id.") @QueryParam("codeSchemeId") final String codeSchemeId,
+                                          @ApiParam(value = "Return all links from the system.") @QueryParam("all") @DefaultValue("false") final Boolean all,
                                           @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                           @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                           @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
@@ -65,17 +66,17 @@ public class ExternalReferenceResource extends AbstractBaseResource {
             }
         }
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
-            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, Meta.parseAfterFromString(after), null);
+            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, all, Meta.parseAfterFromString(after), null);
             final String csv = externalReferenceExporter.createCsv(externalReferences);
             return streamCsvExternalReferencesOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, Meta.parseAfterFromString(after), null);
+            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, all, Meta.parseAfterFromString(after), null);
             final Workbook workbook = externalReferenceExporter.createExcel(externalReferences, format);
             return streamExcelExternalReferencesOutput(workbook);
         } else {
             final Meta meta = new Meta(200, null, null, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand)));
-            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, meta.getAfter(), meta);
+            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, all, meta.getAfter(), meta);
             meta.setResultCount(externalReferences.size());
             final ResponseWrapper<ExternalReferenceDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(externalReferences);

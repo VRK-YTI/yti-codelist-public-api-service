@@ -434,7 +434,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
-            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, prefLabel, codeScheme, meta.getAfter(), meta);
+            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, prefLabel, codeScheme, false, meta.getAfter(), meta);
             if (pageSize != null && from + pageSize < meta.getTotalResults()) {
                 meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTERNALREFERENCES, after, pageSize, from + pageSize));
             }

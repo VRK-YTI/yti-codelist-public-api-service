@@ -523,14 +523,11 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<ExternalReferenceDTO> getExternalReferences() {
-        return getExternalReferences(MAX_SIZE, 0, null, null, null, null);
-    }
-
     public Set<ExternalReferenceDTO> getExternalReferences(final Integer pageSize,
                                                            final Integer from,
                                                            final String externalReferencePrefLabel,
                                                            final CodeSchemeDTO codeScheme,
+                                                           final Boolean full,
                                                            final Date after,
                                                            final Meta meta) {
         validatePageSize(pageSize);
@@ -552,6 +549,8 @@ public class DomainImpl implements Domain {
                         .must(matchQuery("parentCodeScheme.id", codeScheme.getId().toString().toLowerCase())))
                     .should(boolQuery()
                         .must(matchQuery("global", true))));
+            } else if (!full) {
+                builder.must(matchQuery("global", true));
             }
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);

@@ -86,12 +86,11 @@ public interface Domain {
 
     ExternalReferenceDTO getExternalReference(final String externalReferenceId);
 
-    Set<ExternalReferenceDTO> getExternalReferences();
-
     Set<ExternalReferenceDTO> getExternalReferences(final Integer pageSize,
                                                     final Integer from,
                                                     final String externalReferencePrefLabel,
                                                     final CodeSchemeDTO codeScheme,
+                                                    final Boolean full,
                                                     final Date after,
                                                     final Meta meta);
 
