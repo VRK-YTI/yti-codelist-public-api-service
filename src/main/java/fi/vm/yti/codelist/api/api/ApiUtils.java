@@ -125,6 +125,10 @@ public class ApiUtils {
         return createResourceUrl(API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES, codeCodeValue);
     }
 
+    public String createCodeRegistryWebUrl(final String codeRegistryCodeValue) {
+        return createFrontendBaseUrl() + "/registry;registryCode=" + codeRegistryCodeValue;
+    }
+
     public String createCodeSchemeWebUrl(final String codeRegistryCodeValue,
                                          final String codeSchemeCodeValue) {
         return createFrontendBaseUrl() + "/codescheme;registryCode=" + codeRegistryCodeValue + ";schemeCode=" + codeSchemeCodeValue;

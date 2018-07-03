@@ -68,8 +68,8 @@ public class UriResolverResource extends AbstractBaseResource {
         final ObjectMapper objectMapper = new ObjectMapper();
         final ObjectNode json = objectMapper.createObjectNode();
         json.put("uri", uri);
+        checkResourceValidity(uriPath);
         final String resourcePath = uriPath.substring(API_PATH_CODELIST.length() + 1);
-        checkResourceValidity(resourcePath);
         final List<String> resourceCodeValues = Arrays.asList(resourcePath.split("/"));
         json.put("url", resolveApiResourceUrl(resourceCodeValues));
         return Response.ok().entity(json).build();
@@ -161,7 +161,11 @@ public class UriResolverResource extends AbstractBaseResource {
 
     private String resolveWebResourceUrl(final List<String> resourceCodeValues) {
         final String url;
-        if (resourceCodeValues.size() == 2) {
+        if (resourceCodeValues.size() == 1) {
+            final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+            checkCodeRegistryExists(codeRegistryCodeValue);
+            url = apiUtils.createCodeRegistryWebUrl(codeRegistryCodeValue);
+        } else if (resourceCodeValues.size() == 2) {
             final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
             final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
             checkCodeSchemeExists(codeRegistryCodeValue, codeSchemeCodeValue);
