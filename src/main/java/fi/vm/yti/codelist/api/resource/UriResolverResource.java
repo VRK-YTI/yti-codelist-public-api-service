@@ -87,6 +87,7 @@ public class UriResolverResource extends AbstractBaseResource {
     })
     public Response redirectUri(@HeaderParam("Accept") String accept,
                                 @ApiParam(value = "Format for returning content.") @QueryParam("format") final String format,
+                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                                 @ApiParam(value = "Resource URI.", required = true) @QueryParam("uri") final String uri) {
         final URI resolveUri = parseUriFromString(uri);
         ensureSuomiFiUriHost(resolveUri.getHost());
@@ -96,7 +97,12 @@ public class UriResolverResource extends AbstractBaseResource {
         final List<String> resourceCodeValues = Arrays.asList(resourcePath.split("/"));
         final List<String> acceptHeaders = parseAcceptHeaderValues(accept);
         if (format != null && !format.isEmpty()) {
-            final URI redirectUrl = URI.create(resolveApiResourceUrl(resourceCodeValues) + "?format=" + format);
+            final URI redirectUrl;
+            if (expand != null && !expand.isEmpty()) {
+                redirectUrl = URI.create(resolveApiResourceUrl(resourceCodeValues) + "?format=" + format + "&expand=" + expand);
+            } else {
+                redirectUrl = URI.create(resolveApiResourceUrl(resourceCodeValues) + "?format=" + format);
+            }
             return Response.seeOther(redirectUrl).build();
         } else if (acceptHeaders.contains(MediaType.APPLICATION_JSON)) {
             final URI redirectUrl = URI.create(resolveApiResourceUrl(resourceCodeValues));
