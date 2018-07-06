@@ -35,12 +35,16 @@ public interface Domain {
 
     Set<CodeSchemeDTO> getCodeSchemes(final String language);
 
-    Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue, final String language);
+    Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue,
+                                                             final List<String> organizationIds,
+                                                             final List<String> userOrganizationIds,
+                                                             final String language);
 
     Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
                                       final Integer from,
                                       final String sortMode,
-                                      final String organizationId,
+                                      final List<String> organizationIds,
+                                      final List<String> userOrganizationIds,
                                       final String codeRegistryCodeValue,
                                       final String codeRegistryPrefLabel,
                                       final String codeSchemeCodeValue,
