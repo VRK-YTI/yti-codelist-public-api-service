@@ -318,12 +318,12 @@ public class DomainImpl implements Domain {
             }
             if (statuses != null && !statuses.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
-                if (statuses.contains(Status.UNFINISHED.toString())) {
+                if (statuses.contains(Status.INCOMPLETE.toString())) {
                     final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
-                    unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.UNFINISHED.toString()));
+                    unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
                     unfinishedQueryBuilder.must(nestedQuery("codeRegistry.organizations", termsQuery("codeRegistry.organizations.id.keyword", userOrganizationIds), ScoreMode.None));
                     boolQueryBuilder.should(unfinishedQueryBuilder);
-                    statuses.remove(Status.UNFINISHED.toString());
+                    statuses.remove(Status.INCOMPLETE.toString());
                 }
                 boolQueryBuilder.should(termsQuery("status.keyword", statuses));
                 builder.must(termsQuery("status.keyword", statuses));
@@ -334,7 +334,7 @@ public class DomainImpl implements Domain {
                 boolQueryBuilder.should(termsQuery("status.keyword", getRegularStatuses()));
                 if (userOrganizationIds != null && !userOrganizationIds.isEmpty()) {
                     final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
-                    unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.UNFINISHED.toString()));
+                    unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
                     unfinishedQueryBuilder.must(nestedQuery("codeRegistry.organizations", termsQuery("codeRegistry.organizations.id.keyword", userOrganizationIds), ScoreMode.None));
                     boolQueryBuilder.should(unfinishedQueryBuilder);
                 }
@@ -899,7 +899,7 @@ public class DomainImpl implements Domain {
         builder.should(constantScoreQuery(termQuery("status.keyword", "SUPERSEDED")).boost(600f));
         builder.should(constantScoreQuery(termQuery("status.keyword", "RETIRED")).boost(500f));
         builder.should(constantScoreQuery(termQuery("status.keyword", "INVALID")).boost(400f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "UNFINISHED")).boost(300f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", "INCOMPLETE")).boost(300f));
     }
 
     private void validatePageSize(final Integer pageSize) {
