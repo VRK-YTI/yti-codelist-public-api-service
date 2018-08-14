@@ -33,8 +33,8 @@ public class ExtensionExporter extends BaseExporter {
             appendValue(csv, csvSeparator, extension.getId().toString());
             appendValue(csv, csvSeparator, extension.getCode() != null ? extension.getCode().getCodeValue() : "");
             appendValue(csv, csvSeparator, extension.getExtension() != null ? extension.getExtension().getId().toString() : "");
-            appendValue(csv, csvSeparator, extension.getCreated() != null ? formatDateWithSeconds(extension.getExtension().getCode().getCreated()) : "");
-            appendValue(csv, csvSeparator, extension.getModified() != null ? formatDateWithSeconds(extension.getExtension().getCode().getModified()) : "");
+            appendValue(csv, csvSeparator, extension.getCreated() != null ? formatDateWithSeconds(extension.getCreated()) : "");
+            appendValue(csv, csvSeparator, extension.getModified() != null ? formatDateWithSeconds(extension.getModified()) : "");
             appendValue(csv, csvSeparator, extension.getOrder().toString(), true);
         }
         return csv.toString();
