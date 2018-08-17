@@ -409,7 +409,7 @@ public class DomainImpl implements Domain {
 
     public Set<CodeDTO> getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(final String codeRegistryCodeValue,
                                                                               final String codeSchemeCodeValue) {
-        return getCodes(MAX_SIZE, 0, codeRegistryCodeValue, codeSchemeCodeValue, null, null, null, null, null, null, null);
+        return getCodes(MAX_SIZE, 0, codeRegistryCodeValue, codeSchemeCodeValue, null, null, null, null, null, null, null, null);
     }
 
     public Set<CodeDTO> getCodes(final Integer pageSize,
@@ -420,6 +420,7 @@ public class DomainImpl implements Domain {
                                  final String prefLabel,
                                  final Integer hierarchyLevel,
                                  final String broaderCodeId,
+                                 final String language,
                                  final List<String> statuses,
                                  final Date after,
                                  final Meta meta) {
@@ -431,7 +432,6 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE)
-                .addSort("order", SortOrder.ASC)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0);
 
@@ -450,6 +450,17 @@ public class DomainImpl implements Domain {
             }
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
+            }
+            if (language != null && !language.isEmpty()) {
+                searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                sortLanguages.forEach(sortLanguage -> {
+                    if (!language.equalsIgnoreCase(sortLanguage)) {
+                        searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                    }
+                });
+                searchRequest.addSort("codeValue.raw", SortOrder.ASC);
+            } else {
+                searchRequest.addSort("order", SortOrder.ASC);
             }
             final SearchResponse response = searchRequest.execute().actionGet();
             setResultCounts(meta, response);

@@ -72,6 +72,7 @@ public interface Domain {
                           final String prefLabel,
                           final Integer hierarchyLevel,
                           final String broaderCodeId,
+                          final String language,
                           final List<String> statuses,
                           final Date after,
                           final Meta meta);
