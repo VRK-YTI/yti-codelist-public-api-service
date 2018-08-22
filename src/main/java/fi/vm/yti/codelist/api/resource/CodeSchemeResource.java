@@ -1,5 +1,6 @@
 package fi.vm.yti.codelist.api.resource;
 
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -13,6 +14,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import fi.vm.yti.codelist.common.model.CodeSchemeListItem;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Component;
 
@@ -107,6 +109,43 @@ public class CodeSchemeResource extends AbstractBaseResource {
             return Response.ok(codeScheme).build();
         } else {
             return Response.status(Response.Status.NOT_FOUND).build();
+        }
+    }
+
+    @GET
+    @Path("{codeSchemeId}/versions")
+    @ApiOperation(value = "Return the complete version history of a specific CodeScheme, latest first.", response = CodeSchemeDTO.class, responseContainer = "List")
+    @ApiResponse(code = 200, message = "Return the complete version history of a specific CodeScheme, latest first, in JSON format.")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    public Response getCodeSchemeVersions(@ApiParam(value = "CodeScheme UUID.", required = true) @PathParam("codeSchemeId") final String codeSchemeId,
+                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
+        final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeSchemeId);
+        LinkedHashSet<CodeSchemeListItem> allVersions = new LinkedHashSet<>();
+        if (codeScheme != null) {
+            allVersions = codeScheme.getAllVersions();
+        }
+        LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
+        final Meta meta = new Meta(200, null, null, null);
+
+        if (codeScheme == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else if (allVersions.isEmpty()) {
+            meta.setResultCount(1);
+            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
+            result.add(codeScheme);
+            wrapper.setResults(result);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
+        } else {
+            for (CodeSchemeListItem item : allVersions) {
+                result.add(domain.getCodeScheme(item.getId().toString()));
+            }
+            meta.setResultCount(result.size());
+            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
+            wrapper.setResults(result);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
         }
     }
 }
