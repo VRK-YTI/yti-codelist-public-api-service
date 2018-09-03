@@ -24,6 +24,8 @@ public class ExtensionExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_RELATION);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER, true);
@@ -33,6 +35,8 @@ public class ExtensionExporter extends BaseExporter {
             appendValue(csv, csvSeparator, extension.getId().toString());
             appendValue(csv, csvSeparator, extension.getCode() != null ? extension.getCode().getCodeValue() : "");
             appendValue(csv, csvSeparator, extension.getExtension() != null ? extension.getExtension().getId().toString() : "");
+            appendValue(csv, csvSeparator, extension.getStartDate() != null ? formatDateWithISO8601(extension.getStartDate()) : "");
+            appendValue(csv, csvSeparator, extension.getEndDate() != null ? formatDateWithISO8601(extension.getEndDate()) : "");
             appendValue(csv, csvSeparator, extension.getCreated() != null ? formatDateWithSeconds(extension.getCreated()) : "");
             appendValue(csv, csvSeparator, extension.getModified() != null ? formatDateWithSeconds(extension.getModified()) : "");
             appendValue(csv, csvSeparator, extension.getOrder().toString(), true);
@@ -61,6 +65,8 @@ public class ExtensionExporter extends BaseExporter {
         }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_RELATION);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_ORDER);
@@ -83,6 +89,8 @@ public class ExtensionExporter extends BaseExporter {
             } else {
                 row.createCell(k++).setCellValue("");
             }
+            row.createCell(k++).setCellValue(extension.getStartDate() != null ? formatDateWithISO8601(extension.getStartDate()) : "");
+            row.createCell(k++).setCellValue(extension.getEndDate() != null ? formatDateWithISO8601(extension.getEndDate()) : "");
             row.createCell(k++).setCellValue(extension.getCreated() != null ? formatDateWithSeconds(extension.getCreated()) : "");
             row.createCell(k++).setCellValue(extension.getModified() != null ? formatDateWithSeconds(extension.getModified()) : "");
             row.createCell(k).setCellValue(checkEmptyValue(extension.getOrder() != null ? extension.getOrder().toString() : ""));
