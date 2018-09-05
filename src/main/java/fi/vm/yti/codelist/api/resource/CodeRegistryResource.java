@@ -1,6 +1,7 @@
 package fi.vm.yti.codelist.api.resource;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,6 +15,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import fi.vm.yti.codelist.common.model.CodeSchemeListItem;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Component;
 
@@ -513,6 +515,120 @@ public class CodeRegistryResource extends AbstractBaseResource {
             }
         } else {
             throw new NotFoundException();
+        }
+    }
+
+    @GET
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/versions/")
+    @ApiOperation(value = "Return the complete version history of a specific CodeScheme, latest first.", response = CodeSchemeDTO.class, responseContainer = "List")
+    @ApiResponse(code = 200, message = "Return the complete version history of a specific CodeScheme, latest first, in JSON format.")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    public Response getCodeSchemeVersions(@ApiParam(value = "CodeRegistry codevalue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                          @ApiParam(value = "CodeScheme codevalue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
+        final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
+        LinkedHashSet<CodeSchemeListItem> allVersions = new LinkedHashSet<>();
+        if (codeScheme != null) {
+            allVersions = codeScheme.getAllVersions();
+        }
+        LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
+        final Meta meta = new Meta(200, null, null, null);
+
+        if (codeScheme == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else if (allVersions.isEmpty()) {
+            meta.setResultCount(1);
+            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
+            result.add(codeScheme);
+            wrapper.setResults(result);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
+        } else {
+            for (CodeSchemeListItem item : allVersions) {
+                result.add(domain.getCodeScheme(item.getId().toString()));
+            }
+            meta.setResultCount(result.size());
+            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
+            wrapper.setResults(result);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
+        }
+    }
+
+    @GET
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/variants/")
+    @ApiOperation(value = "Returns the variants of the CodeScheme.", response = CodeSchemeDTO.class, responseContainer = "List")
+    @ApiResponse(code = 200, message = "Return the variants of the CodeScheme in JSON format.")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    public Response getCodeSchemeVariants(@ApiParam(value = "CodeRegistry codevalue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                          @ApiParam(value = "CodeScheme codevalue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
+        final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
+        LinkedHashSet<CodeSchemeListItem> variants = new LinkedHashSet<>();
+        if (codeScheme != null) {
+            variants = codeScheme.getVariantsOfThisCodeScheme();
+        }
+        LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
+        final Meta meta = new Meta(200, null, null, null);
+
+        if (codeScheme == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else if (variants.isEmpty()) {
+            meta.setResultCount(1);
+            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
+            result.add(codeScheme);
+            wrapper.setResults(result);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
+        } else {
+            for (CodeSchemeListItem item : variants) {
+                result.add(domain.getCodeScheme(item.getId().toString()));
+            }
+            meta.setResultCount(result.size());
+            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
+            wrapper.setResults(result);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
+        }
+    }
+
+    @GET
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/variantmothers/")
+    @ApiOperation(value = "Returns the CodeSchemes of which this CodeScheme is a variant of.", response = CodeSchemeDTO.class, responseContainer = "List")
+    @ApiResponse(code = 200, message = "Return the CodeSchemes of which this CodeScheme is a variant of in JSON format.")
+    @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    public Response getCodeSchemeVariantMothers(@ApiParam(value = "CodeRegistry codevalue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                          @ApiParam(value = "CodeScheme codevalue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
+        final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
+        LinkedHashSet<CodeSchemeListItem> variantMothers = new LinkedHashSet<>();
+        if (codeScheme != null) {
+            variantMothers = codeScheme.getVariantMothersOfThisCodeScheme();
+        }
+        LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
+        final Meta meta = new Meta(200, null, null, null);
+
+        if (codeScheme == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else if (variantMothers.isEmpty()) {
+            meta.setResultCount(1);
+            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
+            result.add(codeScheme);
+            wrapper.setResults(result);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
+        } else {
+            for (CodeSchemeListItem item : variantMothers) {
+                result.add(domain.getCodeScheme(item.getId().toString()));
+            }
+            meta.setResultCount(result.size());
+            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
+            wrapper.setResults(result);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
         }
     }
 }
