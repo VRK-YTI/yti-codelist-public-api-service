@@ -477,15 +477,17 @@ public class DomainImpl implements Domain {
         return codes;
     }
 
-    public PropertyTypeDTO getPropertyType(final String propertyTypeId) {
+    public PropertyTypeDTO getPropertyType(final String propertyTypeIdentifier) {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_PROPERTYTYPE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_PROPERTYTYPE)
                 .setTypes(ELASTIC_TYPE_PROPERTYTYPE);
-            final BoolQueryBuilder builder = boolQuery()
-                .must(matchQuery("id", propertyTypeId.toLowerCase()));
+            final BoolQueryBuilder builder = new BoolQueryBuilder()
+                .should(matchQuery("id", propertyTypeIdentifier.toLowerCase()))
+                .should(matchQuery("localName", propertyTypeIdentifier.toLowerCase()).analyzer(TEXT_ANALYZER))
+                .minimumShouldMatch(1);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {

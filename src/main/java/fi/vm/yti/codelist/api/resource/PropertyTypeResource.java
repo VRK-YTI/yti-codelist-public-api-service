@@ -77,14 +77,14 @@ public class PropertyTypeResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{propertyTypeId}")
+    @Path("{propertyTypeIdentifier}")
     @ApiOperation(value = "Return one specific PropertyType.", response = PropertyTypeDTO.class)
     @ApiResponse(code = 200, message = "Returns one specific PropertyType in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getPropertyType(@ApiParam(value = "PropertyType CodeValue.", required = true) @PathParam("propertyTypeId") final String propertyTypeId,
+    public Response getPropertyType(@ApiParam(value = "PropertyType ID.", required = true) @PathParam("propertyTypeIdentifier") final String propertyTypeIdentifier,
                                     @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand)));
-        final PropertyTypeDTO propertyType = domain.getPropertyType(propertyTypeId);
+        final PropertyTypeDTO propertyType = domain.getPropertyType(propertyTypeIdentifier);
         if (propertyType != null) {
             return Response.ok(propertyType).build();
         } else {
