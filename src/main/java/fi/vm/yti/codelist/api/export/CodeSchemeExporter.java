@@ -44,6 +44,7 @@ public class CodeSchemeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CLASSIFICATION);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_LANGUAGECODE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_VERSION);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
         appendValue(csv, csvSeparator, CONTENT_HEADER_SOURCE);
@@ -62,7 +63,8 @@ public class CodeSchemeExporter extends BaseExporter {
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             appendValue(csv, csvSeparator, codeScheme.getCodeValue());
             appendValue(csv, csvSeparator, codeScheme.getId().toString());
-            appendValue(csv, csvSeparator, formatDataClassificationsToString(codeScheme.getDataClassifications()));
+            appendValue(csv, csvSeparator, formatCodesToString(codeScheme.getDataClassifications()));
+            appendValue(csv, csvSeparator, formatCodesToString(codeScheme.getLanguageCodes()));
             appendValue(csv, csvSeparator, codeScheme.getVersion());
             appendValue(csv, csvSeparator, codeScheme.getStatus());
             appendValue(csv, csvSeparator, codeScheme.getSource());
@@ -125,6 +127,7 @@ public class CodeSchemeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CLASSIFICATION);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LANGUAGECODE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_VERSION);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STATUS);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_SOURCE);
@@ -156,7 +159,8 @@ public class CodeSchemeExporter extends BaseExporter {
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getCodeValue()));
-            row.createCell(k++).setCellValue(checkEmptyValue(formatDataClassificationsToString(codeScheme.getDataClassifications())));
+            row.createCell(k++).setCellValue(checkEmptyValue(formatCodesToString(codeScheme.getDataClassifications())));
+            row.createCell(k++).setCellValue(checkEmptyValue(formatCodesToString(codeScheme.getLanguageCodes())));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getVersion()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getStatus()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getSource()));
@@ -221,7 +225,7 @@ public class CodeSchemeExporter extends BaseExporter {
         return languages;
     }
 
-    private String formatDataClassificationsToString(final Set<CodeDTO> classifications) {
+    private String formatCodesToString(final Set<CodeDTO> classifications) {
         final StringBuilder csvClassifications = new StringBuilder();
         int i = 0;
         for (final CodeDTO code : classifications) {
