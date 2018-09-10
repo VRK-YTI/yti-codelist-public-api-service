@@ -1,6 +1,5 @@
 package fi.vm.yti.codelist.api.resource;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
