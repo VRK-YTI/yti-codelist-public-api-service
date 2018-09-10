@@ -239,7 +239,6 @@ public class CodeSchemeExporter extends BaseExporter {
             if (i < organizations.size()) {
                 csvOrganizations.append(";");
             }
-            i++;
         }
         return csvOrganizations.toString();
     }
@@ -253,7 +252,6 @@ public class CodeSchemeExporter extends BaseExporter {
             if (i < codes.size()) {
                 csvCodes.append(";");
             }
-            i++;
         }
         return csvCodes.toString();
     }
