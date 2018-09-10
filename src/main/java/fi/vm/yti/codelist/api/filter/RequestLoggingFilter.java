@@ -83,24 +83,12 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
     private void logRequestInfo(final ContainerRequestContext requestContext,
                                 final ContainerResponseContext responseContext,
                                 final long executionTime) {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("Request: /");
-        builder.append(requestContext.getMethod());
-        builder.append(" ");
-        builder.append(requestContext.getUriInfo().getPath());
-        builder.append(", ");
-        builder.append("Status: ");
-        builder.append(responseContext.getStatus());
-        builder.append(", ");
-        builder.append("User-Agent: ");
-        builder.append(MDC.get("userAgent"));
-        builder.append(", ");
-        builder.append("Host: ");
-        builder.append(MDC.get("host"));
-        builder.append(", ");
-        builder.append("Time: ");
-        builder.append(executionTime);
-        builder.append(" ms");
-        LOG.info(builder.toString());
+        final String log = "Request: /" +
+            requestContext.getMethod() + " " + requestContext.getUriInfo().getPath() + ", " +
+            "Status: " + responseContext.getStatus() + ", " +
+            "User-Agent: " + MDC.get("userAgent") +  ", " +
+            "Host: " + MDC.get("host") + ", " +
+            "Time: " + executionTime + " ms";
+        LOG.info(log);
     }
 }
