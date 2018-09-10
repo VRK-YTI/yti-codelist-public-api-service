@@ -528,11 +528,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                           @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-        LinkedHashSet<CodeSchemeListItem> allVersions = new LinkedHashSet<>();
+        Set<CodeSchemeListItem> allVersions = new LinkedHashSet<>();
         if (codeScheme != null) {
             allVersions = codeScheme.getAllVersions();
         }
-        LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
+        Set<CodeSchemeDTO> result = new LinkedHashSet<>();
         final Meta meta = new Meta(200, null, null, null);
 
         if (codeScheme == null) {
@@ -566,11 +566,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                           @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-        LinkedHashSet<CodeSchemeListItem> variants = new LinkedHashSet<>();
+        Set<CodeSchemeListItem> variants = new LinkedHashSet<>();
         if (codeScheme != null) {
             variants = codeScheme.getVariantsOfThisCodeScheme();
         }
-        LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
+        Set<CodeSchemeDTO> result = new LinkedHashSet<>();
         final Meta meta = new Meta(200, null, null, null);
 
         if (codeScheme == null) {
@@ -604,11 +604,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                           @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-        LinkedHashSet<CodeSchemeListItem> variantMothers = new LinkedHashSet<>();
+        Set<CodeSchemeListItem> variantMothers = new LinkedHashSet<>();
         if (codeScheme != null) {
             variantMothers = codeScheme.getVariantMothersOfThisCodeScheme();
         }
-        LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
+        Set<CodeSchemeDTO> result = new LinkedHashSet<>();
         final Meta meta = new Meta(200, null, null, null);
 
         if (codeScheme == null) {
