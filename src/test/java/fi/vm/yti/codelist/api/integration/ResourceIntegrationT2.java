@@ -49,7 +49,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
         try {
-            final ObjectNode jsonObject = (ObjectNode) mapper.readTree(response.getBody().toString());
+            final ObjectNode jsonObject = (ObjectNode) mapper.readTree(response.getBody());
             final ArrayNode registriesArray = (ArrayNode) jsonObject.get("results");
             assertEquals(8, registriesArray.size());
         } catch (final IOException e) {
@@ -66,7 +66,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
         try {
-            final CodeRegistryDTO codeRegistry = mapper.readValue(response.getBody().toString(), CodeRegistryDTO.class);
+            final CodeRegistryDTO codeRegistry = mapper.readValue(response.getBody(), CodeRegistryDTO.class);
             assertEquals(TEST_CODEREGISTRY_CODEVALUE, codeRegistry.getCodeValue());
         } catch (final IOException e) {
             Assert.fail("Exception " + e);
@@ -82,7 +82,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
         try {
-            final ObjectNode jsonObject = (ObjectNode) mapper.readTree(response.getBody().toString());
+            final ObjectNode jsonObject = (ObjectNode) mapper.readTree(response.getBody());
             final ArrayNode codeSchemesArray = (ArrayNode) jsonObject.get("results");
             assertEquals(8, codeSchemesArray.size());
         } catch (final IOException e) {
@@ -99,7 +99,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
         try {
-            final CodeSchemeDTO codeScheme = mapper.readValue(response.getBody().toString(), CodeSchemeDTO.class);
+            final CodeSchemeDTO codeScheme = mapper.readValue(response.getBody(), CodeSchemeDTO.class);
             assertEquals(TEST_CODESCHEME_CODEVALUE, codeScheme.getCodeValue());
         } catch (final IOException e) {
             Assert.fail("Exception " + e);
@@ -115,7 +115,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
         try {
-            final ObjectNode jsonObject = (ObjectNode) mapper.readTree(response.getBody().toString());
+            final ObjectNode jsonObject = (ObjectNode) mapper.readTree(response.getBody());
             final ArrayNode codesArray = (ArrayNode) jsonObject.get("results");
             assertEquals(8, codesArray.size());
         } catch (final IOException e) {
@@ -132,7 +132,7 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
         try {
-            final CodeDTO code = mapper.readValue(response.getBody().toString(), CodeDTO.class);
+            final CodeDTO code = mapper.readValue(response.getBody(), CodeDTO.class);
             assertEquals(TEST_CODE_CODEVALUE, code.getCodeValue());
         } catch (final IOException e) {
             Assert.fail("Exception " + e);
