@@ -1,6 +1,5 @@
 package fi.vm.yti.codelist.api.resource;
 
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -14,7 +13,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import fi.vm.yti.codelist.common.model.CodeSchemeListItem;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +36,7 @@ import static java.util.Arrays.asList;
 @Component
 @Path("/v1/codeschemes")
 @Api(value = "codeschemes")
-@Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
 public class CodeSchemeResource extends AbstractBaseResource {
 
     private final Domain domain;
@@ -54,7 +52,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return list of available CodeSchemes.", response = CodeSchemeDTO.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns all CodeSchemes in specified format.")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN})
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN })
     public Response getCodeSchemes(@ApiParam(value = "CodeRegistry CodeValue.") @QueryParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                    @ApiParam(value = "CodeRegistry Name.") @QueryParam("codeRegistryName") final String codeRegistryPrefLabel,
                                    @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
