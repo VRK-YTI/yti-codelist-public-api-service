@@ -234,7 +234,7 @@ abstract class AbstractBaseResource {
                                    final MultivaluedMap<String, Object> responseHeaders,
                                    final Object valueToWrite,
                                    final ObjectWriter w,
-                                   final JsonGenerator g) throws IOException {
+                                   final JsonGenerator g) {
             return w.with(provider);
         }
     }
