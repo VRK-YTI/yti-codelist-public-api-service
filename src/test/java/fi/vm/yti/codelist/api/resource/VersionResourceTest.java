@@ -33,7 +33,7 @@ public class VersionResourceTest extends AbstractTestBase {
     @Test
     public void testVersionRequest() {
         final String apiUrl = createApiUrlWithoutVersion(randomServerPort, API_PATH_VERSION) + "/";
-        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<LinkedMultiValueMap<String, Object>>(null, null);
+        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(null, null);
         final ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class);
         assertEquals(response.getStatusCode(), HttpStatus.OK);
     }

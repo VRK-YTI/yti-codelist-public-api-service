@@ -105,7 +105,7 @@ public class CodeSchemeExporter extends BaseExporter {
                 extensionExporter.addExtensionsSheet(workbook, extensionSheetName, domain.getExtensions(null, null, extensionScheme, null, null));
             }
         } else {
-            extensionSchemeExporter.addExtensionSchemesSheet(workbook, extensionSchemeSheetName, new HashSet<ExtensionSchemeDTO>());
+            extensionSchemeExporter.addExtensionSchemesSheet(workbook, extensionSchemeSheetName, new HashSet<>());
         }
         return workbook;
     }

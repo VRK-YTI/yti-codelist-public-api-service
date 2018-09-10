@@ -43,8 +43,8 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
     @Test
     public void getRegistriesTest() {
         final String apiUrl = createApiUrl(randomServerPort, API_PATH_CODEREGISTRIES) + "/";
-        final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
-        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<LinkedMultiValueMap<String, Object>>(parameters, null);
+        final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<>();
+        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(parameters, null);
         final ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class, "");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
@@ -60,8 +60,8 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
     @Test
     public void getRegistryTest() {
         final String apiUrl = createApiUrl(randomServerPort, API_PATH_CODEREGISTRIES) + "/" + TEST_CODEREGISTRY_CODEVALUE + "/";
-        final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
-        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<LinkedMultiValueMap<String, Object>>(parameters, null);
+        final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<>();
+        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(parameters, null);
         final ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class, "");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
@@ -76,8 +76,8 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
     @Test
     public void getCodeSchemesTest() {
         final String apiUrl = createApiUrl(randomServerPort, API_PATH_CODEREGISTRIES) + "/" + TEST_CODEREGISTRY_CODEVALUE + API_PATH_CODESCHEMES + "/";
-        final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
-        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<LinkedMultiValueMap<String, Object>>(parameters, null);
+        final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<>();
+        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(parameters, null);
         final ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class, "");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
@@ -93,8 +93,8 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
     @Test
     public void getCodeSchemeTest() {
         final String apiUrl = createApiUrl(randomServerPort, API_PATH_CODEREGISTRIES) + "/" + TEST_CODEREGISTRY_CODEVALUE + API_PATH_CODESCHEMES + "/" + TEST_CODESCHEME_CODEVALUE + "/";
-        final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
-        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<LinkedMultiValueMap<String, Object>>(parameters, null);
+        final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<>();
+        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(parameters, null);
         final ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class, "");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
@@ -109,8 +109,8 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
     @Test
     public void getCodesTest() {
         final String apiUrl = createApiUrl(randomServerPort, API_PATH_CODEREGISTRIES) + "/" + TEST_CODEREGISTRY_CODEVALUE + API_PATH_CODESCHEMES + "/" + TEST_CODESCHEME_CODEVALUE + API_PATH_CODES + "/";
-        final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
-        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<LinkedMultiValueMap<String, Object>>(parameters, null);
+        final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<>();
+        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(parameters, null);
         final ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class, "");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
@@ -126,8 +126,8 @@ public class ResourceIntegrationT2 extends AbstractTestBase {
     @Test
     public void getCodeTest() {
         final String apiUrl = createApiUrl(randomServerPort, API_PATH_CODEREGISTRIES) + "/" + TEST_CODEREGISTRY_CODEVALUE + API_PATH_CODESCHEMES + "/" + TEST_CODESCHEME_CODEVALUE + API_PATH_CODES + "/" + TEST_CODE_CODEVALUE + "/";
-        final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<String, Object>();
-        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<LinkedMultiValueMap<String, Object>>(parameters, null);
+        final LinkedMultiValueMap<String, Object> parameters = new LinkedMultiValueMap<>();
+        final HttpEntity<LinkedMultiValueMap<String, Object>> entity = new HttpEntity<>(parameters, null);
         final ResponseEntity<String> response = restTemplate.exchange(apiUrl, HttpMethod.GET, entity, String.class, "");
         assertEquals(HttpStatus.OK, response.getStatusCode());
         final ObjectMapper mapper = new ObjectMapper();
