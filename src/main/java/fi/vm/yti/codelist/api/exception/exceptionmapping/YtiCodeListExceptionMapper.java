@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Provider
-public class YtiCodeListExceptionMapper extends BaseExceptionMapper implements ExceptionMapper<YtiCodeListException> {
+public class YtiCodeListExceptionMapper implements BaseExceptionMapper, ExceptionMapper<YtiCodeListException> {
 
     private static final Logger LOG = LoggerFactory.getLogger(UncaughtExceptionMapper.class);
 
