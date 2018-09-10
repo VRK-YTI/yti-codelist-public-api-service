@@ -14,6 +14,7 @@ import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
+import fi.vm.yti.codelist.common.dto.OrganizationDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
@@ -43,6 +44,7 @@ public class CodeSchemeExporter extends BaseExporter {
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ORGANIZATION);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CLASSIFICATION);
         appendValue(csv, csvSeparator, CONTENT_HEADER_LANGUAGECODE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_VERSION);
@@ -63,6 +65,7 @@ public class CodeSchemeExporter extends BaseExporter {
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             appendValue(csv, csvSeparator, codeScheme.getCodeValue());
             appendValue(csv, csvSeparator, codeScheme.getId().toString());
+            appendValue(csv, csvSeparator, formatOrganizationsToString(codeScheme.getOrganizations()));
             appendValue(csv, csvSeparator, formatCodesToString(codeScheme.getDataClassifications()));
             appendValue(csv, csvSeparator, formatCodesToString(codeScheme.getLanguageCodes()));
             appendValue(csv, csvSeparator, codeScheme.getVersion());
@@ -126,6 +129,7 @@ public class CodeSchemeExporter extends BaseExporter {
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ORGANIZATION);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CLASSIFICATION);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LANGUAGECODE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_VERSION);
@@ -159,6 +163,7 @@ public class CodeSchemeExporter extends BaseExporter {
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getCodeValue()));
+            row.createCell(k++).setCellValue(checkEmptyValue(formatOrganizationsToString(codeScheme.getOrganizations())));
             row.createCell(k++).setCellValue(checkEmptyValue(formatCodesToString(codeScheme.getDataClassifications())));
             row.createCell(k++).setCellValue(checkEmptyValue(formatCodesToString(codeScheme.getLanguageCodes())));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getVersion()));
@@ -225,17 +230,31 @@ public class CodeSchemeExporter extends BaseExporter {
         return languages;
     }
 
-    private String formatCodesToString(final Set<CodeDTO> classifications) {
-        final StringBuilder csvClassifications = new StringBuilder();
+    private String formatOrganizationsToString(final Set<OrganizationDTO> organizations) {
+        final StringBuilder csvOrganizations = new StringBuilder();
         int i = 0;
-        for (final CodeDTO code : classifications) {
+        for (final OrganizationDTO organization : organizations) {
             i++;
-            csvClassifications.append(code.getCodeValue().trim());
-            if (i < classifications.size()) {
-                csvClassifications.append(";");
+            csvOrganizations.append(organization.getId());
+            if (i < organizations.size()) {
+                csvOrganizations.append(";");
             }
             i++;
         }
-        return csvClassifications.toString();
+        return csvOrganizations.toString();
+    }
+
+    private String formatCodesToString(final Set<CodeDTO> codes) {
+        final StringBuilder csvCodes = new StringBuilder();
+        int i = 0;
+        for (final CodeDTO code : codes) {
+            i++;
+            csvCodes.append(code.getCodeValue().trim());
+            if (i < codes.size()) {
+                csvCodes.append(";");
+            }
+            i++;
+        }
+        return csvCodes.toString();
     }
 }
