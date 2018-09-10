@@ -143,48 +143,62 @@ public class UriResolverResource extends AbstractBaseResource {
 
     private String resolveApiResourceUrl(final List<String> resourceCodeValues) {
         final String url;
-        if (resourceCodeValues.size() == 1) {
-            final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
-            checkCodeRegistryExists(codeRegistryCodeValue);
-            url = apiUtils.createCodeRegistryUrl(codeRegistryCodeValue);
-        } else if (resourceCodeValues.size() == 2) {
-            final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
-            final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
-            checkCodeSchemeExists(codeRegistryCodeValue, codeSchemeCodeValue);
-            url = apiUtils.createCodeSchemeUrl(codeRegistryCodeValue, codeSchemeCodeValue);
-        } else if (resourceCodeValues.size() == 3) {
-            final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
-            final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
-            final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(2));
-            checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
-            url = apiUtils.createCodeUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
-        } else {
-            LOG.error("Codelist resource URI not resolvable!");
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Codelist resource URI not resolvable!"));
+        switch (resourceCodeValues.size()) {
+            case 1: {
+                final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+                checkCodeRegistryExists(codeRegistryCodeValue);
+                url = apiUtils.createCodeRegistryUrl(codeRegistryCodeValue);
+                break;
+            }
+            case 2: {
+                final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+                final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
+                checkCodeSchemeExists(codeRegistryCodeValue, codeSchemeCodeValue);
+                url = apiUtils.createCodeSchemeUrl(codeRegistryCodeValue, codeSchemeCodeValue);
+                break;
+            }
+            case 3: {
+                final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+                final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
+                final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(2));
+                checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                url = apiUtils.createCodeUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                break;
+            }
+            default:
+                LOG.error("Codelist resource URI not resolvable!");
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Codelist resource URI not resolvable!"));
         }
         return url;
     }
 
     private String resolveWebResourceUrl(final List<String> resourceCodeValues) {
         final String url;
-        if (resourceCodeValues.size() == 1) {
-            final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
-            checkCodeRegistryExists(codeRegistryCodeValue);
-            url = apiUtils.createCodeRegistryWebUrl(codeRegistryCodeValue);
-        } else if (resourceCodeValues.size() == 2) {
-            final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
-            final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
-            checkCodeSchemeExists(codeRegistryCodeValue, codeSchemeCodeValue);
-            url = apiUtils.createCodeSchemeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue);
-        } else if (resourceCodeValues.size() == 3) {
-            final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
-            final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
-            final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(2));
-            checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
-            url = apiUtils.createCodeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
-        } else {
-            LOG.error("Codelist resource URI not resolvable!");
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Codelist resource URI not resolvable!"));
+        switch (resourceCodeValues.size()) {
+            case 1: {
+                final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+                checkCodeRegistryExists(codeRegistryCodeValue);
+                url = apiUtils.createCodeRegistryWebUrl(codeRegistryCodeValue);
+                break;
+            }
+            case 2: {
+                final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+                final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
+                checkCodeSchemeExists(codeRegistryCodeValue, codeSchemeCodeValue);
+                url = apiUtils.createCodeSchemeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue);
+                break;
+            }
+            case 3: {
+                final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+                final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
+                final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(2));
+                checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                url = apiUtils.createCodeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                break;
+            }
+            default:
+                LOG.error("Codelist resource URI not resolvable!");
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Codelist resource URI not resolvable!"));
         }
         return url;
     }
