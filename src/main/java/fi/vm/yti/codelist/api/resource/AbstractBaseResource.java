@@ -16,6 +16,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.poi.ss.usermodel.Workbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -44,6 +46,7 @@ abstract class AbstractBaseResource {
     public static final String DOWNLOAD_FILENAME_EXTENSIONSCHEMES = "extensionschemes";
     public static final String DOWNLOAD_FILENAME_EXTENSIONS = "extensions";
 
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractBaseResource.class);
     private static final String HEADER_CONTENT_DISPOSITION = "content-disposition";
 
     public SimpleFilterProvider createSimpleFilterProvider(final String baseFilter,
@@ -161,6 +164,7 @@ abstract class AbstractBaseResource {
             try {
                 output.write(csv.getBytes(StandardCharsets.UTF_8));
             } catch (final Exception e) {
+                LOG.error("CSV output generation issue.", e);
                 throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "CSV output generation failed!"));
             }
         };
@@ -201,6 +205,7 @@ abstract class AbstractBaseResource {
             try {
                 workbook.write(output);
             } catch (final Exception e) {
+                LOG.error("Excel output generation issue.", e);
                 throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Excel output generation failed!"));
             }
         };
@@ -210,7 +215,8 @@ abstract class AbstractBaseResource {
     public String urlDecodeString(final String string) {
         try {
             return URLDecoder.decode(string, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
+        } catch (final UnsupportedEncodingException e) {
+            LOG.error("Issue with url decoding a string.", e);
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), ERR_MSG_USER_406));
         }
     }
