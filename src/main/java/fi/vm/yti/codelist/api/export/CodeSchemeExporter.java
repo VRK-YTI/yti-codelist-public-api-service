@@ -20,10 +20,10 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Component
 public class CodeSchemeExporter extends BaseExporter {
 
-    private Domain domain;
-    private CodeExporter codeExporter;
-    private ExtensionSchemeExporter extensionSchemeExporter;
-    private ExtensionExporter extensionExporter;
+    private final Domain domain;
+    private final CodeExporter codeExporter;
+    private final ExtensionSchemeExporter extensionSchemeExporter;
+    private final ExtensionExporter extensionExporter;
 
     public CodeSchemeExporter(final Domain domain,
                               final CodeExporter codeExporter,

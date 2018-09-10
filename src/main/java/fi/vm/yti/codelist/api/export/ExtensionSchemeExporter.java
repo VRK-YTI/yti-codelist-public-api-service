@@ -18,8 +18,8 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Component
 public class ExtensionSchemeExporter extends BaseExporter {
 
-    private Domain domain;
-    private ExtensionExporter extensionExporter;
+    private final Domain domain;
+    private final ExtensionExporter extensionExporter;
 
     public ExtensionSchemeExporter(final Domain domain,
                                    final ExtensionExporter extensionExporter) {

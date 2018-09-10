@@ -57,7 +57,7 @@ public class DomainImpl implements Domain {
     private static final String TEXT_ANALYZER = "text_analyzer";
     private static final String BOOSTSTATUS = "boostStatus";
     private static final Set<String> sortLanguages = new HashSet<>(Arrays.asList(LANGUAGE_CODE_FI, LANGUAGE_CODE_EN, LANGUAGE_CODE_SV));
-    private Client client;
+    private final Client client;
 
     @Inject
     private DomainImpl(final Client client) {

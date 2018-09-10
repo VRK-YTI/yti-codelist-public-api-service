@@ -28,7 +28,7 @@ public class VersionResourceTest extends AbstractTestBase {
     @LocalServerPort
     private int randomServerPort;
 
-    private TestRestTemplate restTemplate = new TestRestTemplate();
+    private final TestRestTemplate restTemplate = new TestRestTemplate();
 
     @Test
     public void testVersionRequest() {
