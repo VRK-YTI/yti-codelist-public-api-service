@@ -79,8 +79,6 @@ public interface Domain {
 
     PropertyTypeDTO getPropertyType(final String propertyTypeId);
 
-    Set<PropertyTypeDTO> getPropertyTypes();
-
     Set<PropertyTypeDTO> getPropertyTypes(final Integer pageSize,
                                           final Integer from,
                                           final String propertyTypePrefLabel,

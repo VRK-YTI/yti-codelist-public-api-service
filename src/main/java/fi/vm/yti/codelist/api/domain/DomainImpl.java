@@ -505,10 +505,6 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<PropertyTypeDTO> getPropertyTypes() {
-        return getPropertyTypes(MAX_SIZE, 0, null, null, null, null, null);
-    }
-
     public Set<PropertyTypeDTO> getPropertyTypes(final Integer pageSize,
                                                  final Integer from,
                                                  final String propertyTypePrefLabel,

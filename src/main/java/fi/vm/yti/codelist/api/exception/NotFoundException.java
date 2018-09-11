@@ -13,8 +13,4 @@ public class NotFoundException extends YtiCodeListException {
     public NotFoundException() {
         super(new ErrorModel(HttpStatus.NOT_FOUND.value(), RESOURCE_NOT_FOUND));
     }
-
-    public NotFoundException(final String errorMessage) {
-        super(new ErrorModel(HttpStatus.NOT_FOUND.value(), errorMessage));
-    }
 }
