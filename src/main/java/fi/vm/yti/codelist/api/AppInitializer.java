@@ -49,7 +49,7 @@ public class AppInitializer implements ApplicationRunner {
     }
 
     @Override
-    public void run(final ApplicationArguments applicationArguments) throws Exception {
+    public void run(final ApplicationArguments applicationArguments) {
         initialize();
     }
 
