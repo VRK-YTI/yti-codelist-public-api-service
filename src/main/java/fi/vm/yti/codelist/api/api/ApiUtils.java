@@ -144,8 +144,8 @@ public class ApiUtils {
         return createResourceUrl(apiPath, null);
     }
 
-    public String createResourceUrl(final String apiPath,
-                                    final String resourceId) {
+    private String createResourceUrl(final String apiPath,
+                                     final String resourceId) {
         final StringBuilder builder = new StringBuilder();
 
         builder.append(createBaseUrl());
@@ -162,7 +162,7 @@ public class ApiUtils {
         return builder.toString();
     }
 
-    public String createBaseUrl() {
+    private String createBaseUrl() {
         final String port = publicApiServiceProperties.getPort();
 
         final StringBuilder builder = new StringBuilder();
@@ -178,7 +178,7 @@ public class ApiUtils {
         return builder.toString();
     }
 
-    public String createFrontendBaseUrl() {
+    private String createFrontendBaseUrl() {
         final String port = frontendProperties.getPort();
 
         final StringBuilder builder = new StringBuilder();
@@ -200,7 +200,7 @@ public class ApiUtils {
      * @param date Date to be converted to string.
      * @return The date in ISO 8601 format as a string.
      */
-    public String dateToIso(final Date date) {
+    private String dateToIso(final Date date) {
         final TimeZone tz = TimeZone.getTimeZone("UTC");
         final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
         df.setTimeZone(tz);

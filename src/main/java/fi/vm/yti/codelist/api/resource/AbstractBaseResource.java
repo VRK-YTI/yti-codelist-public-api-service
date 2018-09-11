@@ -37,26 +37,26 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 abstract class AbstractBaseResource {
 
-    public static final String DOWNLOAD_FILENAME_CODEREGISTRIES = "coderegistries";
-    public static final String DOWNLOAD_FILENAME_CODESCHEMES = "codeschemes";
-    public static final String DOWNLOAD_FILENAME_CODES = "codes";
-    public static final String DOWNLOAD_FILENAME_EXTERNALREFERENCES = "externalreferences";
-    public static final String DOWNLOAD_FILENAME_PROPERTYTYPES = "propertytypes";
-    public static final String DOWNLOAD_FILENAME_EXTENSIONSCHEMES = "extensionschemes";
-    public static final String DOWNLOAD_FILENAME_EXTENSIONS = "extensions";
+    private static final String DOWNLOAD_FILENAME_CODEREGISTRIES = "coderegistries";
+    private static final String DOWNLOAD_FILENAME_CODESCHEMES = "codeschemes";
+    private static final String DOWNLOAD_FILENAME_CODES = "codes";
+    private static final String DOWNLOAD_FILENAME_EXTERNALREFERENCES = "externalreferences";
+    private static final String DOWNLOAD_FILENAME_PROPERTYTYPES = "propertytypes";
+    private static final String DOWNLOAD_FILENAME_EXTENSIONSCHEMES = "extensionschemes";
+    private static final String DOWNLOAD_FILENAME_EXTENSIONS = "extensions";
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBaseResource.class);
     private static final String HEADER_CONTENT_DISPOSITION = "content-disposition";
 
-    public SimpleFilterProvider createSimpleFilterProvider(final String baseFilter,
-                                                           final String expand) {
+    SimpleFilterProvider createSimpleFilterProvider(final String baseFilter,
+                                                    final String expand) {
         final List<String> baseFilters = new ArrayList<>();
         baseFilters.add(baseFilter);
         return createSimpleFilterProvider(baseFilters, expand);
     }
 
-    public SimpleFilterProvider createSimpleFilterProvider(final List<String> baseFilters,
-                                                           final String expand) {
+    private SimpleFilterProvider createSimpleFilterProvider(final List<String> baseFilters,
+                                                            final String expand) {
         final SimpleFilterProvider filterProvider = new SimpleFilterProvider();
         filterProvider.addFilter(FILTER_NAME_CODEREGISTRY, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI, FIELD_NAME_URL));
         filterProvider.addFilter(FILTER_NAME_CODESCHEME, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI, FIELD_NAME_URL));
@@ -72,7 +72,7 @@ abstract class AbstractBaseResource {
             filterProvider.removeFilter(baseFilter);
         }
         if (expand != null && !expand.isEmpty()) {
-            final List<String> filterOptions = Arrays.asList(expand.split(","));
+            final String[] filterOptions = expand.split(",");
             for (final String filter : filterOptions) {
                 filterProvider.removeFilter(filter);
             }
@@ -80,20 +80,10 @@ abstract class AbstractBaseResource {
         return filterProvider;
     }
 
-    Response createErrorResponse(final int errorCode,
-                                 final String errorMessage) {
-        final ErrorWrapper error = new ErrorWrapper();
-        final Meta meta = new Meta();
-        meta.setCode(errorCode);
-        meta.setMessage(errorMessage);
-        error.setMeta(meta);
-        return Response.status(Response.Status.NOT_FOUND).entity(error).type(MediaType.APPLICATION_JSON_TYPE).build();
-    }
-
-    public List<String> parseStatus(final String statusCsl) {
+    List<String> parseStatus(final String statusCsl) {
         final Set<String> statusSet = new HashSet<>();
         if (statusCsl != null) {
-            for (final String s : Arrays.asList(statusCsl.split(","))) {
+            for (final String s : statusCsl.split(",")) {
                 final Status status = Status.valueOf(s.toUpperCase().trim());
                 statusSet.add(status.toString());
             }
@@ -101,10 +91,10 @@ abstract class AbstractBaseResource {
         return new ArrayList<>(statusSet);
     }
 
-    public List<String> parseDataClassifications(final String dataClassificationCsl) {
+    List<String> parseDataClassifications(final String dataClassificationCsl) {
         final Set<String> dataClassificationsSet = new HashSet<>();
         if (dataClassificationCsl != null) {
-            for (final String s : Arrays.asList(dataClassificationCsl.split(","))) {
+            for (final String s : dataClassificationCsl.split(",")) {
                 dataClassificationsSet.add(s.toUpperCase().trim());
             }
         }
@@ -118,8 +108,8 @@ abstract class AbstractBaseResource {
         }
     }
 
-    public String createDownloadFilename(final String format,
-                                         final String filename) {
+    private String createDownloadFilename(final String format,
+                                          final String filename) {
         if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
             return filename + "." + FORMAT_EXCEL_XLSX;
         } else if (FORMAT_EXCEL_XLS.equalsIgnoreCase(format)) {
@@ -129,31 +119,31 @@ abstract class AbstractBaseResource {
         }
     }
 
-    public Response streamCsvCodesOutput(final String csv) {
+    Response streamCsvCodesOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_CODES);
     }
 
-    public Response streamCsvCodeSchemesOutput(final String csv) {
+    Response streamCsvCodeSchemesOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_CODESCHEMES);
     }
 
-    public Response streamCsvCodeRegistriesOutput(final String csv) {
+    Response streamCsvCodeRegistriesOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_CODEREGISTRIES);
     }
 
-    public Response streamCsvExternalReferencesOutput(final String csv) {
+    Response streamCsvExternalReferencesOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_EXTERNALREFERENCES);
     }
 
-    public Response streamCsvPropertyTypesOutput(final String csv) {
+    Response streamCsvPropertyTypesOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_PROPERTYTYPES);
     }
 
-    public Response streamCsvExtensionSchemesOutput(final String csv) {
+    Response streamCsvExtensionSchemesOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_EXTENSIONSCHEMES);
     }
 
-    public Response streamCsvExtensionsOutput(final String csv) {
+    Response streamCsvExtensionsOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_EXTENSIONS);
     }
 
@@ -170,31 +160,31 @@ abstract class AbstractBaseResource {
         return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(FORMAT_CSV, filename)).build();
     }
 
-    public Response streamExcelCodesOutput(final Workbook workbook) {
+    Response streamExcelCodesOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_CODES);
     }
 
-    public Response streamExcelCodeSchemesOutput(final Workbook workbook) {
+    Response streamExcelCodeSchemesOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_CODESCHEMES);
     }
 
-    public Response streamExcelCodeRegistriesOutput(final Workbook workbook) {
+    Response streamExcelCodeRegistriesOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_CODEREGISTRIES);
     }
 
-    public Response streamExcelExternalReferencesOutput(final Workbook workbook) {
+    Response streamExcelExternalReferencesOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_EXTERNALREFERENCES);
     }
 
-    public Response streamExcelPropertyTypesOutput(final Workbook workbook) {
+    Response streamExcelPropertyTypesOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_PROPERTYTYPES);
     }
 
-    public Response streamExcelExtensionSchemesOutput(final Workbook workbook) {
+    Response streamExcelExtensionSchemesOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_EXTENSIONSCHEMES);
     }
 
-    public Response streamExcelExtensionsOutput(final Workbook workbook) {
+    Response streamExcelExtensionsOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_EXTENSIONS);
     }
 
@@ -211,7 +201,7 @@ abstract class AbstractBaseResource {
         return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(FORMAT_EXCEL, filename)).build();
     }
 
-    public String urlDecodeString(final String string) {
+    String urlDecodeString(final String string) {
         try {
             return URLDecoder.decode(string, "UTF-8");
         } catch (final UnsupportedEncodingException e) {
@@ -224,7 +214,7 @@ abstract class AbstractBaseResource {
 
         private final FilterProvider provider;
 
-        protected FilterModifier(final FilterProvider provider) {
+        FilterModifier(final FilterProvider provider) {
             this.provider = provider;
         }
 

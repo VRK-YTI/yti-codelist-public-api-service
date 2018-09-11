@@ -35,11 +35,10 @@ import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 abstract public class AbstractTestBase {
 
-    public static final String TEST_BASE_URL = "http://localhost";
-    public static final String TEST_CODEREGISTRY_CODEVALUE = "testregistry1";
-    public static final String TEST_CODESCHEME_CODEVALUE = "testscheme1";
-    public static final String TEST_CODE_CODEVALUE = "testcode1";
-
+    protected static final String TEST_CODEREGISTRY_CODEVALUE = "testregistry1";
+    protected static final String TEST_CODESCHEME_CODEVALUE = "testscheme1";
+    protected static final String TEST_CODE_CODEVALUE = "testcode1";
+    private static final String TEST_BASE_URL = "http://localhost";
     private static final String SOURCE_TEST = "test";
     private static final Logger LOG = LoggerFactory.getLogger(AbstractTestBase.class);
     private static final String MAX_RESULT_WINDOW = "max_result_window";
@@ -173,7 +172,7 @@ abstract public class AbstractTestBase {
     @Inject
     private Domain domain;
 
-    public void createAndIndexMockData() {
+    protected void createAndIndexMockData() {
         createAndIndexMockCodeRegistries();
         createAndIndexMockCodeSchemes(domain.getCodeRegistries());
         createAndIndexMockCodes(domain.getCodeSchemes(null));
@@ -299,7 +298,7 @@ abstract public class AbstractTestBase {
      * @param indexName The name of the index to be refreshed.
      */
     @SuppressFBWarnings("RR_NOT_CHECKED")
-    public void refreshIndex(final String indexName) {
+    private void refreshIndex(final String indexName) {
         final FlushRequest request = new FlushRequest(indexName);
         try {
             client.admin().indices().flush(request).get();
@@ -367,13 +366,13 @@ abstract public class AbstractTestBase {
         return code;
     }
 
-    public String createApiUrlWithoutVersion(final int serverPort,
-                                             final String apiPath) {
+    protected String createApiUrlWithoutVersion(final int serverPort,
+                                                final String apiPath) {
         return TEST_BASE_URL + ":" + serverPort + API_CONTEXT_PATH_RESTAPI + API_BASE_PATH + apiPath + "/";
     }
 
-    public String createApiUrl(final int serverPort,
-                               final String apiPath) {
+    protected String createApiUrl(final int serverPort,
+                                  final String apiPath) {
         return TEST_BASE_URL + ":" + serverPort + API_CONTEXT_PATH_RESTAPI + API_BASE_PATH + API_PATH_VERSION_V1 + apiPath + "/";
     }
 }
