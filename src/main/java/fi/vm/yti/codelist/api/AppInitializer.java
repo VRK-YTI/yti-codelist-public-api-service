@@ -15,6 +15,8 @@ import javax.inject.Inject;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,14 +31,13 @@ import fi.vm.yti.codelist.api.configuration.VersionInformation;
 import fi.vm.yti.codelist.api.util.FileUtils;
 
 @Component
-public class AppInitializer {
+public class AppInitializer implements ApplicationRunner {
 
-    private static final Logger LOG = LoggerFactory.getLogger(AppInitializer.class);
     public static final String LOCAL_SWAGGER_DATA_DIR = "/data/yti/yti-codelist-api/swagger/";
+    private static final Logger LOG = LoggerFactory.getLogger(AppInitializer.class);
     private final ApiUtils apiUtils;
     private final PublicApiServiceProperties publicApiServiceProperties;
     private final VersionInformation versionInformation;
-
 
     @Inject
     public AppInitializer(final VersionInformation versionInformation,
@@ -47,10 +48,15 @@ public class AppInitializer {
         this.publicApiServiceProperties = publicApiServiceProperties;
     }
 
+    @Override
+    public void run(final ApplicationArguments applicationArguments) throws Exception {
+        initialize();
+    }
+
     /**
      * Initialize the application, load data for services.
      */
-    public void initialize() {
+    private void initialize() {
         printLogo();
         updateSwaggerHost();
     }
@@ -78,7 +84,7 @@ public class AppInitializer {
 
     /**
      * Updates the compile time generated swagger.json with the hostname of the current environment.
-     *
+     * <p>
      * The file is stored in the {@value #LOCAL_SWAGGER_DATA_DIR} folder, where it will be served from the SwaggerResource.
      */
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
@@ -96,14 +102,13 @@ public class AppInitializer {
             final File file = new File(LOCAL_SWAGGER_DATA_DIR + "swagger.json");
             Files.createDirectories(Paths.get(file.getParentFile().getPath()));
             final String fileLocation = file.toString();
-            LOG.info("Storing modified swagger.json description with hostname: " + hostname + " to: " + fileLocation);
+            LOG.info(String.format("Storing modified swagger.json description with hostname: %s to: %s", hostname, fileLocation));
             try (final FileOutputStream fos = new FileOutputStream(fileLocation, false)) {
                 mapper.configure(SerializationFeature.INDENT_OUTPUT, true);
-                fos.write(mapper.writeValueAsString(jsonObject).getBytes(StandardCharsets.UTF_8));                
+                fos.write(mapper.writeValueAsString(jsonObject).getBytes(StandardCharsets.UTF_8));
             }
         } catch (final IOException e) {
             LOG.error("Swagger JSON parsing failed!", e);
         }
     }
-
 }
