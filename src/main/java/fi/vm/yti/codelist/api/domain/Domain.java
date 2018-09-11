@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import fi.vm.yti.codelist.api.dto.ResourceDTO;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
@@ -131,4 +132,19 @@ public interface Domain {
                                     final Meta meta);
 
     ExtensionDTO getExtension(final String extensionId);
+
+    Set<ResourceDTO> getContainers(final Integer pageSize,
+                                   final Integer from,
+                                   final String language,
+                                   final List<String> statuses,
+                                   final Date after,
+                                   final Meta meta);
+
+    Set<ResourceDTO> getResources(final Integer pageSize,
+                                  final Integer from,
+                                  final String codeSchemeUri,
+                                  final String language,
+                                  final List<String> statuses,
+                                  final Date after,
+                                  final Meta meta);
 }

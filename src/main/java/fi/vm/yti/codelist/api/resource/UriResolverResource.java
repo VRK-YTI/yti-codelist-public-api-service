@@ -39,11 +39,10 @@ import io.swagger.annotations.ApiResponses;
 @Component
 @Path("/v1/uris")
 @Api(value = "uris")
-@Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
 public class UriResolverResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(UriResolverResource.class);
-    private static final String SUOMI_URI_HOST = "uri.suomi.fi";
     private static final String API_PATH_CODELIST = "/codelist";
 
     private final ApiUtils apiUtils;
@@ -60,7 +59,7 @@ public class UriResolverResource extends AbstractBaseResource {
     @Path("resolve")
     @ApiOperation(value = "Resolve URI resource.", response = String.class)
     @ApiResponse(code = 200, message = "Resolves the API url for the given codelist resource URI.")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN})
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN })
     public Response resolveUri(@ApiParam(value = "Resource URI.", required = true) @QueryParam("uri") final String uri) {
         final URI resolveUri = parseUriFromString(uri);
         ensureSuomiFiUriHost(resolveUri.getHost());
@@ -78,8 +77,8 @@ public class UriResolverResource extends AbstractBaseResource {
     @GET
     @Path("redirect")
     @ApiOperation(value = "Redirect URI resource.")
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
-    @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML})
+    @Consumes({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
+    @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
     @ApiResponses(value = {
         @ApiResponse(code = 303, message = "Does a redirect from codelist resource URI to codelist API."),
         @ApiResponse(code = 406, message = "Resource not found."),
@@ -123,22 +122,6 @@ public class UriResolverResource extends AbstractBaseResource {
             }
         }
         return acceptHeaders;
-    }
-
-    private void ensureSuomiFiUriHost(final String host) {
-        if (!SUOMI_URI_HOST.equalsIgnoreCase(host)) {
-            LOG.error("This URI is not resolvable as a codelist resource, wrong host.");
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "This URI is not resolvable as a codelist resource."));
-        }
-    }
-
-    private URI parseUriFromString(final String uriString) {
-        if (!uriString.isEmpty()) {
-            return URI.create(uriString.replace(" ", "%20"));
-        } else {
-            LOG.error("URI string was not valid!");
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "URI string was not valid!"));
-        }
     }
 
     private String resolveApiResourceUrl(final List<String> resourceCodeValues) {

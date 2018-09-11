@@ -1,6 +1,7 @@
 package fi.vm.yti.codelist.api.resource;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -33,6 +34,8 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 abstract class AbstractBaseResource {
 
+    public static final String SUOMI_URI_HOST = "uri.suomi.fi";
+
     private static final String DOWNLOAD_FILENAME_CODEREGISTRIES = "coderegistries";
     private static final String DOWNLOAD_FILENAME_CODESCHEMES = "codeschemes";
     private static final String DOWNLOAD_FILENAME_CODES = "codes";
@@ -43,6 +46,10 @@ abstract class AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBaseResource.class);
     private static final String HEADER_CONTENT_DISPOSITION = "content-disposition";
+
+    SimpleFilterProvider createSimpleFilterProvider(final String baseFilter) {
+        return createSimpleFilterProvider(baseFilter, null);
+    }
 
     SimpleFilterProvider createSimpleFilterProvider(final String baseFilter,
                                                     final String expand) {
@@ -214,6 +221,22 @@ abstract class AbstractBaseResource {
                                    final ObjectWriter w,
                                    final JsonGenerator g) {
             return w.with(provider);
+        }
+    }
+
+    public void ensureSuomiFiUriHost(final String host) {
+        if (!SUOMI_URI_HOST.equalsIgnoreCase(host)) {
+            LOG.error("This URI is not resolvable as a codelist resource, wrong host.");
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "This URI is not resolvable as a codelist resource."));
+        }
+    }
+
+    public URI parseUriFromString(final String uriString) {
+        if (!uriString.isEmpty()) {
+            return URI.create(uriString.replace(" ", "%20"));
+        } else {
+            LOG.error("URI string was not valid!");
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "URI string was not valid!"));
         }
     }
 }

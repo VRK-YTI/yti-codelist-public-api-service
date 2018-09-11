@@ -16,6 +16,7 @@ import fi.vm.yti.codelist.api.resource.CodeSchemeResource;
 import fi.vm.yti.codelist.api.resource.ExtensionResource;
 import fi.vm.yti.codelist.api.resource.ExtensionSchemeResource;
 import fi.vm.yti.codelist.api.resource.ExternalReferenceResource;
+import fi.vm.yti.codelist.api.resource.IntegrationResource;
 import fi.vm.yti.codelist.api.resource.PingResource;
 import fi.vm.yti.codelist.api.resource.PropertyTypeResource;
 import fi.vm.yti.codelist.api.resource.SwaggerResource;
@@ -82,6 +83,9 @@ public class JerseyConfig extends ResourceConfig {
         register(ExternalReferenceResource.class);
         register(ExtensionSchemeResource.class);
         register(ExtensionResource.class);
+
+        // API: Integration API
+        register(IntegrationResource.class);
 
         // API: URI Resolver
         register(UriResolverResource.class);

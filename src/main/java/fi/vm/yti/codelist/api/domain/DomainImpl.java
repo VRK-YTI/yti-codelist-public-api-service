@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
+import fi.vm.yti.codelist.api.dto.ResourceDTO;
 import fi.vm.yti.codelist.api.exception.JsonParsingException;
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
@@ -869,6 +870,122 @@ public class DomainImpl implements Domain {
             }
         }
         return null;
+    }
+
+    public Set<ResourceDTO> getContainers(final Integer pageSize,
+                                          final Integer from,
+                                          final String language,
+                                          final List<String> statuses,
+                                          final Date after,
+                                          final Meta meta) {
+        validatePageSize(pageSize);
+        final Set<ResourceDTO> containers = new LinkedHashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_CODESCHEME)
+                .setTypes(ELASTIC_TYPE_CODESCHEME)
+                .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                .setFrom(from != null ? from : 0);
+            final BoolQueryBuilder builder = boolQuery();
+            if (after != null) {
+                final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
+                final String afterString = dateFormat.format(after);
+                builder.must(rangeQuery("modified").gt(afterString));
+            }
+            if (language != null && !language.isEmpty()) {
+                searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                sortLanguages.forEach(sortLanguage -> {
+                    if (!language.equalsIgnoreCase(sortLanguage)) {
+                        searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                    }
+                });
+                searchRequest.addSort("codeValue.raw", SortOrder.ASC);
+            } else {
+                searchRequest.addSort("codeValue.raw", SortOrder.ASC);
+            }
+            if (statuses != null && !statuses.isEmpty()) {
+                final BoolQueryBuilder boolQueryBuilder = boolQuery();
+                if (statuses.contains(Status.INCOMPLETE.toString())) {
+                    final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
+                    unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
+                    boolQueryBuilder.should(unfinishedQueryBuilder);
+                    statuses.remove(Status.INCOMPLETE.toString());
+                }
+                boolQueryBuilder.should(termsQuery("status.keyword", statuses));
+                builder.must(termsQuery("status.keyword", statuses));
+                boolQueryBuilder.minimumShouldMatch(1);
+                builder.must(boolQueryBuilder);
+            } else {
+                final BoolQueryBuilder boolQueryBuilder = boolQuery();
+                boolQueryBuilder.should(termsQuery("status.keyword", getRegularStatuses()));
+                boolQueryBuilder.minimumShouldMatch(1);
+                builder.must(boolQueryBuilder);
+            }
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            setResultCounts(meta, response);
+            response.getHits().forEach(hit -> {
+                try {
+                    containers.add(mapper.readValue(hit.getSourceAsString(), ResourceDTO.class));
+                } catch (final IOException e) {
+                    LOG.error("getContainers reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
+                }
+            });
+        }
+        return containers;
+    }
+
+    public Set<ResourceDTO> getResources(final Integer pageSize,
+                                         final Integer from,
+                                         final String codeSchemeUri,
+                                         final String language,
+                                         final List<String> statuses,
+                                         final Date after,
+                                         final Meta meta) {
+        validatePageSize(pageSize);
+        final Set<ResourceDTO> resources = new LinkedHashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_CODE)
+                .setTypes(ELASTIC_TYPE_CODE)
+                .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                .setFrom(from != null ? from : 0);
+
+            final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
+            builder.must(matchQuery("codeScheme.uri.keyword", codeSchemeUri.toLowerCase()).analyzer(TEXT_ANALYZER));
+            if (statuses != null && !statuses.isEmpty()) {
+                builder.must(termsQuery("status.keyword", statuses));
+            }
+            if (language != null && !language.isEmpty()) {
+                searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                sortLanguages.forEach(sortLanguage -> {
+                    if (!language.equalsIgnoreCase(sortLanguage)) {
+                        searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                    }
+                });
+                searchRequest.addSort("codeValue.raw", SortOrder.ASC);
+            } else {
+                searchRequest.addSort("order", SortOrder.ASC);
+            }
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            setResultCounts(meta, response);
+            response.getHits().forEach(hit -> {
+                try {
+                    resources.add(mapper.readValue(hit.getSourceAsString(), ResourceDTO.class));
+                } catch (final IOException e) {
+                    LOG.error("getResources reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
+                }
+            });
+            return resources;
+        }
+        return resources;
     }
 
     private BoolQueryBuilder constructSearchQuery(final String codeValue,
