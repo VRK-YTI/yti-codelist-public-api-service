@@ -4,12 +4,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
@@ -27,10 +25,8 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier;
 
-import fi.vm.yti.codelist.api.api.ErrorWrapper;
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
-import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.model.Status;
 import static fi.vm.yti.codelist.api.exception.ErrorConstants.ERR_MSG_USER_406;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
@@ -99,13 +95,6 @@ abstract class AbstractBaseResource {
             }
         }
         return new ArrayList<>(dataClassificationsSet);
-    }
-
-    public void appendNotNull(final StringBuilder builder,
-                              final String string) {
-        if (string != null) {
-            builder.append(string);
-        }
     }
 
     private String createDownloadFilename(final String format,

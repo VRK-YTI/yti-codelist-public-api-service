@@ -1,10 +1,5 @@
 package fi.vm.yti.codelist.api.api;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
-
 import javax.inject.Inject;
 
 import org.springframework.stereotype.Component;
@@ -34,37 +29,6 @@ public class ApiUtils {
             builder.append(":");
             builder.append(port);
         }
-        return builder.toString();
-    }
-
-    /**
-     * Creates a timestamped resource URL that can be used when fetching new content from this resource.
-     *
-     * @param apiVersion The REST API version string.
-     * @param apiPath    The path for the API resource.
-     * @param after      After timestamp in ISO 8601 format for filtering content.
-     * @return The resource URL for after timestamped results.
-     */
-    public String createAfterResourceUrl(final String apiVersion,
-                                         final String apiPath,
-                                         final Date after) {
-        final String port = publicApiServiceProperties.getPort();
-        final StringBuilder builder = new StringBuilder();
-        builder.append(publicApiServiceProperties.getScheme());
-        builder.append("://");
-        builder.append(publicApiServiceProperties.getHost());
-        if (port != null && port.length() > 0) {
-            builder.append(":");
-            builder.append(port);
-        }
-        builder.append(publicApiServiceProperties.getContextPath());
-        builder.append(API_BASE_PATH);
-        builder.append("/");
-        builder.append(apiVersion);
-        builder.append(apiPath);
-        builder.append("/");
-        builder.append("?after=");
-        builder.append(dateToIso(after));
         return builder.toString();
     }
 
@@ -140,10 +104,6 @@ public class ApiUtils {
         return createFrontendBaseUrl() + "/code;registryCode=" + codeRegistryCodeValue + ";schemeCode=" + codeSchemeCodeValue + ";codeCode=" + codeCodeValue;
     }
 
-    public String createResourceUrl(final String apiPath) {
-        return createResourceUrl(apiPath, null);
-    }
-
     private String createResourceUrl(final String apiPath,
                                      final String resourceId) {
         final StringBuilder builder = new StringBuilder();
@@ -193,18 +153,4 @@ public class ApiUtils {
 
         return builder.toString();
     }
-
-    /**
-     * Converts a Date object to a date string in ISO 8601 format.
-     *
-     * @param date Date to be converted to string.
-     * @return The date in ISO 8601 format as a string.
-     */
-    private String dateToIso(final Date date) {
-        final TimeZone tz = TimeZone.getTimeZone("UTC");
-        final DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-        df.setTimeZone(tz);
-        return df.format(new Date());
-    }
-
 }
