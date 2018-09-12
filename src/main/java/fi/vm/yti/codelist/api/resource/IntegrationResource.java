@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
+import fi.vm.yti.codelist.api.api.ApiUtils;
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.api.dto.ResourceDTO;
@@ -26,7 +27,8 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
-import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_RESOURCE;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.API_PATH_CODES;
 
 @Component
 @Path("/v1/integration")
@@ -35,10 +37,13 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_RESOU
 public class IntegrationResource extends AbstractBaseResource {
 
     private final Domain domain;
+    private final ApiUtils apiUtils;
 
     @Inject
-    public IntegrationResource(final Domain domain) {
+    public IntegrationResource(final Domain domain,
+                               final ApiUtils apiUtils) {
         this.domain = domain;
+        this.apiUtils = apiUtils;
     }
 
     @GET
@@ -58,6 +63,9 @@ public class IntegrationResource extends AbstractBaseResource {
         final Set<ResourceDTO> containers = domain.getContainers(pageSize, from, language, statusList, meta.getAfter(), meta);
         if (includeMeta) {
             meta.setResultCount(containers.size());
+            if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_CONTAINERS, after, pageSize, from + pageSize) + "&includeMeta=true");
+            }
             final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(containers);
             wrapper.setMeta(meta);
@@ -85,8 +93,11 @@ public class IntegrationResource extends AbstractBaseResource {
         final List<String> statusList = parseStatus(status);
         final Meta meta = new Meta(200, pageSize, from, after);
         final Set<ResourceDTO> resources = domain.getResources(pageSize, from, codeSchemeUri, language, statusList, meta.getAfter(), meta);
-        meta.setResultCount(resources.size());
         if (includeMeta) {
+            meta.setResultCount(resources.size());
+            if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&includeMeta=true&uri=" + codeSchemeUri);
+            }
             final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(resources);
             wrapper.setMeta(meta);
