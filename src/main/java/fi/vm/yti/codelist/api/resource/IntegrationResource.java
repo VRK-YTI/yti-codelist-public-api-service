@@ -50,16 +50,21 @@ public class IntegrationResource extends AbstractBaseResource {
                                   @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                   @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                   @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
-                                  @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after) {
+                                  @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
+                                  @ApiParam(value = "Include pagination related meta element and wrap response items in bulk array.") @QueryParam("includeMeta") @DefaultValue("false") final boolean includeMeta) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_RESOURCE)));
-        final Meta meta = new Meta(200, null, null, after);
+        final Meta meta = new Meta(200, pageSize, from, after);
         final List<String> statusList = parseStatus(status);
-        final Set<ResourceDTO> containers = domain.getContainers(pageSize, from, language, statusList, Meta.parseAfterFromString(after), meta);
-        meta.setResultCount(containers.size());
-        final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
-        wrapper.setResults(containers);
-        wrapper.setMeta(meta);
-        return Response.ok(wrapper).build();
+        final Set<ResourceDTO> containers = domain.getContainers(pageSize, from, language, statusList, meta.getAfter(), meta);
+        if (includeMeta) {
+            meta.setResultCount(containers.size());
+            final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
+            wrapper.setResults(containers);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
+        } else {
+            return Response.ok(containers).build();
+        }
     }
 
     @GET
@@ -72,17 +77,22 @@ public class IntegrationResource extends AbstractBaseResource {
                                  @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                  @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
                                  @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                 @ApiParam(value = "Container URI.", required = true) @QueryParam("uri") final String codeSchemeUri) {
+                                 @ApiParam(value = "Container URI.", required = true) @QueryParam("uri") final String codeSchemeUri,
+                                 @ApiParam(value = "Include pagination related meta element and wrap response items in bulk array.") @QueryParam("includeMeta") @DefaultValue("false") final boolean includeMeta) {
         final URI resolveUri = parseUriFromString(codeSchemeUri);
         ensureSuomiFiUriHost(resolveUri.getHost());
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_RESOURCE)));
         final List<String> statusList = parseStatus(status);
-        final Meta meta = new Meta(200, null, null, after);
+        final Meta meta = new Meta(200, pageSize, from, after);
         final Set<ResourceDTO> resources = domain.getResources(pageSize, from, codeSchemeUri, language, statusList, meta.getAfter(), meta);
         meta.setResultCount(resources.size());
-        final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
-        wrapper.setResults(resources);
-        wrapper.setMeta(meta);
-        return Response.ok(wrapper).build();
+        if (includeMeta) {
+            final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
+            wrapper.setResults(resources);
+            wrapper.setMeta(meta);
+            return Response.ok(wrapper).build();
+        } else {
+            return Response.ok(resources).build();
+        }
     }
 }
