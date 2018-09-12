@@ -100,7 +100,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
             final Workbook workbook = codeRegistryExporter.createExcel(codeRegistries, format);
             return streamExcelCodeRegistriesOutput(workbook);
         } else {
-            final Meta meta = new Meta(200, null, null, after);
+            final Meta meta = new Meta(200, pageSize, from, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand)));
             final Set<CodeRegistryDTO> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, meta.getAfter(), meta, organizations);
             meta.setResultCount(codeRegistries.size());
@@ -154,7 +154,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                                                @ApiParam(value = "Sort mode for response values.") @QueryParam("sortMode") @DefaultValue("default") final String sortMode,
                                                @ApiParam(value = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv) {
-        final Meta meta = new Meta(200, null, null, after);
+        final Meta meta = new Meta(200, pageSize, from, after);
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
         final List<String> dataClassificationList = parseDataClassifications(dataClassification);
         final List<String> statusList = parseStatus(status);

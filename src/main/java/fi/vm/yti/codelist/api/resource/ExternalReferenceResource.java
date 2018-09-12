@@ -74,7 +74,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
             final Workbook workbook = externalReferenceExporter.createExcel(externalReferences, format);
             return streamExcelExternalReferencesOutput(workbook);
         } else {
-            final Meta meta = new Meta(200, null, null, after);
+            final Meta meta = new Meta(200, pageSize, from, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand)));
             final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, all, meta.getAfter(), meta);
             meta.setResultCount(externalReferences.size());

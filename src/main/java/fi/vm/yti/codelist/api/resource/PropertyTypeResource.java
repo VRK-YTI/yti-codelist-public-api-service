@@ -65,7 +65,7 @@ public class PropertyTypeResource extends AbstractBaseResource {
             final Workbook workbook = propertyTypeExporter.createExcel(propertyTypes, format);
             return streamExcelPropertyTypesOutput(workbook);
         } else {
-            final Meta meta = new Meta(200, null, null, after);
+            final Meta meta = new Meta(200, pageSize, from, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand)));
             final Set<PropertyTypeDTO> propertyTypes = domain.getPropertyTypes(pageSize, from, name, context, type, meta.getAfter(), meta);
             meta.setResultCount(propertyTypes.size());

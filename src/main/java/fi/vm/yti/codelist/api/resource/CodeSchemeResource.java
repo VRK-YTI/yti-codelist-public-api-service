@@ -83,7 +83,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
             final Workbook workbook = codeSchemeExporter.createExcel(codeSchemes, format);
             return streamExcelCodeSchemesOutput(workbook);
         } else {
-            final Meta meta = new Meta(200, null, null, after);
+            final Meta meta = new Meta(200, pageSize, from, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
             final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizations, userOrganizations, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, statusList, dataClassificationList, meta.getAfter(), meta);
             meta.setResultCount(codeSchemes.size());

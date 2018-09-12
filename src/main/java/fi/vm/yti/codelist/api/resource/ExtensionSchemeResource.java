@@ -65,7 +65,7 @@ public class ExtensionSchemeResource extends AbstractBaseResource {
             final Workbook workbook = extensionSchemeExporter.createExcel(extensionSchemes, format);
             return streamExcelExtensionSchemesOutput(workbook);
         } else {
-            final Meta meta = new Meta(200, null, null, after);
+            final Meta meta = new Meta(200, pageSize, from, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSIONSCHEME, expand)));
             final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(pageSize, from, prefLabel, null, meta.getAfter(), meta);
             meta.setResultCount(extensionSchemes.size());
