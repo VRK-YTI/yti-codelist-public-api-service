@@ -1,5 +1,6 @@
 package fi.vm.yti.codelist.api.resource;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -69,9 +70,14 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                                    @ApiParam(value = "Sort mode for response values.") @QueryParam("sortMode") @DefaultValue("default") final String sortMode,
                                    @ApiParam(value = "Organizations filtering parameter, results will be codeschemes belonging to these organizations") @QueryParam("organizations") final String organizationsCsv,
-                                   @ApiParam(value = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv) {
+                                   @ApiParam(value = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv,
+                                   @ApiParam(value = "Filter string from the UI frontpage search results filter.") @QueryParam("organizationId") final String organizationId) {
         final List<String> dataClassificationList = parseDataClassifications(dataClassification);
-        final List<String> organizations = organizationsCsv == null ? null : asList(organizationsCsv.toLowerCase().split(","));
+        List<String> organizations = organizationsCsv == null ? null : asList(organizationsCsv.toLowerCase().split(","));
+        if (organizationId != null) { // In this case we are coming from the UI frontpage and we never have a csv list
+            organizations = new ArrayList<String>();
+            organizations.add(organizationId);
+        }
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
         final List<String> statusList = parseStatus(status);
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {

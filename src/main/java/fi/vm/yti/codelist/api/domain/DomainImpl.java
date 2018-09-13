@@ -291,7 +291,7 @@ public class DomainImpl implements Domain {
                 builder.must(rangeQuery("modified").gt(afterString));
             }
             if (organizationIds != null && !organizationIds.isEmpty()) {
-                builder.must(nestedQuery("codeRegistry.organizations", termsQuery("codeRegistry.organizations.id.keyword", organizationIds), ScoreMode.None));
+                builder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", organizationIds), ScoreMode.None));
             }
             if (codeRegistryCodeValue != null && !codeRegistryCodeValue.isEmpty()) {
                 builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
