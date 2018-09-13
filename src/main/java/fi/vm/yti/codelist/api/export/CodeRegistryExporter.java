@@ -17,13 +17,13 @@ public class CodeRegistryExporter extends BaseExporter {
 
     public String createCsv(final Set<CodeRegistryDTO> registries) {
         final Set<String> prefLabelLanguages = resolveCodeRegistryPrefLabelLanguages(registries);
-        final Set<String> definitionLanguages = resolveCodeRegistryDefinitionLanguages(registries);
+        final Set<String> descriptionLanguages = resolveCodeRegistryDescriptionLanguages(registries);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
-        definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
+        descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
         csv.append("\n");
@@ -31,7 +31,7 @@ public class CodeRegistryExporter extends BaseExporter {
             appendValue(csv, csvSeparator, codeRegistry.getCodeValue());
             appendValue(csv, csvSeparator, codeRegistry.getId().toString());
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, codeRegistry.getPrefLabel().get(language)));
-            definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeRegistry.getDefinition().get(language)));
+            descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeRegistry.getDescription().get(language)));
             appendValue(csv, csvSeparator, codeRegistry.getCreated() != null ? formatDateWithSeconds(codeRegistry.getCreated()) : "");
             appendValue(csv, csvSeparator, codeRegistry.getModified() != null ? formatDateWithSeconds(codeRegistry.getModified()) : "", true);
             csv.append("\n");
@@ -43,7 +43,7 @@ public class CodeRegistryExporter extends BaseExporter {
                                 final String format) {
         final Workbook workbook = createWorkBook(format);
         final Set<String> prefLabelLanguages = resolveCodeRegistryPrefLabelLanguages(registries);
-        final Set<String> definitionLanguages = resolveCodeRegistryDefinitionLanguages(registries);
+        final Set<String> descriptionLanguages = resolveCodeRegistryDescriptionLanguages(registries);
         final Sheet sheet = workbook.createSheet(EXCEL_SHEET_CODEREGISTRIES);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
@@ -52,8 +52,8 @@ public class CodeRegistryExporter extends BaseExporter {
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
-        for (final String language : definitionLanguages) {
-            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase());
+        for (final String language : descriptionLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase());
         }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_MODIFIED);
@@ -66,8 +66,8 @@ public class CodeRegistryExporter extends BaseExporter {
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(codeRegistry.getPrefLabel().get(language));
             }
-            for (final String language : definitionLanguages) {
-                row.createCell(k++).setCellValue(codeRegistry.getDefinition().get(language));
+            for (final String language : descriptionLanguages) {
+                row.createCell(k++).setCellValue(codeRegistry.getDescription().get(language));
             }
             row.createCell(k++).setCellValue(codeRegistry.getCreated() != null ? formatDateWithSeconds(codeRegistry.getCreated()) : "");
             row.createCell(k).setCellValue(codeRegistry.getModified() != null ? formatDateWithSeconds(codeRegistry.getModified()) : "");
@@ -84,11 +84,11 @@ public class CodeRegistryExporter extends BaseExporter {
         return languages;
     }
 
-    private Set<String> resolveCodeRegistryDefinitionLanguages(final Set<CodeRegistryDTO> registries) {
+    private Set<String> resolveCodeRegistryDescriptionLanguages(final Set<CodeRegistryDTO> registries) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeRegistryDTO registry : registries) {
-            final Map<String, String> definition = registry.getDefinition();
-            languages.addAll(definition.keySet());
+            final Map<String, String> description = registry.getDescription();
+            languages.addAll(description.keySet());
         }
         return languages;
     }
