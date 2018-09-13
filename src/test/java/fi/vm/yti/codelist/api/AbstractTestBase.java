@@ -315,9 +315,9 @@ abstract public class AbstractTestBase {
         codeRegistry.setPrefLabel(LANGUAGE_CODE_FI, "Testirekisteri");
         codeRegistry.setPrefLabel(LANGUAGE_CODE_SV, "Test register");
         codeRegistry.setPrefLabel(LANGUAGE_CODE_EN, "Test register");
-        codeRegistry.setDefinition(LANGUAGE_CODE_FI, "Testi määritelmä");
-        codeRegistry.setDefinition(LANGUAGE_CODE_SV, "Test upplösning");
-        codeRegistry.setDefinition(LANGUAGE_CODE_EN, "Test definition");
+        codeRegistry.setDescription(LANGUAGE_CODE_FI, "Testi määritelmä");
+        codeRegistry.setDescription(LANGUAGE_CODE_SV, "Test upplösning");
+        codeRegistry.setDescription(LANGUAGE_CODE_EN, "Test definition");
         codeRegistry.setModified(new Date(System.currentTimeMillis()));
         codeRegistry.setUrl("http://localhost:9601/codelist-api/api/v1/coderegistries/" + codeValue + "/");
         return codeRegistry;
