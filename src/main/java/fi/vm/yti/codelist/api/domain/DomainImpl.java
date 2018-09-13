@@ -322,7 +322,7 @@ public class DomainImpl implements Domain {
                 if (statuses.contains(Status.INCOMPLETE.toString())) {
                     final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
                     unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
-                    unfinishedQueryBuilder.must(nestedQuery("codeRegistry.organizations", termsQuery("codeRegistry.organizations.id.keyword", userOrganizationIds), ScoreMode.None));
+                    unfinishedQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", userOrganizationIds), ScoreMode.None));
                     boolQueryBuilder.should(unfinishedQueryBuilder);
                     statuses.remove(Status.INCOMPLETE.toString());
                 }
@@ -336,7 +336,7 @@ public class DomainImpl implements Domain {
                 if (userOrganizationIds != null && !userOrganizationIds.isEmpty()) {
                     final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
                     unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
-                    unfinishedQueryBuilder.must(nestedQuery("codeRegistry.organizations", termsQuery("codeRegistry.organizations.id.keyword", userOrganizationIds), ScoreMode.None));
+                    unfinishedQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", userOrganizationIds), ScoreMode.None));
                     boolQueryBuilder.should(unfinishedQueryBuilder);
                 }
                 boolQueryBuilder.minimumShouldMatch(1);
