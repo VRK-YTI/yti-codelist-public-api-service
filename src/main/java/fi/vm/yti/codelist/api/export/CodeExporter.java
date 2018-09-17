@@ -19,10 +19,6 @@ public class CodeExporter extends BaseExporter {
 
     public String createCsv(final Set<CodeDTO> codes) {
         Integer flatInt = 1;
-        final Map<UUID, String> codeValueIdMap = new HashMap<>();
-        for (final CodeDTO code : codes) {
-            codeValueIdMap.put(code.getId(), code.getCodeValue());
-        }
         final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codes);
         final Set<String> definitionLanguages = resolveCodeDefinitionLanguages(codes);
         final Set<String> descriptionLanguages = resolveCodeDescriptionLanguages(codes);
@@ -47,7 +43,7 @@ public class CodeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, code.getCodeValue());
             appendValue(csv, csvSeparator, code.getId().toString());
             appendValue(csv, csvSeparator, code.getOrder() != null ? code.getOrder().toString() : flatInt.toString());
-            appendValue(csv, csvSeparator, codeValueIdMap.get(code.getBroaderCodeId()));
+            appendValue(csv, csvSeparator, code.getBroaderCode() != null ? code.getBroaderCode().getCodeValue() : "");
             appendValue(csv, csvSeparator, code.getStatus());
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, code.getPrefLabel().get(language)));
             definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, code.getDefinition().get(language)));
@@ -75,10 +71,6 @@ public class CodeExporter extends BaseExporter {
     public void addCodeSheet(final Workbook workbook,
                              final String sheetName,
                              final Set<CodeDTO> codes) {
-        final Map<UUID, String> codeValueIdMap = new HashMap<>();
-        for (final CodeDTO code : codes) {
-            codeValueIdMap.put(code.getId(), code.getCodeValue());
-        }
         final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codes);
         final Set<String> definitionLanguages = resolveCodeDefinitionLanguages(codes);
         final Set<String> descriptionLanguages = resolveCodeDescriptionLanguages(codes);
@@ -113,7 +105,7 @@ public class CodeExporter extends BaseExporter {
             int k = 0;
             row.createCell(k++).setCellValue(code.getId().toString());
             row.createCell(k++).setCellValue(code.getCodeValue());
-            row.createCell(k++).setCellValue(checkEmptyValue(codeValueIdMap.get(code.getBroaderCodeId())));
+            row.createCell(k++).setCellValue(code.getBroaderCode() != null ? code.getBroaderCode().getCodeValue() : "");
             row.createCell(k++).setCellValue(code.getStatus());
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(code.getPrefLabel().get(language));
