@@ -447,7 +447,7 @@ public class DomainImpl implements Domain {
                 builder.must(rangeQuery("hierarchyLevel").lte(hierarchyLevel));
             }
             if (broaderCodeId != null && !broaderCodeId.isEmpty()) {
-                builder.must(matchQuery("broaderCodeId", broaderCodeId.toLowerCase()));
+                builder.must(matchQuery("broaderCode.id", broaderCodeId.toLowerCase()));
             }
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
