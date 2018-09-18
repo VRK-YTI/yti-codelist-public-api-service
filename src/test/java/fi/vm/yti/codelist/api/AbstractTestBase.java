@@ -111,7 +111,7 @@ abstract public class AbstractTestBase {
         "      }\n" +
         "    }\n" +
         "  },\n" +
-        "  \"extensionSchemes\": {\n" +
+        "  \"extensions\": {\n" +
         "    \"type\": \"nested\"\n" +
         "  },\n" +
         "  \"externalReferences\": {\n" +

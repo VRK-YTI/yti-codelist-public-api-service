@@ -29,12 +29,12 @@ import fi.vm.yti.codelist.api.export.CodeExporter;
 import fi.vm.yti.codelist.api.export.CodeRegistryExporter;
 import fi.vm.yti.codelist.api.export.CodeSchemeExporter;
 import fi.vm.yti.codelist.api.export.MemberExporter;
-import fi.vm.yti.codelist.api.export.ExtensionSchemeExporter;
+import fi.vm.yti.codelist.api.export.ExtensionExporter;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.MemberDTO;
-import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
+import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
 import io.swagger.annotations.Api;
@@ -58,7 +58,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     private final CodeExporter codeExporter;
     private final CodeSchemeExporter codeSchemeExporter;
     private final CodeRegistryExporter codeRegistryExporter;
-    private final ExtensionSchemeExporter extensionSchemeExporter;
+    private final ExtensionExporter extensionExporter;
     private final MemberExporter memberExporter;
 
     @Inject
@@ -67,14 +67,14 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                 final CodeExporter codeExporter,
                                 final CodeSchemeExporter codeSchemeExporter,
                                 final CodeRegistryExporter codeRegistryExporter,
-                                final ExtensionSchemeExporter extensionSchemeExporter,
+                                final ExtensionExporter extensionExporter,
                                 final MemberExporter memberExporter) {
         this.apiUtils = apiUtils;
         this.domain = domain;
         this.codeExporter = codeExporter;
         this.codeSchemeExporter = codeSchemeExporter;
         this.codeRegistryExporter = codeRegistryExporter;
-        this.extensionSchemeExporter = extensionSchemeExporter;
+        this.extensionExporter = extensionExporter;
         this.memberExporter = memberExporter;
     }
 
@@ -265,21 +265,21 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes/{extensionSchemeCodeValue}/members/{memberId}")
-    @ApiOperation(value = "Return Extension for a ExtensionScheme.", response = ExtensionSchemeDTO.class)
-    @ApiResponse(code = 200, message = "Returns single Extenion for ExtensionScheme.")
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensions/{extensionCodeValue}/members/{memberId}")
+    @ApiOperation(value = "Return Member for an Extension.", response = ExtensionDTO.class)
+    @ApiResponse(code = 200, message = "Returns single Member for Extension.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
-    public Response getCodeRegistryCodeSchemeExtensionSchemeExtension(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
-                                                                      @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                                      @ApiParam(value = "ExtensionScheme CodeValue.", required = true) @PathParam("extensionSchemeCodeValue") final String extensionSchemeCodeValue,
-                                                                      @ApiParam(value = "Extension ID.", required = true) @PathParam("memberId") final String memberId,
-                                                                      @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+    public Response getCodeRegistryCodeSchemeExtensionMember(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                                             @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                             @ApiParam(value = "Extension CodeValue.", required = true) @PathParam("extensionCodeValue") final String extensionCodeValue,
+                                                             @ApiParam(value = "Member ID.", required = true) @PathParam("memberId") final String memberId,
+                                                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
             final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
             if (codeScheme != null) {
-                final ExtensionSchemeDTO extensionScheme = domain.getExtensionScheme(codeRegistryCodeValue, codeSchemeCodeValue, extensionSchemeCodeValue);
-                if (extensionScheme != null) {
+                final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
+                if (extension != null) {
                     final MemberDTO member = domain.getMember(memberId);
                     if (member != null) {
                         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand)));
@@ -299,30 +299,30 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes/{extensionSchemeCodeValue}")
-    @ApiOperation(value = "Return ExtensionScheme for a CodeScheme.", response = ExtensionSchemeDTO.class)
-    @ApiResponse(code = 200, message = "Returns single ExtensionScheme for CodeScheme.")
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensions/{extensionCodeValue}")
+    @ApiOperation(value = "Return Extension for a CodeScheme.", response = ExtensionDTO.class)
+    @ApiResponse(code = 200, message = "Returns single Extension for CodeScheme.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
-    public Response getCodeRegistryCodeSchemeExtensionScheme(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
-                                                             @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                             @ApiParam(value = "ExtensionScheme CodeValue.", required = true) @PathParam("extensionSchemeCodeValue") final String extensionSchemeCodeValue,
-                                                             @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
-                                                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+    public Response getCodeRegistryCodeSchemeExtension(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                                       @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                       @ApiParam(value = "Extension CodeValue.", required = true) @PathParam("extensionCodeValue") final String extensionCodeValue,
+                                                       @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
+                                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
-            final ExtensionSchemeDTO extensionScheme = domain.getExtensionScheme(codeScheme.getId(), extensionSchemeCodeValue);
-            if (extensionScheme != null) {
+            final ExtensionDTO extension = domain.getExtension(codeScheme.getId(), extensionCodeValue);
+            if (extension != null) {
                 if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-                    final Set<ExtensionSchemeDTO> extensionSchemes = new HashSet<>();
-                    extensionSchemes.add(extensionScheme);
-                    final String csv = extensionSchemeExporter.createCsv(extensionSchemes);
-                    return streamCsvExtensionSchemesOutput(csv);
+                    final Set<ExtensionDTO> extensions = new HashSet<>();
+                    extensions.add(extension);
+                    final String csv = extensionExporter.createCsv(extensions);
+                    return streamCsvExtensionsOutput(csv);
                 } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                    final Workbook workbook = extensionSchemeExporter.createExcel(extensionScheme, format);
-                    return streamExcelExtensionSchemesOutput(workbook);
+                    final Workbook workbook = extensionExporter.createExcel(extension, format);
+                    return streamExcelExtensionsOutput(workbook);
                 } else {
-                    ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSIONSCHEME, expand)));
-                    return Response.ok(extensionScheme).build();
+                    ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
+                    return Response.ok(extension).build();
                 }
             } else {
                 throw new NotFoundException();
@@ -333,41 +333,41 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes/")
-    @ApiOperation(value = "Return ExtensionSchemes for a CodeScheme.", response = ExtensionSchemeDTO.class)
-    @ApiResponse(code = 200, message = "Returns all ExtensionSchemes for CodeScheme.")
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensions/")
+    @ApiOperation(value = "Return Extensions for a CodeScheme.", response = ExtensionDTO.class)
+    @ApiResponse(code = 200, message = "Returns all Extensions for CodeScheme.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
-    public Response getCodeRegistryCodeSchemeExtensionSchemes(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
-                                                              @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                                              @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
-                                                              @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                              @ApiParam(value = "ExtensionScheme PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
-                                                              @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
-                                                              @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+    public Response getCodeRegistryCodeSchemeExtensions(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
+                                                        @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
+                                                        @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                                        @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                        @ApiParam(value = "Extension PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
+                                                        @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
+                                                        @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
+                                                        @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
             if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-                final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(pageSize, from, prefLabel, codeScheme, Meta.parseAfterFromString(after), null);
-                final String csv = extensionSchemeExporter.createCsv(extensionSchemes);
-                return streamCsvExtensionSchemesOutput(csv);
+                final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, prefLabel, codeScheme, Meta.parseAfterFromString(after), null);
+                final String csv = extensionExporter.createCsv(extensions);
+                return streamCsvExtensionsOutput(csv);
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(pageSize, from, prefLabel, codeScheme, Meta.parseAfterFromString(after), null);
-                final Workbook workbook = extensionSchemeExporter.createExcel(extensionSchemes, format);
-                return streamExcelExtensionSchemesOutput(workbook);
+                final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, prefLabel, codeScheme, Meta.parseAfterFromString(after), null);
+                final Workbook workbook = extensionExporter.createExcel(extensions, format);
+                return streamExcelExtensionsOutput(workbook);
             } else {
-                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSIONSCHEME, expand)));
-                final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(pageSize, from, prefLabel, codeScheme, meta.getAfter(), meta);
+                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
+                final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, prefLabel, codeScheme, meta.getAfter(), meta);
                 if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                    meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONSCHEMES, after, pageSize, from + pageSize));
+                    meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONS, after, pageSize, from + pageSize));
                 }
-                final ResponseWrapper<ExtensionSchemeDTO> wrapper = new ResponseWrapper<>();
+                final ResponseWrapper<ExtensionDTO> wrapper = new ResponseWrapper<>();
                 wrapper.setMeta(meta);
-                if (extensionSchemes == null) {
+                if (extensions == null) {
                     throw new NotFoundException();
                 }
-                wrapper.setResults(extensionSchemes);
+                wrapper.setResults(extensions);
                 return Response.ok(wrapper).build();
             }
         } else {
@@ -376,38 +376,38 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensionschemes/{extensionSchemeCodeValue}/members/")
-    @ApiOperation(value = "Return Members for a ExtensionScheme.", response = MemberDTO.class)
-    @ApiResponse(code = 200, message = "Returns all Members for ExtensionScheme.")
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensions/{extensionCodeValue}/members/")
+    @ApiOperation(value = "Return Members for an Extension.", response = MemberDTO.class)
+    @ApiResponse(code = 200, message = "Returns all Members for an Extension.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
-    public Response getCodeRegistryCodeSchemeExtensionSchemeMembers(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
-                                                                    @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                                                    @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
-                                                                    @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                                    @ApiParam(value = "ExtensionScheme Value.", required = true) @PathParam("extensionSchemeCodeValue") final String extensionSchemeCodeValue,
-                                                                    @ApiParam(value = "ExtensionScheme PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
-                                                                    @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
-                                                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+    public Response getCodeRegistryCodeSchemeExtensionMembers(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
+                                                              @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
+                                                              @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                                              @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                              @ApiParam(value = "Extension CodeValue.", required = true) @PathParam("extensionCodeValue") final String extensionCodeValue,
+                                                              @ApiParam(value = "Extension PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
+                                                              @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
+                                                              @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
+                                                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
-            final ExtensionSchemeDTO extensionScheme = domain.getExtensionScheme(codeScheme.getId(), extensionSchemeCodeValue);
-            if (extensionScheme != null) {
+            final ExtensionDTO extension = domain.getExtension(codeScheme.getId(), extensionCodeValue);
+            if (extension != null) {
                 if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-                    final Set<MemberDTO> members = domain.getMembers(pageSize, from, extensionScheme, meta.getAfter(), meta);
+                    final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
                     final String csv = memberExporter.createCsv(members);
                     return streamCsvMembersOutput(csv);
                 } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                    final Set<MemberDTO> members = domain.getMembers(pageSize, from, extensionScheme, meta.getAfter(), meta);
+                    final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
                     final Workbook workbook = memberExporter.createExcel(members, format);
                     return streamExcelMembersOutput(workbook);
                 } else {
                     ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand)));
-                    final Set<MemberDTO> members = domain.getMembers(pageSize, from, extensionScheme, meta.getAfter(), meta);
+                    final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
                     if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                        meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONSCHEMES + "/" + extensionSchemeCodeValue + API_PATH_MEMBERS, after, pageSize, from + pageSize));
+                        meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONS + "/" + extensionCodeValue + API_PATH_MEMBERS, after, pageSize, from + pageSize));
                     }
                     final ResponseWrapper<MemberDTO> wrapper = new ResponseWrapper<>();
                     wrapper.setMeta(meta);
@@ -434,7 +434,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                                 @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                                                 @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                                 @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                                @ApiParam(value = "ExtensionScheme PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
+                                                                @ApiParam(value = "Extension PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                                                                 @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
@@ -483,7 +483,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                          @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                                          @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                          @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                         @ApiParam(value = "ExtensionScheme PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
+                                                         @ApiParam(value = "Extension PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                                                          @ApiParam(value = "Code code.", required = true) @PathParam("codeCodeValue") final String codeCodeValue,
                                                          @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                          @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,

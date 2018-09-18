@@ -58,8 +58,8 @@ abstract class BaseExporter {
         }
     }
 
-    String createExtensionSchemesSheetName(final CodeSchemeDTO codeScheme) {
-        return truncateSheetName(EXCEL_SHEET_EXTENSIONSCHEMES + "_" + codeScheme.getCodeValue());
+    String createExtensionsSheetName(final CodeSchemeDTO codeScheme) {
+        return truncateSheetName(EXCEL_SHEET_EXTENSIONS + "_" + codeScheme.getCodeValue());
     }
 
     String createCodesSheetName(final CodeSchemeDTO codeScheme) {

@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
-import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
+import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.OrganizationDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
@@ -22,16 +22,16 @@ public class CodeSchemeExporter extends BaseExporter {
 
     private final Domain domain;
     private final CodeExporter codeExporter;
-    private final ExtensionSchemeExporter extensionSchemeExporter;
+    private final ExtensionExporter extensionExporter;
     private final MemberExporter memberExporter;
 
     public CodeSchemeExporter(final Domain domain,
                               final CodeExporter codeExporter,
-                              final ExtensionSchemeExporter extensionSchemeExporter,
+                              final ExtensionExporter extensionExporter,
                               final MemberExporter memberExporter) {
         this.domain = domain;
         this.codeExporter = codeExporter;
-        this.extensionSchemeExporter = extensionSchemeExporter;
+        this.extensionExporter = extensionExporter;
         this.memberExporter = memberExporter;
     }
 
@@ -95,17 +95,17 @@ public class CodeSchemeExporter extends BaseExporter {
         addCodeSchemeSheet(workbook, EXCEL_SHEET_CODESCHEMES, codeSchemes);
         final String codeSheetName = truncateSheetName(EXCEL_SHEET_CODES + "_" + codeScheme.getCodeValue());
         codeExporter.addCodeSheet(workbook, codeSheetName, domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeScheme.getCodeRegistry().getCodeValue(), codeScheme.getCodeValue()));
-        final Set<ExtensionSchemeDTO> extensionSchemes = domain.getExtensionSchemes(null, null, null, codeScheme, null, null);
-        final String extensionSchemeSheetName = truncateSheetName(EXCEL_SHEET_EXTENSIONSCHEMES + "_" + codeScheme.getCodeValue());
-        if (extensionSchemes != null && !extensionSchemes.isEmpty()) {
-            extensionSchemeExporter.addExtensionSchemesSheet(workbook, extensionSchemeSheetName, extensionSchemes);
+        final Set<ExtensionDTO> extensions = domain.getExtensions(null, null, null, codeScheme, null, null);
+        final String extensionSheetName = truncateSheetName(EXCEL_SHEET_EXTENSIONS + "_" + codeScheme.getCodeValue());
+        if (extensions != null && !extensions.isEmpty()) {
+            extensionExporter.addExtensionSheet(workbook, extensionSheetName, extensions);
             int i = 0;
-            for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
-                final String extensionSheetName = truncateSheetNameWithIndex(EXCEL_SHEET_MEMBERS + "_" + codeScheme.getCodeValue() + "_" + extensionScheme.getCodeValue(), ++i);
-                memberExporter.addMembersSheet(workbook, extensionSheetName, domain.getMembers(null, null, extensionScheme, null, null));
+            for (final ExtensionDTO extension : extensions) {
+                final String memberSheetName = truncateSheetNameWithIndex(EXCEL_SHEET_MEMBERS + "_" + codeScheme.getCodeValue() + "_" + extension.getCodeValue(), ++i);
+                memberExporter.addMembersSheet(workbook, memberSheetName, domain.getMembers(null, null, extension, null, null));
             }
         } else {
-            extensionSchemeExporter.addExtensionSchemesSheet(workbook, extensionSchemeSheetName, new HashSet<>());
+            extensionExporter.addExtensionSheet(workbook, extensionSheetName, new HashSet<>());
         }
         return workbook;
     }
@@ -156,7 +156,7 @@ public class CodeSchemeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODESSHEET);
-        rowhead.createCell(j).setCellValue(CONTENT_HEADER_EXTENSIONSCHEMESSHEET);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_EXTENSIONSSHEET);
         int i = 1;
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Row row = sheet.createRow(i++);
@@ -190,7 +190,7 @@ public class CodeSchemeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(codeScheme.getCreated() != null ? formatDateWithSeconds(codeScheme.getCreated()) : "");
             row.createCell(k++).setCellValue(codeScheme.getModified() != null ? formatDateWithSeconds(codeScheme.getModified()) : "");
             row.createCell(k++).setCellValue(checkEmptyValue(createCodesSheetName(codeScheme)));
-            row.createCell(k).setCellValue(checkEmptyValue(createExtensionSchemesSheetName(codeScheme)));
+            row.createCell(k).setCellValue(checkEmptyValue(createExtensionsSheetName(codeScheme)));
         }
     }
 

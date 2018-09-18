@@ -10,7 +10,7 @@ import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.MemberDTO;
-import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
+import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
@@ -98,21 +98,21 @@ public interface Domain {
                                                     final Date after,
                                                     final Meta meta);
 
-    Set<ExtensionSchemeDTO> getExtensionSchemes(final Integer pageSize,
-                                                final Integer from,
-                                                final String extensionSchemePrefLabel,
-                                                final CodeSchemeDTO codeScheme,
-                                                final Date after,
-                                                final Meta meta);
+    Set<ExtensionDTO> getExtensions(final Integer pageSize,
+                                    final Integer from,
+                                    final String extensionPrefLabel,
+                                    final CodeSchemeDTO codeScheme,
+                                    final Date after,
+                                    final Meta meta);
 
-    ExtensionSchemeDTO getExtensionScheme(final String codeRegistryCodeValue,
-                                          final String codeSchemeCodeValue,
-                                          final String extensionSchemeCodeValue);
+    ExtensionDTO getExtension(final String codeRegistryCodeValue,
+                              final String codeSchemeCodeValue,
+                              final String extensionCodeValue);
 
-    ExtensionSchemeDTO getExtensionScheme(final UUID codeSchemeId,
-                                          final String extensionSchemeCodeValue);
+    ExtensionDTO getExtension(final UUID codeSchemeId,
+                              final String extensionCodeValue);
 
-    ExtensionSchemeDTO getExtensionScheme(final String extensionSchemeId);
+    ExtensionDTO getExtension(final String extensionId);
 
     Set<MemberDTO> getMembers(final Integer pageSize,
                                  final Integer from,
@@ -121,7 +121,7 @@ public interface Domain {
 
     Set<MemberDTO> getMembers(final Integer pageSize,
                                  final Integer from,
-                                 final ExtensionSchemeDTO code,
+                                 final ExtensionDTO code,
                                  final Date after,
                                  final Meta meta);
 
