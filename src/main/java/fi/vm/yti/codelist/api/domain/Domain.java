@@ -9,7 +9,7 @@ import fi.vm.yti.codelist.api.dto.ResourceDTO;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
-import fi.vm.yti.codelist.common.dto.ExtensionDTO;
+import fi.vm.yti.codelist.common.dto.MemberDTO;
 import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
@@ -114,24 +114,24 @@ public interface Domain {
 
     ExtensionSchemeDTO getExtensionScheme(final String extensionSchemeId);
 
-    Set<ExtensionDTO> getExtensions(final Integer pageSize,
-                                    final Integer from,
-                                    final Date after,
-                                    final Meta meta);
+    Set<MemberDTO> getMembers(final Integer pageSize,
+                                 final Integer from,
+                                 final Date after,
+                                 final Meta meta);
 
-    Set<ExtensionDTO> getExtensions(final Integer pageSize,
-                                    final Integer from,
-                                    final ExtensionSchemeDTO code,
-                                    final Date after,
-                                    final Meta meta);
+    Set<MemberDTO> getMembers(final Integer pageSize,
+                                 final Integer from,
+                                 final ExtensionSchemeDTO code,
+                                 final Date after,
+                                 final Meta meta);
 
-    Set<ExtensionDTO> getExtensions(final Integer pageSize,
-                                    final Integer from,
-                                    final CodeDTO code,
-                                    final Date after,
-                                    final Meta meta);
+    Set<MemberDTO> getMembers(final Integer pageSize,
+                                 final Integer from,
+                                 final CodeDTO code,
+                                 final Date after,
+                                 final Meta meta);
 
-    ExtensionDTO getExtension(final String extensionId);
+    MemberDTO getMember(final String memberId);
 
     Set<ResourceDTO> getContainers(final Integer pageSize,
                                    final Integer from,

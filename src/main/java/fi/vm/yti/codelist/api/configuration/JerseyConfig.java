@@ -13,7 +13,7 @@ import fi.vm.yti.codelist.api.filter.CacheFilter;
 import fi.vm.yti.codelist.api.filter.RequestLoggingFilter;
 import fi.vm.yti.codelist.api.resource.CodeRegistryResource;
 import fi.vm.yti.codelist.api.resource.CodeSchemeResource;
-import fi.vm.yti.codelist.api.resource.ExtensionResource;
+import fi.vm.yti.codelist.api.resource.MemberResource;
 import fi.vm.yti.codelist.api.resource.ExtensionSchemeResource;
 import fi.vm.yti.codelist.api.resource.ExternalReferenceResource;
 import fi.vm.yti.codelist.api.resource.IntegrationResource;
@@ -82,7 +82,7 @@ public class JerseyConfig extends ResourceConfig {
         register(PropertyTypeResource.class);
         register(ExternalReferenceResource.class);
         register(ExtensionSchemeResource.class);
-        register(ExtensionResource.class);
+        register(MemberResource.class);
 
         // API: Integration API
         register(IntegrationResource.class);

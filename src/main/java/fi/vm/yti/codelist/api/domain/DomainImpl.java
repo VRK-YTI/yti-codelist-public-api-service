@@ -38,9 +38,9 @@ import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
-import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.ExtensionSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
+import fi.vm.yti.codelist.common.dto.MemberDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
 import fi.vm.yti.codelist.common.model.Status;
@@ -745,19 +745,19 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<ExtensionDTO> getExtensions(final Integer pageSize,
-                                           final Integer from,
-                                           final CodeDTO code,
-                                           final Date after,
-                                           final Meta meta) {
+    public Set<MemberDTO> getMembers(final Integer pageSize,
+                                     final Integer from,
+                                     final CodeDTO code,
+                                     final Date after,
+                                     final Meta meta) {
         validatePageSize(pageSize);
-        final Set<ExtensionDTO> extensions = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
+        final Set<MemberDTO> members = new LinkedHashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_EXTENSION)
-                .setTypes(ELASTIC_TYPE_EXTENSION)
+                .prepareSearch(ELASTIC_INDEX_MEMBER)
+                .setTypes(ELASTIC_TYPE_MEMBER)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0)
                 .addSort("order", SortOrder.ASC);
@@ -770,29 +770,29 @@ public class DomainImpl implements Domain {
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
                 try {
-                    final ExtensionDTO extension = mapper.readValue(hit.getSourceAsString(), ExtensionDTO.class);
-                    extensions.add(extension);
+                    final MemberDTO member = mapper.readValue(hit.getSourceAsString(), MemberDTO.class);
+                    members.add(member);
                 } catch (final IOException e) {
-                    LOG.error("getExtensions reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    LOG.error("getMembers reading value from JSON string failed: " + hit.getSourceAsString(), e);
                     throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             });
         }
-        return extensions;
+        return members;
     }
 
-    public Set<ExtensionDTO> getExtensions(final Integer pageSize,
-                                           final Integer from,
-                                           final Date after,
-                                           final Meta meta) {
+    public Set<MemberDTO> getMembers(final Integer pageSize,
+                                     final Integer from,
+                                     final Date after,
+                                     final Meta meta) {
         validatePageSize(pageSize);
-        final Set<ExtensionDTO> extensions = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
+        final Set<MemberDTO> members = new LinkedHashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_EXTENSION)
-                .setTypes(ELASTIC_TYPE_EXTENSION)
+                .prepareSearch(ELASTIC_INDEX_MEMBER)
+                .setTypes(ELASTIC_TYPE_MEMBER)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0)
                 .addSort("order", SortOrder.ASC);
@@ -802,29 +802,29 @@ public class DomainImpl implements Domain {
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
                 try {
-                    final ExtensionDTO extension = mapper.readValue(hit.getSourceAsString(), ExtensionDTO.class);
-                    extensions.add(extension);
+                    final MemberDTO member = mapper.readValue(hit.getSourceAsString(), MemberDTO.class);
+                    members.add(member);
                 } catch (final IOException e) {
-                    LOG.error("getExtensions reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    LOG.error("getMembers reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             });
         }
-        return extensions;
+        return members;
     }
 
-    public Set<ExtensionDTO> getExtensions(final Integer pageSize,
-                                           final Integer from,
-                                           final ExtensionSchemeDTO extensionScheme,
-                                           final Date after,
-                                           final Meta meta) {
+    public Set<MemberDTO> getMembers(final Integer pageSize,
+                                     final Integer from,
+                                     final ExtensionSchemeDTO extensionScheme,
+                                     final Date after,
+                                     final Meta meta) {
         validatePageSize(pageSize);
-        final Set<ExtensionDTO> extensions = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
+        final Set<MemberDTO> members = new LinkedHashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_EXTENSION)
-                .setTypes(ELASTIC_TYPE_EXTENSION)
+                .prepareSearch(ELASTIC_INDEX_MEMBER)
+                .setTypes(ELASTIC_TYPE_MEMBER)
                 .setSize(pageSize != null ? pageSize : MAX_SIZE)
                 .setFrom(from != null ? from : 0)
                 .addSort("order", SortOrder.ASC);
@@ -837,35 +837,35 @@ public class DomainImpl implements Domain {
             setResultCounts(meta, response);
             response.getHits().forEach(hit -> {
                 try {
-                    final ExtensionDTO extension = mapper.readValue(hit.getSourceAsString(), ExtensionDTO.class);
-                    extensions.add(extension);
+                    final MemberDTO member = mapper.readValue(hit.getSourceAsString(), MemberDTO.class);
+                    members.add(member);
                 } catch (final IOException e) {
-                    LOG.error("getExtensions reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    LOG.error("getMembers reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             });
         }
-        return extensions;
+        return members;
     }
 
-    public ExtensionDTO getExtension(final String extensionId) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
+    public MemberDTO getMember(final String memberId) {
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
             final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_EXTENSION)
-                .setTypes(ELASTIC_TYPE_EXTENSION);
+                .prepareSearch(ELASTIC_INDEX_MEMBER)
+                .setTypes(ELASTIC_TYPE_MEMBER);
             final BoolQueryBuilder builder = boolQuery()
-                .must(matchQuery("id", extensionId.toLowerCase()));
+                .must(matchQuery("id", memberId.toLowerCase()));
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
                 final SearchHit hit = response.getHits().getAt(0);
                 try {
                     if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(), ExtensionDTO.class);
+                        return mapper.readValue(hit.getSourceAsString(), MemberDTO.class);
                     }
                 } catch (final IOException e) {
-                    LOG.error("getExtension reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    LOG.error("getMember reading value from JSON string failed: " + hit.getSourceAsString(), e);
                 }
             }
         }

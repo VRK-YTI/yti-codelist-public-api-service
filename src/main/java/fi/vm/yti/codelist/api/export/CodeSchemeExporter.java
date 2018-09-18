@@ -23,16 +23,16 @@ public class CodeSchemeExporter extends BaseExporter {
     private final Domain domain;
     private final CodeExporter codeExporter;
     private final ExtensionSchemeExporter extensionSchemeExporter;
-    private final ExtensionExporter extensionExporter;
+    private final MemberExporter memberExporter;
 
     public CodeSchemeExporter(final Domain domain,
                               final CodeExporter codeExporter,
                               final ExtensionSchemeExporter extensionSchemeExporter,
-                              final ExtensionExporter extensionExporter) {
+                              final MemberExporter memberExporter) {
         this.domain = domain;
         this.codeExporter = codeExporter;
         this.extensionSchemeExporter = extensionSchemeExporter;
-        this.extensionExporter = extensionExporter;
+        this.memberExporter = memberExporter;
     }
 
     public String createCsv(final Set<CodeSchemeDTO> codeSchemes) {
@@ -101,8 +101,8 @@ public class CodeSchemeExporter extends BaseExporter {
             extensionSchemeExporter.addExtensionSchemesSheet(workbook, extensionSchemeSheetName, extensionSchemes);
             int i = 0;
             for (final ExtensionSchemeDTO extensionScheme : extensionSchemes) {
-                final String extensionSheetName = truncateSheetNameWithIndex(EXCEL_SHEET_EXTENSIONS + "_" + codeScheme.getCodeValue() + "_" + extensionScheme.getCodeValue(), ++i);
-                extensionExporter.addExtensionsSheet(workbook, extensionSheetName, domain.getExtensions(null, null, extensionScheme, null, null));
+                final String extensionSheetName = truncateSheetNameWithIndex(EXCEL_SHEET_MEMBERS + "_" + codeScheme.getCodeValue() + "_" + extensionScheme.getCodeValue(), ++i);
+                memberExporter.addMembersSheet(workbook, extensionSheetName, domain.getMembers(null, null, extensionScheme, null, null));
             }
         } else {
             extensionSchemeExporter.addExtensionSchemesSheet(workbook, extensionSchemeSheetName, new HashSet<>());

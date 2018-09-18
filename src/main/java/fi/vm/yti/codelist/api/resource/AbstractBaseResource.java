@@ -42,7 +42,7 @@ abstract class AbstractBaseResource {
     private static final String DOWNLOAD_FILENAME_EXTERNALREFERENCES = "externalreferences";
     private static final String DOWNLOAD_FILENAME_PROPERTYTYPES = "propertytypes";
     private static final String DOWNLOAD_FILENAME_EXTENSIONSCHEMES = "extensionschemes";
-    private static final String DOWNLOAD_FILENAME_EXTENSIONS = "extensions";
+    private static final String DOWNLOAD_FILENAME_MEMBERS = "members";
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBaseResource.class);
     private static final String HEADER_CONTENT_DISPOSITION = "content-disposition";
@@ -69,7 +69,7 @@ abstract class AbstractBaseResource {
         filterProvider.addFilter(FILTER_NAME_DATACLASSIFICATION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URL));
         filterProvider.addFilter(FILTER_NAME_ORGANIZATION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_ID));
         filterProvider.addFilter(FILTER_NAME_EXTENSIONSCHEME, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URL));
-        filterProvider.addFilter(FILTER_NAME_EXTENSION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URL));
+        filterProvider.addFilter(FILTER_NAME_MEMBER, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URL));
         filterProvider.setFailOnUnknownId(false);
         for (final String baseFilter : baseFilters) {
             filterProvider.removeFilter(baseFilter);
@@ -139,8 +139,8 @@ abstract class AbstractBaseResource {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_EXTENSIONSCHEMES);
     }
 
-    Response streamCsvExtensionsOutput(final String csv) {
-        return streamCsvOutput(csv, DOWNLOAD_FILENAME_EXTENSIONS);
+    Response streamCsvMembersOutput(final String csv) {
+        return streamCsvOutput(csv, DOWNLOAD_FILENAME_MEMBERS);
     }
 
     private Response streamCsvOutput(final String csv,
@@ -180,8 +180,8 @@ abstract class AbstractBaseResource {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_EXTENSIONSCHEMES);
     }
 
-    Response streamExcelExtensionsOutput(final Workbook workbook) {
-        return streamExcelOutput(workbook, DOWNLOAD_FILENAME_EXTENSIONS);
+    Response streamExcelMembersOutput(final Workbook workbook) {
+        return streamExcelOutput(workbook, DOWNLOAD_FILENAME_MEMBERS);
     }
 
     private Response streamExcelOutput(final Workbook workbook,
