@@ -1,6 +1,5 @@
 package fi.vm.yti.codelist.api.resource;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
