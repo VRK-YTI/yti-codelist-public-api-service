@@ -34,7 +34,7 @@ public class MemberExporter extends BaseExporter {
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, member.getId().toString());
             appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getCodeValue() : "");
-            appendValue(csv, csvSeparator, member.getBroaderMember() != null ? member.getBroaderMember().getId().toString() : "");
+            appendValue(csv, csvSeparator, member.getRelatedMember() != null ? member.getRelatedMember().getId().toString() : "");
             appendValue(csv, csvSeparator, member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
             appendValue(csv, csvSeparator, member.getEndDate() != null ? formatDateWithISO8601(member.getEndDate()) : "");
             appendValue(csv, csvSeparator, member.getCreated() != null ? formatDateWithSeconds(member.getCreated()) : "");
@@ -84,8 +84,8 @@ public class MemberExporter extends BaseExporter {
             } else {
                 row.createCell(k++).setCellValue("");
             }
-            if (member.getBroaderMember() != null && member.getBroaderMember().getCode() != null) {
-                row.createCell(k++).setCellValue(checkEmptyValue(member.getBroaderMember().getId().toString()));
+            if (member.getRelatedMember() != null && member.getRelatedMember().getCode() != null) {
+                row.createCell(k++).setCellValue(checkEmptyValue(member.getRelatedMember().getId().toString()));
             } else {
                 row.createCell(k++).setCellValue("");
             }
