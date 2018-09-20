@@ -19,7 +19,9 @@ public class MemberExporter extends BaseExporter {
         final Set<String> prefLabelLanguages = resolveMemberPrefLabelLanguages(members);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_MEMBERVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_MEMBERVALUE_1);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_MEMBERVALUE_2);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_MEMBERVALUE_3);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODE);
@@ -30,7 +32,9 @@ public class MemberExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER, true);
         for (final MemberDTO member : members) {
-            appendValue(csv, csvSeparator, member.getMemberValue());
+            appendValue(csv, csvSeparator, member.getMemberValue_1());
+            appendValue(csv, csvSeparator, member.getMemberValue_2());
+            appendValue(csv, csvSeparator, member.getMemberValue_3());
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, member.getId().toString());
             appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getCodeValue() : "");
@@ -59,7 +63,9 @@ public class MemberExporter extends BaseExporter {
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBERVALUE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBERVALUE_1);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBERVALUE_2);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBERVALUE_3);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
@@ -75,7 +81,9 @@ public class MemberExporter extends BaseExporter {
             final Row row = sheet.createRow(i++);
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(member.getId().toString()));
-            row.createCell(k++).setCellValue(checkEmptyValue(member.getMemberValue()));
+            row.createCell(k++).setCellValue(checkEmptyValue(member.getMemberValue_1()));
+            row.createCell(k++).setCellValue(checkEmptyValue(member.getMemberValue_2()));
+            row.createCell(k++).setCellValue(checkEmptyValue(member.getMemberValue_3()));
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(member.getPrefLabel().get(language));
             }
