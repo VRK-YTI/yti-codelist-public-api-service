@@ -43,6 +43,7 @@ import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import fi.vm.yti.codelist.common.dto.MemberDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
+import fi.vm.yti.codelist.common.dto.ValueTypeDTO;
 import fi.vm.yti.codelist.common.model.Status;
 import static fi.vm.yti.codelist.api.exception.ErrorConstants.ERR_MSG_USER_406;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
@@ -544,6 +545,69 @@ public class DomainImpl implements Domain {
             });
         }
         return propertyTypes;
+    }
+
+    public ValueTypeDTO getValueType(final String valueTypeIdentifier) {
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_VALUETYPE).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_VALUETYPE)
+                .setTypes(ELASTIC_TYPE_VALUETYPE);
+            final BoolQueryBuilder builder = new BoolQueryBuilder()
+                .should(matchQuery("id", valueTypeIdentifier.toLowerCase()))
+                .should(matchQuery("localName", valueTypeIdentifier.toLowerCase()).analyzer(TEXT_ANALYZER))
+                .minimumShouldMatch(1);
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            if (response.getHits().getTotalHits() > 0) {
+                final SearchHit hit = response.getHits().getAt(0);
+                try {
+                    if (hit != null) {
+                        return mapper.readValue(hit.getSourceAsString(), ValueTypeDTO.class);
+                    }
+                } catch (final IOException e) {
+                    LOG.error("getValueType reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
+                }
+            }
+        }
+        return null;
+    }
+
+    public Set<ValueTypeDTO> getValueTypes(final Integer pageSize,
+                                           final Integer from,
+                                           final String localName,
+                                           final Date after,
+                                           final Meta meta) {
+        validatePageSize(pageSize);
+        final Set<ValueTypeDTO> valueTypes = new LinkedHashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_VALUETYPE).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_VALUETYPE)
+                .setTypes(ELASTIC_TYPE_VALUETYPE)
+                .setSize(pageSize != null ? pageSize : MAX_SIZE)
+                .setFrom(from != null ? from : 0);
+            final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
+            if (localName != null) {
+                builder.must(prefixQuery("localName", localName.toLowerCase()));
+            }
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            setResultCounts(meta, response);
+            response.getHits().forEach(hit -> {
+                try {
+                    final ValueTypeDTO valueType = mapper.readValue(hit.getSourceAsString(), ValueTypeDTO.class);
+                    valueTypes.add(valueType);
+                } catch (final IOException e) {
+                    LOG.error("getValueTypes reading value from JSON string failed: " + hit.getSourceAsString(), e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
+                }
+            });
+        }
+        return valueTypes;
     }
 
     public ExternalReferenceDTO getExternalReference(final String externalReferenceId) {

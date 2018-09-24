@@ -9,11 +9,12 @@ import fi.vm.yti.codelist.api.dto.ResourceDTO;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
-import fi.vm.yti.codelist.common.dto.MemberDTO;
 import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
+import fi.vm.yti.codelist.common.dto.MemberDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
+import fi.vm.yti.codelist.common.dto.ValueTypeDTO;
 
 public interface Domain {
 
@@ -88,6 +89,14 @@ public interface Domain {
                                           final Date after,
                                           final Meta meta);
 
+    ValueTypeDTO getValueType(final String valueTypeId);
+
+    Set<ValueTypeDTO> getValueTypes(final Integer pageSize,
+                                    final Integer from,
+                                    final String localName,
+                                    final Date after,
+                                    final Meta meta);
+
     ExternalReferenceDTO getExternalReference(final String externalReferenceId);
 
     Set<ExternalReferenceDTO> getExternalReferences(final Integer pageSize,
@@ -115,21 +124,21 @@ public interface Domain {
     ExtensionDTO getExtension(final String extensionId);
 
     Set<MemberDTO> getMembers(final Integer pageSize,
-                                 final Integer from,
-                                 final Date after,
-                                 final Meta meta);
+                              final Integer from,
+                              final Date after,
+                              final Meta meta);
 
     Set<MemberDTO> getMembers(final Integer pageSize,
-                                 final Integer from,
-                                 final ExtensionDTO code,
-                                 final Date after,
-                                 final Meta meta);
+                              final Integer from,
+                              final ExtensionDTO code,
+                              final Date after,
+                              final Meta meta);
 
     Set<MemberDTO> getMembers(final Integer pageSize,
-                                 final Integer from,
-                                 final CodeDTO code,
-                                 final Date after,
-                                 final Meta meta);
+                              final Integer from,
+                              final CodeDTO code,
+                              final Date after,
+                              final Meta meta);
 
     MemberDTO getMember(final String memberId);
 

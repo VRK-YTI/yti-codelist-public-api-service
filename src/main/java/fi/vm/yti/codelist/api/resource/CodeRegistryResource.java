@@ -397,11 +397,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
             if (extension != null) {
                 if (FORMAT_CSV.startsWith(format.toLowerCase())) {
                     final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
-                    final String csv = memberExporter.createCsv(members);
+                    final String csv = memberExporter.createCsv(extension, members);
                     return streamCsvMembersOutput(csv);
                 } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
                     final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
-                    final Workbook workbook = memberExporter.createExcel(members, format);
+                    final Workbook workbook = memberExporter.createExcel(extension, members, format);
                     return streamExcelMembersOutput(workbook);
                 } else {
                     ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand)));
@@ -493,11 +493,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
         if (code != null) {
             if (FORMAT_CSV.startsWith(format.toLowerCase())) {
                 final Set<MemberDTO> members = domain.getMembers(pageSize, from, code, meta.getAfter(), meta);
-                final String csv = memberExporter.createCsv(members);
+                final String csv = memberExporter.createCsv(null, members);
                 return streamCsvMembersOutput(csv);
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
                 final Set<MemberDTO> members = domain.getMembers(pageSize, from, code, meta.getAfter(), meta);
-                final Workbook workbook = memberExporter.createExcel(members, format);
+                final Workbook workbook = memberExporter.createExcel(null, members, format);
                 return streamExcelMembersOutput(workbook);
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand)));

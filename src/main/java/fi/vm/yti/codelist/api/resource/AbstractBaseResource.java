@@ -41,6 +41,7 @@ abstract class AbstractBaseResource {
     private static final String DOWNLOAD_FILENAME_CODES = "codes";
     private static final String DOWNLOAD_FILENAME_EXTERNALREFERENCES = "externalreferences";
     private static final String DOWNLOAD_FILENAME_PROPERTYTYPES = "propertytypes";
+    private static final String DOWNLOAD_FILENAME_VALUETYPES = "valuetypes";
     private static final String DOWNLOAD_FILENAME_EXTENSIONS = "extensions";
     private static final String DOWNLOAD_FILENAME_MEMBERS = "members";
 
@@ -70,6 +71,8 @@ abstract class AbstractBaseResource {
         filterProvider.addFilter(FILTER_NAME_ORGANIZATION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_ID));
         filterProvider.addFilter(FILTER_NAME_EXTENSION, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URL));
         filterProvider.addFilter(FILTER_NAME_MEMBER, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URL));
+        filterProvider.addFilter(FILTER_NAME_VALUETYPE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URL));
+        filterProvider.addFilter(FILTER_NAME_MEMBERVALUE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_ID));
         filterProvider.setFailOnUnknownId(false);
         for (final String baseFilter : baseFilters) {
             filterProvider.removeFilter(baseFilter);
@@ -135,6 +138,10 @@ abstract class AbstractBaseResource {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_PROPERTYTYPES);
     }
 
+    Response streamCsvValueTypesOutput(final String csv) {
+        return streamCsvOutput(csv, DOWNLOAD_FILENAME_VALUETYPES);
+    }
+
     Response streamCsvExtensionsOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_EXTENSIONS);
     }
@@ -174,6 +181,10 @@ abstract class AbstractBaseResource {
 
     Response streamExcelPropertyTypesOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_PROPERTYTYPES);
+    }
+
+    Response streamExcelValueTypesOutput(final Workbook workbook) {
+        return streamExcelOutput(workbook, DOWNLOAD_FILENAME_VALUETYPES);
     }
 
     Response streamExcelExtensionsOutput(final Workbook workbook) {

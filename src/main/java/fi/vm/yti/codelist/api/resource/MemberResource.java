@@ -57,11 +57,11 @@ public class MemberResource extends AbstractBaseResource {
                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
             final Set<MemberDTO> members = domain.getMembers(pageSize, from, Meta.parseAfterFromString(after), null);
-            final String csv = memberExporter.createCsv(members);
+            final String csv = memberExporter.createCsv(null, members);
             return streamCsvMembersOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
             final Set<MemberDTO> members = domain.getMembers(pageSize, from, Meta.parseAfterFromString(after), null);
-            final Workbook workbook = memberExporter.createExcel(members, format);
+            final Workbook workbook = memberExporter.createExcel(null, members, format);
             return streamExcelMembersOutput(workbook);
         } else {
             final Meta meta = new Meta(200, pageSize, from, after);

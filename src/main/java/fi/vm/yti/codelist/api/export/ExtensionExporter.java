@@ -70,7 +70,7 @@ public class ExtensionExporter extends BaseExporter {
         extensions.add(extension);
         addExtensionSheet(workbook, EXCEL_SHEET_EXTENSIONS, extensions);
         final String extensionSheetName = truncateSheetNameWithIndex(EXCEL_SHEET_MEMBERS + "_" + extension.getParentCodeScheme().getCodeValue() + "_" + extension.getCodeValue(), 1);
-        memberExporter.addMembersSheet(workbook, extensionSheetName, domain.getMembers(null, null, extension, null, null));
+        memberExporter.addMembersSheet(extension, workbook, extensionSheetName, domain.getMembers(null, null, extension, null, null));
         return workbook;
     }
 

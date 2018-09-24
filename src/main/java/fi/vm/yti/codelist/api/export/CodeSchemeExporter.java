@@ -102,7 +102,7 @@ public class CodeSchemeExporter extends BaseExporter {
             int i = 0;
             for (final ExtensionDTO extension : extensions) {
                 final String memberSheetName = truncateSheetNameWithIndex(EXCEL_SHEET_MEMBERS + "_" + codeScheme.getCodeValue() + "_" + extension.getCodeValue(), ++i);
-                memberExporter.addMembersSheet(workbook, memberSheetName, domain.getMembers(null, null, extension, null, null));
+                memberExporter.addMembersSheet(extension, workbook, memberSheetName, domain.getMembers(null, null, extension, null, null));
             }
         } else {
             extensionExporter.addExtensionSheet(workbook, extensionSheetName, new HashSet<>());

@@ -9,19 +9,27 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Component;
 
+import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.MemberDTO;
+import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
+import fi.vm.yti.codelist.common.dto.ValueTypeDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 public class MemberExporter extends BaseExporter {
 
-    public String createCsv(final Set<MemberDTO> members) {
+    private static final String UNARYOPERATOR = "unaryOperator";
+    private static final String COMPARISONOPERATOR = "comparisonOperator";
+
+    public String createCsv(final ExtensionDTO extension,
+                            final Set<MemberDTO> members) {
         final Set<String> prefLabelLanguages = resolveMemberPrefLabelLanguages(members);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_MEMBERVALUE_1);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_MEMBERVALUE_2);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_MEMBERVALUE_3);
+        final Set<ValueTypeDTO> valueTypes = extension.getPropertyType().getValueTypes();
+        if (valueTypes != null && !valueTypes.isEmpty()) {
+            valueTypes.forEach(valueType -> appendValue(csv, csvSeparator, valueType.getLocalName().toUpperCase()));
+        }
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODE);
@@ -32,9 +40,9 @@ public class MemberExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER, true);
         for (final MemberDTO member : members) {
-            appendValue(csv, csvSeparator, member.getMemberValue_1());
-            appendValue(csv, csvSeparator, member.getMemberValue_2());
-            appendValue(csv, csvSeparator, member.getMemberValue_3());
+            if (valueTypes != null && !valueTypes.isEmpty()) {
+                valueTypes.forEach(valueType -> appendValue(csv, csvSeparator, member.getMemberValueWithLocalName(valueType.getLocalName()).getValue()));
+            }
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, member.getId().toString());
             appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getCodeValue() : "");
@@ -48,24 +56,22 @@ public class MemberExporter extends BaseExporter {
         return csv.toString();
     }
 
-    public Workbook createExcel(final Set<MemberDTO> members,
-                                final String format) {
-        final Workbook workbook = createWorkBook(format);
-        addMembersSheet(workbook, EXCEL_SHEET_MEMBERS, members);
-        return workbook;
-    }
-
-    public void addMembersSheet(final Workbook workbook,
+    public void addMembersSheet(final ExtensionDTO extension,
+                                final Workbook workbook,
                                 final String sheetName,
                                 final Set<MemberDTO> members) {
         final Set<String> prefLabelLanguages = resolveMemberPrefLabelLanguages(members);
         final Sheet sheet = workbook.createSheet(sheetName);
+
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBERVALUE_1);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBERVALUE_2);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBERVALUE_3);
+        final Set<ValueTypeDTO> valueTypes = extension.getPropertyType().getValueTypes();
+        if (valueTypes != null && !valueTypes.isEmpty()) {
+            for (final ValueTypeDTO valueType : valueTypes) {
+                rowhead.createCell(j++).setCellValue(valueType.getLocalName().toUpperCase());
+            }
+        }
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
@@ -81,9 +87,11 @@ public class MemberExporter extends BaseExporter {
             final Row row = sheet.createRow(i++);
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(member.getId().toString()));
-            row.createCell(k++).setCellValue(checkEmptyValue(member.getMemberValue_1()));
-            row.createCell(k++).setCellValue(checkEmptyValue(member.getMemberValue_2()));
-            row.createCell(k++).setCellValue(checkEmptyValue(member.getMemberValue_3()));
+            if (valueTypes != null && !valueTypes.isEmpty()) {
+                for (final ValueTypeDTO valueType : valueTypes) {
+                    row.createCell(k++).setCellValue(checkEmptyValue(member.getMemberValueWithLocalName(valueType.getLocalName()).getValue()));
+                }
+            }
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(member.getPrefLabel().get(language));
             }
@@ -112,5 +120,20 @@ public class MemberExporter extends BaseExporter {
             languages.addAll(prefLabel.keySet());
         }
         return languages;
+    }
+
+    public boolean hasValueTypes(final PropertyTypeDTO propertyType) {
+        if (propertyType != null) {
+            return (propertyType.getValueTypes() != null && !propertyType.getValueTypes().isEmpty());
+        }
+        return false;
+    }
+
+    public Workbook createExcel(final ExtensionDTO extension,
+                                final Set<MemberDTO> members,
+                                final String format) {
+        final Workbook workbook = createWorkBook(format);
+        addMembersSheet(extension, workbook, EXCEL_SHEET_MEMBERS, members);
+        return workbook;
     }
 }
