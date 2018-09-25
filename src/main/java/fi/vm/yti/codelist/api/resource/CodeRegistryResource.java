@@ -15,7 +15,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import fi.vm.yti.codelist.common.model.CodeSchemeListItem;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Component;
 
@@ -28,15 +27,16 @@ import fi.vm.yti.codelist.api.exception.NotFoundException;
 import fi.vm.yti.codelist.api.export.CodeExporter;
 import fi.vm.yti.codelist.api.export.CodeRegistryExporter;
 import fi.vm.yti.codelist.api.export.CodeSchemeExporter;
-import fi.vm.yti.codelist.api.export.MemberExporter;
 import fi.vm.yti.codelist.api.export.ExtensionExporter;
+import fi.vm.yti.codelist.api.export.MemberExporter;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
-import fi.vm.yti.codelist.common.dto.MemberDTO;
 import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
+import fi.vm.yti.codelist.common.dto.MemberDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
+import fi.vm.yti.codelist.common.model.CodeSchemeListItem;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -130,7 +130,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
             }
             return Response.ok(codeRegistry).build();
         } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            throw new NotFoundException();
         }
     }
 
@@ -265,74 +265,6 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensions/{extensionCodeValue}/members/{memberId}")
-    @ApiOperation(value = "Return Member for an Extension.", response = ExtensionDTO.class)
-    @ApiResponse(code = 200, message = "Returns single Member for Extension.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
-    public Response getCodeRegistryCodeSchemeExtensionMember(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
-                                                             @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                             @ApiParam(value = "Extension CodeValue.", required = true) @PathParam("extensionCodeValue") final String extensionCodeValue,
-                                                             @ApiParam(value = "Member ID.", required = true) @PathParam("memberId") final String memberId,
-                                                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
-        if (codeRegistry != null) {
-            final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-            if (codeScheme != null) {
-                final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
-                if (extension != null) {
-                    final MemberDTO member = domain.getMember(memberId);
-                    if (member != null) {
-                        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand)));
-                        return Response.ok(member).build();
-                    } else {
-                        throw new NotFoundException();
-                    }
-                } else {
-                    throw new NotFoundException();
-                }
-            } else {
-                throw new NotFoundException();
-            }
-        } else {
-            throw new NotFoundException();
-        }
-    }
-
-    @GET
-    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensions/{extensionCodeValue}")
-    @ApiOperation(value = "Return Extension for a CodeScheme.", response = ExtensionDTO.class)
-    @ApiResponse(code = 200, message = "Returns single Extension for CodeScheme.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
-    public Response getCodeRegistryCodeSchemeExtension(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
-                                                       @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                       @ApiParam(value = "Extension CodeValue.", required = true) @PathParam("extensionCodeValue") final String extensionCodeValue,
-                                                       @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
-                                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-        if (codeScheme != null) {
-            final ExtensionDTO extension = domain.getExtension(codeScheme.getId(), extensionCodeValue);
-            if (extension != null) {
-                if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-                    final Set<ExtensionDTO> extensions = new HashSet<>();
-                    extensions.add(extension);
-                    final String csv = extensionExporter.createCsv(extensions);
-                    return streamCsvExtensionsOutput(csv);
-                } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                    final Workbook workbook = extensionExporter.createExcel(extension, format);
-                    return streamExcelExtensionsOutput(workbook);
-                } else {
-                    ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
-                    return Response.ok(extension).build();
-                }
-            } else {
-                throw new NotFoundException();
-            }
-        } else {
-            throw new NotFoundException();
-        }
-    }
-
-    @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensions/")
     @ApiOperation(value = "Return Extensions for a CodeScheme.", response = ExtensionDTO.class)
     @ApiResponse(code = 200, message = "Returns all Extensions for CodeScheme.")
@@ -376,10 +308,39 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensions/{extensionCodeValue}")
+    @ApiOperation(value = "Return Extension for a CodeScheme.", response = ExtensionDTO.class)
+    @ApiResponse(code = 200, message = "Returns single Extension for CodeScheme.")
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
+    public Response getCodeRegistryCodeSchemeExtension(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                                       @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                       @ApiParam(value = "Extension CodeValue.", required = true) @PathParam("extensionCodeValue") final String extensionCodeValue,
+                                                       @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
+                                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+        final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
+        if (extension != null) {
+            if (FORMAT_CSV.startsWith(format.toLowerCase())) {
+                final Set<ExtensionDTO> extensions = new HashSet<>();
+                extensions.add(extension);
+                final String csv = extensionExporter.createCsv(extensions);
+                return streamCsvExtensionsOutput(csv);
+            } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+                final Workbook workbook = extensionExporter.createExcel(extension, format);
+                return streamExcelExtensionsOutput(workbook);
+            } else {
+                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
+                return Response.ok(extension).build();
+            }
+        } else {
+            throw new NotFoundException();
+        }
+    }
+
+    @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensions/{extensionCodeValue}/members/")
     @ApiOperation(value = "Return Members for an Extension.", response = MemberDTO.class)
     @ApiResponse(code = 200, message = "Returns all Members for an Extension.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
     public Response getCodeRegistryCodeSchemeExtensionMembers(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                                               @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                                               @ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
@@ -391,32 +352,51 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
-        final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-        if (codeScheme != null) {
-            final ExtensionDTO extension = domain.getExtension(codeScheme.getId(), extensionCodeValue);
-            if (extension != null) {
-                if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-                    final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
-                    final String csv = memberExporter.createCsv(extension, members);
-                    return streamCsvMembersOutput(csv);
-                } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                    final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
-                    final Workbook workbook = memberExporter.createExcel(extension, members, format);
-                    return streamExcelMembersOutput(workbook);
-                } else {
-                    ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand)));
-                    final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
-                    if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                        meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONS + "/" + extensionCodeValue + API_PATH_MEMBERS, after, pageSize, from + pageSize));
-                    }
-                    final ResponseWrapper<MemberDTO> wrapper = new ResponseWrapper<>();
-                    wrapper.setMeta(meta);
-                    if (members == null) {
-                        throw new NotFoundException();
-                    }
-                    wrapper.setResults(members);
-                    return Response.ok(wrapper).build();
+        final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
+        if (extension != null) {
+            if (FORMAT_CSV.startsWith(format.toLowerCase())) {
+                final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
+                final String csv = memberExporter.createCsv(extension, members);
+                return streamCsvMembersOutput(csv);
+            } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
+                final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
+                final Workbook workbook = memberExporter.createExcel(extension, members, format);
+                return streamExcelMembersOutput(workbook);
+            } else {
+                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand)));
+                final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
+                if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+                    meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONS + "/" + extensionCodeValue + API_PATH_MEMBERS, after, pageSize, from + pageSize));
                 }
+                final ResponseWrapper<MemberDTO> wrapper = new ResponseWrapper<>();
+                wrapper.setMeta(meta);
+                if (members == null) {
+                    throw new NotFoundException();
+                }
+                wrapper.setResults(members);
+                return Response.ok(wrapper).build();
+            }
+        } else {
+            throw new NotFoundException();
+        }
+    }
+
+    @GET
+    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensions/{extensionCodeValue}/members/{memberId}")
+    @ApiOperation(value = "Return Member for an Extension.", response = ExtensionDTO.class)
+    @ApiResponse(code = 200, message = "Returns single Member for Extension.")
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
+    public Response getCodeRegistryCodeSchemeExtensionMember(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                                             @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                             @ApiParam(value = "Extension CodeValue.", required = true) @PathParam("extensionCodeValue") final String extensionCodeValue,
+                                                             @ApiParam(value = "Member ID.", required = true) @PathParam("memberId") final String memberId,
+                                                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+        final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
+        if (extension != null) {
+            final MemberDTO member = domain.getMember(memberId);
+            if (member != null) {
+                ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand)));
+                return Response.ok(member).build();
             } else {
                 throw new NotFoundException();
             }
@@ -468,10 +448,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
         final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
-        if (code == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+        if (code != null) {
+            return Response.ok(code).build();
         }
-        return Response.ok(code).build();
+        throw new NotFoundException();
     }
 
     @GET
@@ -536,7 +516,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final Meta meta = new Meta(200, null, null, null);
 
         if (codeScheme == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            throw new NotFoundException();
         } else if (allVersions.isEmpty()) {
             meta.setResultCount(1);
             final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
@@ -574,7 +554,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final Meta meta = new Meta(200, null, null, null);
 
         if (codeScheme == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            throw new NotFoundException();
         } else if (variants.isEmpty()) {
             meta.setResultCount(1);
             final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
@@ -600,8 +580,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @ApiResponse(code = 200, message = "Return the CodeSchemes of which this CodeScheme is a variant of in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeSchemeVariantMothers(@ApiParam(value = "CodeRegistry codevalue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
-                                          @ApiParam(value = "CodeScheme codevalue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                                @ApiParam(value = "CodeScheme codevalue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
+                                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         LinkedHashSet<CodeSchemeListItem> variantMothers = new LinkedHashSet<>();
@@ -612,7 +592,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final Meta meta = new Meta(200, null, null, null);
 
         if (codeScheme == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            throw new NotFoundException();
         } else if (variantMothers.isEmpty()) {
             meta.setResultCount(1);
             final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();

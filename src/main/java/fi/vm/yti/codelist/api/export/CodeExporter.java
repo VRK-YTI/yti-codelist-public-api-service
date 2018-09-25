@@ -97,7 +97,7 @@ public class CodeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_MODIFIED);
         int i = 1;
-        Integer flatInt = 1;
+        int flatInt = 1;
         for (final CodeDTO code : codes) {
             final Row row = sheet.createRow(i++);
             int k = 0;
@@ -117,7 +117,7 @@ public class CodeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(code.getShortName()));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getConceptUriInVocabularies()));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null));
-            row.createCell(k++).setCellValue(checkEmptyValue(code.getOrder() != null ? code.getOrder().toString() : flatInt.toString()));
+            row.createCell(k++).setCellValue(checkEmptyValue(code.getOrder() != null ? code.getOrder().toString() : Integer.toString(flatInt)));
             row.createCell(k++).setCellValue(code.getStartDate() != null ? formatDateWithISO8601(code.getStartDate()) : "");
             row.createCell(k++).setCellValue(code.getEndDate() != null ? formatDateWithISO8601(code.getEndDate()) : "");
             row.createCell(k++).setCellValue(code.getCreated() != null ? formatDateWithSeconds(code.getCreated()) : "");

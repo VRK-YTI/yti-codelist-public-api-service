@@ -18,15 +18,12 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Component
 public class MemberExporter extends BaseExporter {
 
-    private static final String UNARYOPERATOR = "unaryOperator";
-    private static final String COMPARISONOPERATOR = "comparisonOperator";
-
     public String createCsv(final ExtensionDTO extension,
                             final Set<MemberDTO> members) {
         final Set<String> prefLabelLanguages = resolveMemberPrefLabelLanguages(members);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        final Set<ValueTypeDTO> valueTypes = extension.getPropertyType().getValueTypes();
+        final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
         if (valueTypes != null && !valueTypes.isEmpty()) {
             valueTypes.forEach(valueType -> appendValue(csv, csvSeparator, valueType.getLocalName().toUpperCase()));
         }
@@ -66,7 +63,7 @@ public class MemberExporter extends BaseExporter {
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
-        final Set<ValueTypeDTO> valueTypes = extension.getPropertyType().getValueTypes();
+        final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
         if (valueTypes != null && !valueTypes.isEmpty()) {
             for (final ValueTypeDTO valueType : valueTypes) {
                 rowhead.createCell(j++).setCellValue(valueType.getLocalName().toUpperCase());
@@ -120,13 +117,6 @@ public class MemberExporter extends BaseExporter {
             languages.addAll(prefLabel.keySet());
         }
         return languages;
-    }
-
-    public boolean hasValueTypes(final PropertyTypeDTO propertyType) {
-        if (propertyType != null) {
-            return (propertyType.getValueTypes() != null && !propertyType.getValueTypes().isEmpty());
-        }
-        return false;
     }
 
     public Workbook createExcel(final ExtensionDTO extension,

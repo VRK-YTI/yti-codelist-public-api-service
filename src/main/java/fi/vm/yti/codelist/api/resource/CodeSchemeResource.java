@@ -20,6 +20,7 @@ import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
+import fi.vm.yti.codelist.api.exception.NotFoundException;
 import fi.vm.yti.codelist.api.export.CodeSchemeExporter;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
@@ -106,7 +107,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
         if (codeScheme != null) {
             return Response.ok(codeScheme).build();
         } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            throw new NotFoundException();
         }
     }
 }

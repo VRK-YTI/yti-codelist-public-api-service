@@ -19,6 +19,7 @@ import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
+import fi.vm.yti.codelist.api.exception.NotFoundException;
 import fi.vm.yti.codelist.api.export.ValueTypeExporter;
 import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.dto.ValueTypeDTO;
@@ -86,7 +87,7 @@ public class ValueTypeResource extends AbstractBaseResource {
         if (valueType != null) {
             return Response.ok(valueType).build();
         } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            throw new NotFoundException();
         }
     }
 }

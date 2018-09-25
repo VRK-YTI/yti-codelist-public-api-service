@@ -25,11 +25,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import fi.vm.yti.codelist.api.api.ApiUtils;
 import fi.vm.yti.codelist.api.domain.Domain;
+import fi.vm.yti.codelist.api.exception.NotFoundException;
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
+import fi.vm.yti.codelist.common.dto.ExtensionDTO;
+import fi.vm.yti.codelist.common.dto.MemberDTO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -93,21 +96,21 @@ public class UriResolverResource extends AbstractBaseResource {
         final String uriPath = resolveUri.getPath();
         checkResourceValidity(uriPath);
         final String resourcePath = uriPath.substring(API_PATH_CODELIST.length() + 1);
-        final List<String> resourceCodeValues = Arrays.asList(resourcePath.split("/"));
+        final List<String> resourcePathParams = Arrays.asList(resourcePath.split("/"));
         final List<String> acceptHeaders = parseAcceptHeaderValues(accept);
         if (format != null && !format.isEmpty()) {
             final URI redirectUrl;
             if (expand != null && !expand.isEmpty()) {
-                redirectUrl = URI.create(resolveApiResourceUrl(resourceCodeValues) + "?format=" + format + "&expand=" + expand);
+                redirectUrl = URI.create(resolveApiResourceUrl(resourcePathParams) + "?format=" + format + "&expand=" + expand);
             } else {
-                redirectUrl = URI.create(resolveApiResourceUrl(resourceCodeValues) + "?format=" + format);
+                redirectUrl = URI.create(resolveApiResourceUrl(resourcePathParams) + "?format=" + format);
             }
             return Response.seeOther(redirectUrl).build();
         } else if (acceptHeaders.contains(MediaType.APPLICATION_JSON)) {
-            final URI redirectUrl = URI.create(resolveApiResourceUrl(resourceCodeValues));
+            final URI redirectUrl = URI.create(resolveApiResourceUrl(resourcePathParams));
             return Response.seeOther(redirectUrl).build();
         } else {
-            final URI redirectUrl = URI.create(resolveWebResourceUrl(resourceCodeValues));
+            final URI redirectUrl = URI.create(resolveWebResourceUrl(resourcePathParams));
             return Response.seeOther(redirectUrl).build();
         }
     }
@@ -140,16 +143,34 @@ public class UriResolverResource extends AbstractBaseResource {
                 url = apiUtils.createCodeSchemeUrl(codeRegistryCodeValue, codeSchemeCodeValue);
                 break;
             }
-            case 3: {
+            case 4: {
                 final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
                 final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
-                final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(2));
-                checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
-                url = apiUtils.createCodeUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                final String pathIdentifier = checkNotEmpty(resourceCodeValues.get(2));
+                if (pathIdentifier.equalsIgnoreCase("code")) {
+                    final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(3));
+                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                    url = apiUtils.createCodeUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                    break;
+                } else if (pathIdentifier.equalsIgnoreCase("extension")) {
+                    final String extensionCodeValue = checkNotEmpty(resourceCodeValues.get(3));
+                    checkExtensionExists(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
+                    url = apiUtils.createExtensionUrl(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
+                    break;
+                } else {
+                    throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Codelist resource URI not resolvable!"));
+                }
+            }
+            case 6: {
+                final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+                final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
+                final String extensionCodeValue = checkNotEmpty(resourceCodeValues.get(3));
+                final String memberId = checkNotEmpty(resourceCodeValues.get(5));
+                checkMemberExists(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue, memberId);
+                url = apiUtils.createMemberUrl(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue, memberId);
                 break;
             }
             default:
-                LOG.error("Codelist resource URI not resolvable!");
                 throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Codelist resource URI not resolvable!"));
         }
         return url;
@@ -171,16 +192,34 @@ public class UriResolverResource extends AbstractBaseResource {
                 url = apiUtils.createCodeSchemeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue);
                 break;
             }
-            case 3: {
+            case 4: {
                 final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
                 final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
-                final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(2));
-                checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
-                url = apiUtils.createCodeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                final String pathIdentifier = checkNotEmpty(resourceCodeValues.get(2));
+                if (pathIdentifier.equalsIgnoreCase("code")) {
+                    final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(3));
+                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                    url = apiUtils.createCodeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                    break;
+                } else if (pathIdentifier.equalsIgnoreCase("extension")) {
+                    final String extensionCodeValue = checkNotEmpty(resourceCodeValues.get(3));
+                    checkExtensionExists(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
+                    url = apiUtils.createExtensionWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
+                    break;
+                } else {
+                    throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Codelist resource URI not resolvable!"));
+                }
+            }
+            case 6: {
+                final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
+                final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
+                final String extensionCodeValue = checkNotEmpty(resourceCodeValues.get(3));
+                final String memberId = checkNotEmpty(resourceCodeValues.get(5));
+                checkMemberExists(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue, memberId);
+                url = apiUtils.createMemberWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue, memberId);
                 break;
             }
             default:
-                LOG.error("Codelist resource URI not resolvable!");
                 throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "Codelist resource URI not resolvable!"));
         }
         return url;
@@ -210,7 +249,7 @@ public class UriResolverResource extends AbstractBaseResource {
     private void checkCodeRegistryExists(final String codeRegistryCodeValue) {
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry == null) {
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_FOUND.value(), "Resource not found."));
+            throw new NotFoundException();
         }
     }
 
@@ -218,7 +257,7 @@ public class UriResolverResource extends AbstractBaseResource {
                                        final String codeSchemeCodeValue) {
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme == null) {
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_FOUND.value(), "Resource not found."));
+            throw new NotFoundException();
         }
     }
 
@@ -227,7 +266,31 @@ public class UriResolverResource extends AbstractBaseResource {
                                  final String codeCodeValue) {
         final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
         if (code == null) {
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_FOUND.value(), "Resource not found."));
+            throw new NotFoundException();
+        }
+    }
+
+    private void checkExtensionExists(final String codeRegistryCodeValue,
+                                      final String codeSchemeCodeValue,
+                                      final String extensionCodeValue) {
+        final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
+        if (extension == null) {
+            throw new NotFoundException();
+        }
+    }
+
+    private void checkMemberExists(final String codeRegistryCodeValue,
+                                   final String codeSchemeCodeValue,
+                                   final String extensionCodeValue,
+                                   final String memberId) {
+        final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
+        if (extension != null) {
+            final MemberDTO member = domain.getMember(memberId);
+            if (member == null) {
+                throw new NotFoundException();
+            }
+        } else {
+            throw new NotFoundException();
         }
     }
 }

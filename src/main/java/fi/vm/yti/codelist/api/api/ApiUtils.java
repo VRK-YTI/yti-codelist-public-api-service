@@ -89,6 +89,19 @@ public class ApiUtils {
         return createResourceUrl(API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES, codeCodeValue);
     }
 
+    public String createExtensionUrl(final String codeRegistryCodeValue,
+                                     final String codeSchemeCodeValue,
+                                     final String extensionCodeValue) {
+        return createResourceUrl(API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONS, extensionCodeValue);
+    }
+
+    public String createMemberUrl(final String codeRegistryCodeValue,
+                                  final String codeSchemeCodeValue,
+                                  final String extensionCodeValue,
+                                  final String memberId) {
+        return createResourceUrl(API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONS + "/" + extensionCodeValue + API_PATH_MEMBERS, memberId);
+    }
+
     public String createCodeRegistryWebUrl(final String codeRegistryCodeValue) {
         return createFrontendBaseUrl() + "/registry;registryCode=" + codeRegistryCodeValue;
     }
@@ -102,6 +115,19 @@ public class ApiUtils {
                                    final String codeSchemeCodeValue,
                                    final String codeCodeValue) {
         return createFrontendBaseUrl() + "/code;registryCode=" + codeRegistryCodeValue + ";schemeCode=" + codeSchemeCodeValue + ";codeCode=" + codeCodeValue;
+    }
+
+    public String createExtensionWebUrl(final String codeRegistryCodeValue,
+                                        final String codeSchemeCodeValue,
+                                        final String extensionCodeValue) {
+        return createFrontendBaseUrl() + "/extension;registryCode=" + codeRegistryCodeValue + ";schemeCode=" + codeSchemeCodeValue + ";extensionCode=" + extensionCodeValue;
+    }
+
+    public String createMemberWebUrl(final String codeRegistryCodeValue,
+                                     final String codeSchemeCodeValue,
+                                     final String extensionCodeValue,
+                                     final String memberId) {
+        return createFrontendBaseUrl() + "/member;registryCode=" + codeRegistryCodeValue + ";schemeCode=" + codeSchemeCodeValue + ";extensionCode=" + extensionCodeValue + ";memberId=" + memberId;
     }
 
     private String createResourceUrl(final String apiPath,

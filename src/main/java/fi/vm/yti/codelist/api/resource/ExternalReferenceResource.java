@@ -33,7 +33,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Component
 @Path("/v1/externalreferences")
 @Api(value = "externalreferences")
-@Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
 public class ExternalReferenceResource extends AbstractBaseResource {
 
     private final Domain domain;
@@ -49,7 +49,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return a list of available ExternalReferences.", response = ExternalReferenceDTO.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns all ExternalReferences in specified format.")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
     public Response getExternalReferences(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                           @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                           @ApiParam(value = "ExternalReference name as string value.") @QueryParam("name") final String name,
@@ -97,7 +97,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
         if (externalReference != null) {
             return Response.ok(externalReference).build();
         } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            throw new NotFoundException();
         }
     }
 }

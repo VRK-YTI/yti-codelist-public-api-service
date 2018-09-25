@@ -19,6 +19,7 @@ import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
+import fi.vm.yti.codelist.api.exception.NotFoundException;
 import fi.vm.yti.codelist.api.export.PropertyTypeExporter;
 import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
@@ -88,7 +89,7 @@ public class PropertyTypeResource extends AbstractBaseResource {
         if (propertyType != null) {
             return Response.ok(propertyType).build();
         } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            throw new NotFoundException();
         }
     }
 }
