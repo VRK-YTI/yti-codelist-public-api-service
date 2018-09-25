@@ -22,7 +22,6 @@ public class PropertyTypeExporter extends BaseExporter {
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_LOCALNAME);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_TYPE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_PROPERTYURI);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CONTEXT);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
@@ -33,7 +32,6 @@ public class PropertyTypeExporter extends BaseExporter {
         for (final PropertyTypeDTO propertyType : propertyTypes) {
             appendValue(csv, csvSeparator, propertyType.getLocalName());
             appendValue(csv, csvSeparator, propertyType.getId().toString());
-            appendValue(csv, csvSeparator, propertyType.getType());
             appendValue(csv, csvSeparator, propertyType.getPropertyUri());
             appendValue(csv, csvSeparator, propertyType.getContext());
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, propertyType.getPrefLabel().get(language)));
@@ -55,7 +53,6 @@ public class PropertyTypeExporter extends BaseExporter {
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LOCALNAME);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_TYPE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PROPERTYURI);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CONTEXT);
         for (final String language : prefLabelLanguages) {
@@ -72,7 +69,6 @@ public class PropertyTypeExporter extends BaseExporter {
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getLocalName()));
-            row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getType()));
             row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getPropertyUri()));
             row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getContext()));
             for (final String language : prefLabelLanguages) {
