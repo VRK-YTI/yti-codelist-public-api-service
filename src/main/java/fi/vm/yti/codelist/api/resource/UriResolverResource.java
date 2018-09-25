@@ -47,6 +47,8 @@ public class UriResolverResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(UriResolverResource.class);
     private static final String API_PATH_CODELIST = "/codelist";
+    private static final String PATH_CODE = "code";
+    private static final String PATH_EXTENSION = "extension";
 
     private final ApiUtils apiUtils;
     private final Domain domain;
@@ -147,12 +149,12 @@ public class UriResolverResource extends AbstractBaseResource {
                 final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
                 final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
                 final String pathIdentifier = checkNotEmpty(resourceCodeValues.get(2));
-                if (pathIdentifier.equalsIgnoreCase("code")) {
+                if (PATH_CODE.equalsIgnoreCase(pathIdentifier)) {
                     final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(3));
                     checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
                     url = apiUtils.createCodeUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
                     break;
-                } else if (pathIdentifier.equalsIgnoreCase("extension")) {
+                } else if (PATH_EXTENSION.equalsIgnoreCase(pathIdentifier)) {
                     final String extensionCodeValue = checkNotEmpty(resourceCodeValues.get(3));
                     checkExtensionExists(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
                     url = apiUtils.createExtensionUrl(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
@@ -196,12 +198,12 @@ public class UriResolverResource extends AbstractBaseResource {
                 final String codeRegistryCodeValue = checkNotEmpty(resourceCodeValues.get(0));
                 final String codeSchemeCodeValue = checkNotEmpty(resourceCodeValues.get(1));
                 final String pathIdentifier = checkNotEmpty(resourceCodeValues.get(2));
-                if (pathIdentifier.equalsIgnoreCase("code")) {
+                if (PATH_CODE.equalsIgnoreCase(pathIdentifier)) {
                     final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(3));
                     checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
                     url = apiUtils.createCodeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
                     break;
-                } else if (pathIdentifier.equalsIgnoreCase("extension")) {
+                } else if (PATH_EXTENSION.equalsIgnoreCase(pathIdentifier)) {
                     final String extensionCodeValue = checkNotEmpty(resourceCodeValues.get(3));
                     checkExtensionExists(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
                     url = apiUtils.createExtensionWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
