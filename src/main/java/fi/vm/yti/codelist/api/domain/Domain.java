@@ -85,6 +85,7 @@ public interface Domain {
                                           final Integer from,
                                           final String propertyTypePrefLabel,
                                           final String context,
+                                          final String language,
                                           final String type,
                                           final Date after,
                                           final Meta meta);

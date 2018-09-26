@@ -511,6 +511,7 @@ public class DomainImpl implements Domain {
                                                  final Integer from,
                                                  final String propertyTypePrefLabel,
                                                  final String context,
+                                                 final String language,
                                                  final String type,
                                                  final Date after,
                                                  final Meta meta) {
@@ -530,6 +531,17 @@ public class DomainImpl implements Domain {
             }
             if (type != null) {
                 builder.must(prefixQuery("type", type.toLowerCase()));
+            }
+            if (language != null && !language.isEmpty()) {
+                searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                sortLanguages.forEach(sortLanguage -> {
+                    if (!language.equalsIgnoreCase(sortLanguage)) {
+                        searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                    }
+                });
+                searchRequest.addSort("localName.keyword", SortOrder.ASC);
+            } else {
+                searchRequest.addSort("localName.keyword", SortOrder.ASC);
             }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
