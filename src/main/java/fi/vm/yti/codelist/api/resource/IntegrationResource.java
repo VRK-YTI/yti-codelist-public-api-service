@@ -47,7 +47,7 @@ public class IntegrationResource extends AbstractBaseResource {
 
     @GET
     @Path("/containers")
-    @ApiOperation(value = "Return one specific Code.", response = CodeDTO.class)
+    @ApiOperation(value = "Return a list of container resources.")
     @ApiResponse(code = 200, message = "Returns one specific Code in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getContainers(@ApiParam(value = "Language code for sorting results.") @QueryParam("language") @DefaultValue("fi") final String language,
@@ -76,7 +76,7 @@ public class IntegrationResource extends AbstractBaseResource {
 
     @GET
     @Path("/resources")
-    @ApiOperation(value = "Return one specific Code.", response = CodeDTO.class)
+    @ApiOperation(value = "Return a list of available resources for one container.")
     @ApiResponse(code = 200, message = "Returns one specific Code in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getResources(@ApiParam(value = "Language code for sorting results.") @QueryParam("language") @DefaultValue("fi") final String language,
