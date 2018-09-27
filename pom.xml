@@ -375,6 +375,7 @@
                 <artifactId>docker-maven-plugin</artifactId>
                 <version>0.26.1</version>
                 <configuration>
+                    <startParallel>true</startParallel>
                     <skip>${skipTests}</skip>
                     <portPropertyFile>target/test-classes/test-port.properties</portPropertyFile>
                     <images>
