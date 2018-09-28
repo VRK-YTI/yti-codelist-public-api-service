@@ -16,7 +16,7 @@ import io.swagger.annotations.ApiModel;
 
 @JsonFilter("resource")
 @XmlRootElement
-@XmlType(propOrder = { "uri", "prefLabel", "definition", "status" })
+@XmlType(propOrder = { "uri", "prefLabel", "description", "status" })
 @ApiModel(value = "Resource", description = "Resource DTO that represents data for one single container or resource for integration use.")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ResourceDTO implements Serializable {
@@ -24,7 +24,7 @@ public class ResourceDTO implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Map<String, String> prefLabel;
-    private Map<String, String> definition;
+    private Map<String, String> description;
     private String uri;
     private String status;
 
@@ -51,12 +51,12 @@ public class ResourceDTO implements Serializable {
     }
 
     @JsonView(Views.Normal.class)
-    public Map<String, String> getDefinition() {
-        return definition;
+    public Map<String, String> getDescription() {
+        return description;
     }
 
-    public void setDefinition(final Map<String, String> description) {
-        this.definition = description;
+    public void setDescription(final Map<String, String> description) {
+        this.description = description;
     }
 
     public String getStatus() {
