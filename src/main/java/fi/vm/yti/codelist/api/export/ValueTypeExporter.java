@@ -22,7 +22,7 @@ public class ValueTypeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_LOCALNAME);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_TYPEURI);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_VALUETYPEURI);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_URI);
         appendValue(csv, csvSeparator, CONTENT_HEADER_REGEXP);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_REQUIRED, true);
@@ -31,7 +31,7 @@ public class ValueTypeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, valueType.getLocalName());
             appendValue(csv, csvSeparator, valueType.getId().toString());
             appendValue(csv, csvSeparator, valueType.getTypeUri());
-            appendValue(csv, csvSeparator, valueType.getValueTypeUri());
+            appendValue(csv, csvSeparator, valueType.getUri());
             appendValue(csv, csvSeparator, valueType.getRegexp(), true);
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, valueType.getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, Boolean.toString(valueType.getRequired()), true);
@@ -50,7 +50,7 @@ public class ValueTypeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LOCALNAME);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_TYPEURI);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_VALUETYPEURI);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_REGEXP);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
@@ -63,7 +63,7 @@ public class ValueTypeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(valueType.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(valueType.getLocalName()));
             row.createCell(k++).setCellValue(checkEmptyValue(valueType.getTypeUri()));
-            row.createCell(k++).setCellValue(checkEmptyValue(valueType.getValueTypeUri()));
+            row.createCell(k++).setCellValue(checkEmptyValue(valueType.getUri()));
             row.createCell(k++).setCellValue(checkEmptyValue(valueType.getRegexp()));
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(valueType.getPrefLabel().get(language));
