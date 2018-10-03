@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 
 import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.MemberDTO;
-import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
+import fi.vm.yti.codelist.common.dto.MemberValueDTO;
 import fi.vm.yti.codelist.common.dto.ValueTypeDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
@@ -38,7 +38,14 @@ public class MemberExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER, true);
         for (final MemberDTO member : members) {
             if (valueTypes != null && !valueTypes.isEmpty()) {
-                valueTypes.forEach(valueType -> appendValue(csv, csvSeparator, member.getMemberValueWithLocalName(valueType.getLocalName()).getValue()));
+                valueTypes.forEach(valueType -> {
+                    final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
+                    if (memberValue != null) {
+                        appendValue(csv, csvSeparator, member.getMemberValueWithLocalName(valueType.getLocalName()).getValue());
+                    } else {
+                        appendValue(csv, csvSeparator, "");
+                    }
+                });
             }
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, member.getId().toString());
@@ -86,7 +93,12 @@ public class MemberExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(member.getId().toString()));
             if (valueTypes != null && !valueTypes.isEmpty()) {
                 for (final ValueTypeDTO valueType : valueTypes) {
-                    row.createCell(k++).setCellValue(checkEmptyValue(member.getMemberValueWithLocalName(valueType.getLocalName()).getValue()));
+                    final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
+                    if (memberValue != null) {
+                        row.createCell(k++).setCellValue(checkEmptyValue(memberValue.getValue()));
+                    } else {
+                        row.createCell(k++).setCellValue("");
+                    }
                 }
             }
             for (final String language : prefLabelLanguages) {
