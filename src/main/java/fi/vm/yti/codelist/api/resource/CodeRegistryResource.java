@@ -517,9 +517,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         if (allVersions == null || allVersions.isEmpty()) {
             results.add(codeScheme);
         } else {
-            allVersions.forEach(version -> {
-                results.add(domain.getCodeScheme(version.getId().toString()));
-            });
+            allVersions.forEach(version -> results.add(domain.getCodeScheme(version.getId().toString())));
         }
 
         final Meta meta = new Meta(200, null, null, null);
@@ -549,9 +547,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final LinkedHashSet<CodeSchemeListItem> variants = codeScheme.getVariantsOfThisCodeScheme();
 
         if (variants != null && !variants.isEmpty()) {
-            variants.forEach(variant -> {
-                result.add(domain.getCodeScheme(variant.getId().toString()));
-            });
+            variants.forEach(variant -> result.add(domain.getCodeScheme(variant.getId().toString())));
         }
 
         final Meta meta = new Meta(200, null, null, null);
@@ -580,10 +576,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final LinkedHashSet<CodeSchemeListItem> variantMothers = codeScheme.getVariantMothersOfThisCodeScheme();
         final LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
 
-        if (variantMothers != null && variantMothers.isEmpty()) {
-            variantMothers.forEach(variantMother -> {
-                result.add(domain.getCodeScheme(variantMother.getId().toString()));
-            });
+        if (variantMothers != null && !variantMothers.isEmpty()) {
+            variantMothers.forEach(variantMother -> result.add(domain.getCodeScheme(variantMother.getId().toString())));
         }
 
         final Meta meta = new Meta(200, null, null, null);
