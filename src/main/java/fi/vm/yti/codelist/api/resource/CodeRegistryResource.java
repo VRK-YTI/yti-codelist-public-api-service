@@ -508,32 +508,26 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                           @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-        LinkedHashSet<CodeSchemeListItem> allVersions = new LinkedHashSet<>();
-        if (codeScheme != null) {
-            allVersions = codeScheme.getAllVersions();
-        }
-        LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
-        final Meta meta = new Meta(200, null, null, null);
-
         if (codeScheme == null) {
             throw new NotFoundException();
-        } else if (allVersions.isEmpty()) {
-            meta.setResultCount(1);
-            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
-            result.add(codeScheme);
-            wrapper.setResults(result);
-            wrapper.setMeta(meta);
-            return Response.ok(wrapper).build();
-        } else {
-            for (CodeSchemeListItem item : allVersions) {
-                result.add(domain.getCodeScheme(item.getId().toString()));
-            }
-            meta.setResultCount(result.size());
-            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setResults(result);
-            wrapper.setMeta(meta);
-            return Response.ok(wrapper).build();
         }
+        final LinkedHashSet<CodeSchemeListItem> allVersions = codeScheme.getAllVersions();
+        final LinkedHashSet<CodeSchemeDTO> results = new LinkedHashSet<>();
+
+        if (allVersions == null || allVersions.isEmpty()) {
+            results.add(codeScheme);
+        } else {
+            allVersions.forEach(version -> {
+                results.add(domain.getCodeScheme(version.getId().toString()));
+            });
+        }
+
+        final Meta meta = new Meta(200, null, null, null);
+        final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
+        meta.setResultCount(results.size());
+        wrapper.setResults(results);
+        wrapper.setMeta(meta);
+        return Response.ok(wrapper).build();
     }
 
     @GET
@@ -546,32 +540,26 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                           @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-        LinkedHashSet<CodeSchemeListItem> variants = new LinkedHashSet<>();
-        if (codeScheme != null) {
-            variants = codeScheme.getVariantsOfThisCodeScheme();
-        }
-        LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
-        final Meta meta = new Meta(200, null, null, null);
 
         if (codeScheme == null) {
             throw new NotFoundException();
-        } else if (variants.isEmpty()) {
-            meta.setResultCount(1);
-            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
-            result.add(codeScheme);
-            wrapper.setResults(result);
-            wrapper.setMeta(meta);
-            return Response.ok(wrapper).build();
-        } else {
-            for (CodeSchemeListItem item : variants) {
-                result.add(domain.getCodeScheme(item.getId().toString()));
-            }
-            meta.setResultCount(result.size());
-            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setResults(result);
-            wrapper.setMeta(meta);
-            return Response.ok(wrapper).build();
         }
+
+        final LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
+        final LinkedHashSet<CodeSchemeListItem> variants = codeScheme.getVariantsOfThisCodeScheme();
+
+        if (variants != null && !variants.isEmpty()) {
+            variants.forEach(variant -> {
+                result.add(domain.getCodeScheme(variant.getId().toString()));
+            });
+        }
+
+        final Meta meta = new Meta(200, null, null, null);
+        meta.setResultCount(result.size());
+        final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
+        wrapper.setResults(result);
+        wrapper.setMeta(meta);
+        return Response.ok(wrapper).build();
     }
 
     @GET
@@ -584,31 +572,25 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-        LinkedHashSet<CodeSchemeListItem> variantMothers = new LinkedHashSet<>();
-        if (codeScheme != null) {
-            variantMothers = codeScheme.getVariantMothersOfThisCodeScheme();
-        }
-        LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
-        final Meta meta = new Meta(200, null, null, null);
 
         if (codeScheme == null) {
             throw new NotFoundException();
-        } else if (variantMothers.isEmpty()) {
-            meta.setResultCount(1);
-            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
-            result.add(codeScheme);
-            wrapper.setResults(result);
-            wrapper.setMeta(meta);
-            return Response.ok(wrapper).build();
-        } else {
-            for (CodeSchemeListItem item : variantMothers) {
-                result.add(domain.getCodeScheme(item.getId().toString()));
-            }
-            meta.setResultCount(result.size());
-            final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setResults(result);
-            wrapper.setMeta(meta);
-            return Response.ok(wrapper).build();
         }
+
+        final LinkedHashSet<CodeSchemeListItem> variantMothers = codeScheme.getVariantMothersOfThisCodeScheme();
+        final LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
+
+        if (variantMothers != null && variantMothers.isEmpty()) {
+            variantMothers.forEach(variantMother -> {
+                result.add(domain.getCodeScheme(variantMother.getId().toString()));
+            });
+        }
+
+        final Meta meta = new Meta(200, null, null, null);
+        meta.setResultCount(result.size());
+        final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
+        wrapper.setResults(result);
+        wrapper.setMeta(meta);
+        return Response.ok(wrapper).build();
     }
 }
