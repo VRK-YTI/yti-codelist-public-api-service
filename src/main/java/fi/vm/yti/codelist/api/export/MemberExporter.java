@@ -7,13 +7,17 @@ import java.util.Set;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
+import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
+import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.MemberDTO;
 import fi.vm.yti.codelist.common.dto.MemberValueDTO;
 import fi.vm.yti.codelist.common.dto.ValueTypeDTO;
+import static fi.vm.yti.codelist.api.exception.ErrorConstants.ERR_MSG_USER_406;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
@@ -50,12 +54,8 @@ public class MemberExporter extends BaseExporter {
             }
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, member.getId().toString());
-            appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getCodeValue() : "");
-            if (isCodeIsUsedMultipleTimesInMembers(members, member.getRelatedMember().getCode())) {
-                appendValue(csv, csvSeparator, member.getRelatedMember() != null ? member.getRelatedMember().getId().toString() : "");
-            } else {
-                appendValue(csv, csvSeparator, member.getRelatedMember() != null && member.getRelatedMember().getCode() != null ? member.getRelatedMember().getCode().getUri() : "");
-            }
+            appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getUri() : "");
+            appendValue(csv, csvSeparator, resolveRelatedMemberIdentifier(members, member));
             appendValue(csv, csvSeparator, member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
             appendValue(csv, csvSeparator, member.getEndDate() != null ? formatDateWithISO8601(member.getEndDate()) : "");
             appendValue(csv, csvSeparator, member.getCreated() != null ? formatDateWithSeconds(member.getCreated()) : "");
@@ -114,15 +114,7 @@ public class MemberExporter extends BaseExporter {
             } else {
                 row.createCell(k++).setCellValue("");
             }
-            if (member.getRelatedMember() != null && member.getRelatedMember().getCode() != null) {
-                if (isCodeIsUsedMultipleTimesInMembers(members, member.getRelatedMember().getCode())) {
-                    row.createCell(k++).setCellValue(checkEmptyValue(member.getRelatedMember().getId().toString()));
-                } else {
-                    row.createCell(k++).setCellValue(checkEmptyValue(member.getRelatedMember().getCode().getUri()));
-                }
-            } else {
-                row.createCell(k++).setCellValue("");
-            }
+            row.createCell(k++).setCellValue(resolveRelatedMemberIdentifier(members, member.getRelatedMember()));
             row.createCell(k++).setCellValue(member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
             row.createCell(k++).setCellValue(member.getEndDate() != null ? formatDateWithISO8601(member.getEndDate()) : "");
             row.createCell(k++).setCellValue(member.getCreated() != null ? formatDateWithSeconds(member.getCreated()) : "");
@@ -131,18 +123,25 @@ public class MemberExporter extends BaseExporter {
         }
     }
 
-    private boolean isCodeIsUsedMultipleTimesInMembers(final Set<MemberDTO> members,
-                                                       final CodeDTO code) {
+    private String resolveRelatedMemberIdentifier(final Set<MemberDTO> members,
+                                                  final MemberDTO relatedMember) {
+        if (relatedMember == null) {
+            return "";
+        }
+        final CodeDTO relatedCode = relatedMember.getCode();
+        if (relatedCode == null) {
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), ERR_MSG_USER_406));
+        }
         int count = 0;
         for (final MemberDTO member : members) {
-            if (member.getCode().getId().equals(code.getId())) {
+            if (member.getCode().getId().equals(relatedCode.getId())) {
                 count++;
                 if (count > 1) {
-                    return true;
+                    return relatedMember.getId().toString();
                 }
             }
         }
-        return false;
+        return relatedMember.getUri();
     }
 
     private Set<String> resolveMemberPrefLabelLanguages(final Set<MemberDTO> members) {
