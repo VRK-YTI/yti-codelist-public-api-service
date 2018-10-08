@@ -9,6 +9,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Component;
 
+import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.MemberDTO;
 import fi.vm.yti.codelist.common.dto.MemberValueDTO;
@@ -50,7 +51,11 @@ public class MemberExporter extends BaseExporter {
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, member.getId().toString());
             appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getCodeValue() : "");
-            appendValue(csv, csvSeparator, member.getRelatedMember() != null ? member.getRelatedMember().getId().toString() : "");
+            if (isCodeIsUsedMultipleTimesInMembers(members, member.getRelatedMember().getCode())) {
+                appendValue(csv, csvSeparator, member.getRelatedMember() != null ? member.getRelatedMember().getId().toString() : "");
+            } else {
+                appendValue(csv, csvSeparator, member.getRelatedMember() != null && member.getRelatedMember().getCode() != null ? member.getRelatedMember().getCode().getUri() : "");
+            }
             appendValue(csv, csvSeparator, member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
             appendValue(csv, csvSeparator, member.getEndDate() != null ? formatDateWithISO8601(member.getEndDate()) : "");
             appendValue(csv, csvSeparator, member.getCreated() != null ? formatDateWithSeconds(member.getCreated()) : "");
@@ -110,7 +115,11 @@ public class MemberExporter extends BaseExporter {
                 row.createCell(k++).setCellValue("");
             }
             if (member.getRelatedMember() != null && member.getRelatedMember().getCode() != null) {
-                row.createCell(k++).setCellValue(checkEmptyValue(member.getRelatedMember().getId().toString()));
+                if (isCodeIsUsedMultipleTimesInMembers(members, member.getRelatedMember().getCode())) {
+                    row.createCell(k++).setCellValue(checkEmptyValue(member.getRelatedMember().getId().toString()));
+                } else {
+                    row.createCell(k++).setCellValue(checkEmptyValue(member.getRelatedMember().getCode().getUri()));
+                }
             } else {
                 row.createCell(k++).setCellValue("");
             }
@@ -120,6 +129,20 @@ public class MemberExporter extends BaseExporter {
             row.createCell(k++).setCellValue(member.getModified() != null ? formatDateWithSeconds(member.getModified()) : "");
             row.createCell(k).setCellValue(checkEmptyValue(member.getOrder() != null ? member.getOrder().toString() : ""));
         }
+    }
+
+    private boolean isCodeIsUsedMultipleTimesInMembers(final Set<MemberDTO> members,
+                                                       final CodeDTO code) {
+        int count = 0;
+        for (final MemberDTO member : members) {
+            if (member.getCode().getId().equals(code.getId())) {
+                count++;
+                if (count > 1) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private Set<String> resolveMemberPrefLabelLanguages(final Set<MemberDTO> members) {
