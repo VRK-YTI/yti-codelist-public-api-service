@@ -141,7 +141,7 @@ public class MemberExporter extends BaseExporter {
                 }
             }
         }
-        return relatedMember.getUri();
+        return relatedCode.getUri();
     }
 
     private Set<String> resolveMemberPrefLabelLanguages(final Set<MemberDTO> members) {
