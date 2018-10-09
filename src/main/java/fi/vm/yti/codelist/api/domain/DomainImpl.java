@@ -252,7 +252,7 @@ public class DomainImpl implements Domain {
                                              final String searchTerm,
                                              final boolean searchCodes,
                                              final List<String> statuses,
-                                             final List<String> dataClassifications,
+                                             final List<String> infoDomains,
                                              final Date after,
                                              final Meta meta) {
         validatePageSize(pageSize);
@@ -300,8 +300,9 @@ public class DomainImpl implements Domain {
             if (codeRegistryPrefLabel != null && !codeRegistryPrefLabel.isEmpty()) {
                 builder.must(nestedQuery("codeRegistry.prefLabel", multiMatchQuery(codeRegistryPrefLabel.toLowerCase(), "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             }
-            if (dataClassifications != null && !dataClassifications.isEmpty()) {
-                builder.must(nestedQuery("dataClassifications", matchQuery("dataClassifications.codeValue", dataClassifications), ScoreMode.None));
+            if (infoDomains != null && !infoDomains.isEmpty()) {
+                builder.must(nestedQuery("dataClassifications", matchQuery("dataClassifications.codeValue",
+                    infoDomains), ScoreMode.None));
             }
             if (BOOSTSTATUS.equalsIgnoreCase(sortMode)) {
                 searchRequest.addSort(SortBuilders.scoreSort());

@@ -95,14 +95,14 @@ abstract class AbstractBaseResource {
         return new ArrayList<>(statusSet);
     }
 
-    List<String> parseDataClassifications(final String dataClassificationCsl) {
-        final Set<String> dataClassificationsSet = new HashSet<>();
-        if (dataClassificationCsl != null) {
-            for (final String s : dataClassificationCsl.split(",")) {
-                dataClassificationsSet.add(s.toUpperCase().trim());
+    List<String> parseInfoDomains(final String infoDomainCsl) {
+        final Set<String> infoDomainsSet = new HashSet<>();
+        if (infoDomainCsl != null) {
+            for (final String s : infoDomainCsl.split(",")) {
+                infoDomainsSet.add(s.toUpperCase().trim());
             }
         }
-        return new ArrayList<>(dataClassificationsSet);
+        return new ArrayList<>(infoDomainsSet);
     }
 
     private String createDownloadFilename(final String format,

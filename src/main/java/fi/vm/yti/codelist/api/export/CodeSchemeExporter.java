@@ -66,7 +66,7 @@ public class CodeSchemeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, codeScheme.getCodeValue());
             appendValue(csv, csvSeparator, codeScheme.getId().toString());
             appendValue(csv, csvSeparator, formatOrganizationsToString(codeScheme.getOrganizations()));
-            appendValue(csv, csvSeparator, formatCodesToString(codeScheme.getDataClassifications()));
+            appendValue(csv, csvSeparator, formatCodesToString(codeScheme.getInfoDomains()));
             appendValue(csv, csvSeparator, formatCodesToString(codeScheme.getLanguageCodes()));
             appendValue(csv, csvSeparator, codeScheme.getVersion());
             appendValue(csv, csvSeparator, codeScheme.getStatus());
@@ -164,7 +164,7 @@ public class CodeSchemeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getCodeValue()));
             row.createCell(k++).setCellValue(checkEmptyValue(formatOrganizationsToString(codeScheme.getOrganizations())));
-            row.createCell(k++).setCellValue(checkEmptyValue(formatCodesToString(codeScheme.getDataClassifications())));
+            row.createCell(k++).setCellValue(checkEmptyValue(formatCodesToString(codeScheme.getInfoDomains())));
             row.createCell(k++).setCellValue(checkEmptyValue(formatCodesToString(codeScheme.getLanguageCodes())));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getVersion()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getStatus()));

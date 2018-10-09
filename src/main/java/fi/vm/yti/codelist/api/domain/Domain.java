@@ -55,7 +55,7 @@ public interface Domain {
                                       final String searchTerm,
                                       final boolean searchCodes,
                                       final List<String> statuses,
-                                      final List<String> dataClassifications,
+                                      final List<String> infoDomains,
                                       final Date after,
                                       final Meta meta);
 
