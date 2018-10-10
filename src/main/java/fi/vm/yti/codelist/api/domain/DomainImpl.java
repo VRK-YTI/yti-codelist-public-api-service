@@ -301,7 +301,7 @@ public class DomainImpl implements Domain {
                 builder.must(nestedQuery("codeRegistry.prefLabel", multiMatchQuery(codeRegistryPrefLabel.toLowerCase(), "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
             }
             if (infoDomains != null && !infoDomains.isEmpty()) {
-                builder.must(nestedQuery("dataClassifications", matchQuery("dataClassifications.codeValue",
+                builder.must(nestedQuery("infoDomains", matchQuery("infoDomains.codeValue",
                     infoDomains), ScoreMode.None));
             }
             if (BOOSTSTATUS.equalsIgnoreCase(sortMode)) {

@@ -97,7 +97,7 @@ abstract public class AbstractTestBase {
         "    \"type\": \"nested\",\n" +
         "    \"dynamic\": true\n" +
         "  },\n" +
-        "  \"dataClassifications\": {\n" +
+        "  \"infoDomains\": {\n" +
         "    \"type\": \"nested\"\n" +
         "  },\n" +
         "  \"codeRegistry\": {\n" +
@@ -139,7 +139,7 @@ abstract public class AbstractTestBase {
         "  \"prefLabel\": {\n" +
         "    \"type\": \"nested\"\n" +
         "  },\n" +
-        "  \"dataClassifications\": {\n" +
+        "  \"infoDomains\": {\n" +
         "    \"type\": \"nested\"\n" +
         "  },\n" +
         "  \"codeScheme\": {\n" +

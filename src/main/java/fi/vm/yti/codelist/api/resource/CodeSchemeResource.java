@@ -58,7 +58,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @ApiParam(value = "CodeRegistry Name.") @QueryParam("codeRegistryName") final String codeRegistryPrefLabel,
                                    @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                    @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                   @ApiParam(value = "Service classifications in CSL format.") @QueryParam("dataClassification") final String infoDomain,
+                                   @ApiParam(value = "Service infodomain classifications in CSL format.") @QueryParam("infoDomain") final String infoDomain,
                                    @ApiParam(value = "CodeScheme codeValue as string value.") @QueryParam("codeValue") final String codeSchemeCodeValue,
                                    @ApiParam(value = "CodeScheme PrefLabel as string value.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
                                    @ApiParam(value = "Language code for sorting results.") @QueryParam("language") @DefaultValue("fi") final String language,
