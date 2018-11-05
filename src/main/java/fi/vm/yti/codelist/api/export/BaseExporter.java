@@ -2,6 +2,7 @@ package fi.vm.yti.codelist.api.export;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -83,9 +84,9 @@ abstract class BaseExporter {
         }
     }
 
-    String formatDateWithISO8601(final Date date) {
+    String formatDateWithISO8601(final LocalDate date) {
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
-        return dateFormat.format(date);
+        return date.toString();
     }
 
     String formatDateWithSeconds(final Date date) {

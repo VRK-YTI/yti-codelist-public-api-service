@@ -6,6 +6,8 @@ import javax.ws.rs.core.MediaType;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import fi.vm.yti.codelist.api.exception.exceptionmapping.YtiCodeListExceptionMapper;
@@ -59,7 +61,10 @@ public class JerseyConfig extends ResourceConfig {
 
     public JerseyConfig() {
         final JacksonJaxbJsonProvider provider = new JacksonJaxbJsonProvider();
-        provider.setMapper(new CustomObjectMapper());
+        CustomObjectMapper cm = new CustomObjectMapper();
+        cm.registerModule(new JavaTimeModule());
+        cm.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        provider.setMapper(cm);
 
         // ExceptionMappers
         register(YtiCodeListExceptionMapper.class);

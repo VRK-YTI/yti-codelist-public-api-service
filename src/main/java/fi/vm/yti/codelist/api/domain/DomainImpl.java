@@ -29,7 +29,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import fi.vm.yti.codelist.api.dto.ResourceDTO;
 import fi.vm.yti.codelist.api.exception.JsonParsingException;
@@ -66,10 +68,16 @@ public class DomainImpl implements Domain {
         this.client = client;
     }
 
+    private void registerModulesToMapper(ObjectMapper mapper) {
+        mapper.registerModule(new JavaTimeModule());
+        mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    }
+    
     public CodeRegistryDTO getCodeRegistry(final String codeRegistryCodeValue) {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODEREGISTRY).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODEREGISTRY)
                 .setTypes(ELASTIC_TYPE_CODEREGISTRY)
@@ -112,6 +120,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODEREGISTRY).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODEREGISTRY)
                 .setTypes(ELASTIC_TYPE_CODEREGISTRY)
@@ -143,6 +152,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODESCHEME)
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
@@ -172,6 +182,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODESCHEME)
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
@@ -215,6 +226,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE);
@@ -264,6 +276,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODESCHEME)
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
@@ -377,6 +390,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE);
@@ -432,6 +446,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE)
@@ -484,6 +499,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_PROPERTYTYPE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_PROPERTYTYPE)
                 .setTypes(ELASTIC_TYPE_PROPERTYTYPE);
@@ -521,6 +537,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_PROPERTYTYPE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_PROPERTYTYPE)
                 .setTypes(ELASTIC_TYPE_PROPERTYTYPE)
@@ -564,6 +581,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_VALUETYPE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_VALUETYPE)
                 .setTypes(ELASTIC_TYPE_VALUETYPE);
@@ -598,6 +616,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_VALUETYPE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_VALUETYPE)
                 .setTypes(ELASTIC_TYPE_VALUETYPE)
@@ -627,6 +646,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTERNALREFERENCE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_EXTERNALREFERENCE)
                 .setTypes(ELASTIC_TYPE_EXTERNALREFERENCE);
@@ -661,6 +681,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTERNALREFERENCE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_EXTERNALREFERENCE)
                 .setTypes(ELASTIC_TYPE_EXTERNALREFERENCE)
@@ -704,6 +725,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_EXTENSION)
                 .setTypes(ELASTIC_TYPE_EXTENSION)
@@ -735,6 +757,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_EXTENSION)
                 .setTypes(ELASTIC_TYPE_EXTENSION)
@@ -768,6 +791,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_EXTENSION)
                 .setTypes(ELASTIC_TYPE_EXTENSION)
@@ -800,6 +824,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_EXTENSION)
                 .setTypes(ELASTIC_TYPE_EXTENSION);
@@ -832,6 +857,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_MEMBER)
                 .setTypes(ELASTIC_TYPE_MEMBER)
@@ -867,6 +893,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_MEMBER)
                 .setTypes(ELASTIC_TYPE_MEMBER)
@@ -899,6 +926,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_MEMBER)
                 .setTypes(ELASTIC_TYPE_MEMBER)
@@ -928,6 +956,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_MEMBER)
                 .setTypes(ELASTIC_TYPE_MEMBER);
@@ -960,6 +989,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODESCHEME)
                 .setTypes(ELASTIC_TYPE_CODESCHEME)
@@ -1027,6 +1057,7 @@ public class DomainImpl implements Domain {
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE)

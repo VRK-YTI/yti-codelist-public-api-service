@@ -22,7 +22,9 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fi.vm.yti.codelist.api.domain.Domain;
@@ -271,6 +273,8 @@ abstract public class AbstractTestBase {
         boolean success = true;
         if (!set.isEmpty()) {
             final ObjectMapper mapper = new ObjectMapper();
+            mapper.registerModule(new JavaTimeModule());
+            mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
             mapper.setFilterProvider(new SimpleFilterProvider().setFailOnUnknownId(false));
             final BulkRequestBuilder bulkRequest = client.prepareBulk();
             for (final T item : set) {
