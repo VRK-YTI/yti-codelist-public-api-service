@@ -24,15 +24,18 @@ public class CodeSchemeExporter extends BaseExporter {
     private final CodeExporter codeExporter;
     private final ExtensionExporter extensionExporter;
     private final MemberExporter memberExporter;
+    private final ExternalReferenceExporter externalReferenceExporter;
 
     public CodeSchemeExporter(final Domain domain,
                               final CodeExporter codeExporter,
                               final ExtensionExporter extensionExporter,
-                              final MemberExporter memberExporter) {
+                              final MemberExporter memberExporter,
+                              final ExternalReferenceExporter externalReferenceExporter) {
         this.domain = domain;
         this.codeExporter = codeExporter;
         this.extensionExporter = extensionExporter;
         this.memberExporter = memberExporter;
+        this.externalReferenceExporter = externalReferenceExporter;
     }
 
     public String createCsv(final Set<CodeSchemeDTO> codeSchemes) {
@@ -61,7 +64,8 @@ public class CodeSchemeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_HREF, true);
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             appendValue(csv, csvSeparator, codeScheme.getCodeValue());
             appendValue(csv, csvSeparator, codeScheme.getId().toString());
@@ -82,7 +86,8 @@ public class CodeSchemeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, codeScheme.getStartDate() != null ? formatDateWithISO8601(codeScheme.getStartDate()) : "");
             appendValue(csv, csvSeparator, codeScheme.getEndDate() != null ? formatDateWithISO8601(codeScheme.getEndDate()) : "");
             appendValue(csv, csvSeparator, codeScheme.getCreated() != null ? formatDateWithSeconds(codeScheme.getCreated()) : "");
-            appendValue(csv, csvSeparator, codeScheme.getModified() != null ? formatDateWithSeconds(codeScheme.getModified()) : "", true);
+            appendValue(csv, csvSeparator, codeScheme.getModified() != null ? formatDateWithSeconds(codeScheme.getModified()) : "");
+            appendValue(csv, csvSeparator, formatExternalReferencesToString(codeScheme.getExternalReferences()), true);
         }
         return csv.toString();
     }
@@ -93,10 +98,12 @@ public class CodeSchemeExporter extends BaseExporter {
         final Set<CodeSchemeDTO> codeSchemes = new HashSet<>();
         codeSchemes.add(codeScheme);
         addCodeSchemeSheet(workbook, EXCEL_SHEET_CODESCHEMES, codeSchemes);
-        final String codeSheetName = truncateSheetName(EXCEL_SHEET_CODES + "_" + codeScheme.getCodeValue());
+        final String externalReferenceSheetName = createExternalReferencesSheetName(codeScheme);
+        externalReferenceExporter.addExternalReferencesSheet(workbook, externalReferenceSheetName, codeScheme.getExternalReferences());
+        final String codeSheetName = createCodesSheetName(codeScheme);
         codeExporter.addCodeSheet(workbook, codeSheetName, domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeScheme.getCodeRegistry().getCodeValue(), codeScheme.getCodeValue()));
         final Set<ExtensionDTO> extensions = domain.getExtensions(null, null, null, codeScheme, null, null);
-        final String extensionSheetName = truncateSheetName(EXCEL_SHEET_EXTENSIONS + "_" + codeScheme.getCodeValue());
+        final String extensionSheetName = createExtensionsSheetName(codeScheme);
         if (extensions != null && !extensions.isEmpty()) {
             extensionExporter.addExtensionSheet(workbook, extensionSheetName, extensions);
             int i = 0;
@@ -155,7 +162,9 @@ public class CodeSchemeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_HREF);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODESSHEET);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_EXTERNALREFERENCESSHEET);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_EXTENSIONSSHEET);
         int i = 1;
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
@@ -189,7 +198,9 @@ public class CodeSchemeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(codeScheme.getEndDate() != null ? formatDateWithISO8601(codeScheme.getEndDate()) : "");
             row.createCell(k++).setCellValue(codeScheme.getCreated() != null ? formatDateWithSeconds(codeScheme.getCreated()) : "");
             row.createCell(k++).setCellValue(codeScheme.getModified() != null ? formatDateWithSeconds(codeScheme.getModified()) : "");
+            row.createCell(k++).setCellValue(checkEmptyValue(formatExternalReferencesToString(codeScheme.getExternalReferences())));
             row.createCell(k++).setCellValue(checkEmptyValue(createCodesSheetName(codeScheme)));
+            row.createCell(k++).setCellValue(checkEmptyValue(createExternalReferencesSheetName(codeScheme)));
             row.createCell(k).setCellValue(checkEmptyValue(createExtensionsSheetName(codeScheme)));
         }
     }

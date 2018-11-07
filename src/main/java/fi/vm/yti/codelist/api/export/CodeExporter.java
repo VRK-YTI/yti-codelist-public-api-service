@@ -36,7 +36,8 @@ public class CodeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_HREF, true);
         for (final CodeDTO code : codes) {
             appendValue(csv, csvSeparator, code.getCodeValue());
             appendValue(csv, csvSeparator, code.getId().toString());
@@ -52,8 +53,8 @@ public class CodeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, code.getStartDate() != null ? formatDateWithISO8601(code.getStartDate()) : "");
             appendValue(csv, csvSeparator, code.getEndDate() != null ? formatDateWithISO8601(code.getEndDate()) : "");
             appendValue(csv, csvSeparator, code.getCreated() != null ? formatDateWithSeconds(code.getCreated()) : "");
-            appendValue(csv, csvSeparator, code.getModified() != null ? formatDateWithSeconds(code.getModified()) : "", true);
-
+            appendValue(csv, csvSeparator, code.getModified() != null ? formatDateWithSeconds(code.getModified()) : "");
+            appendValue(csv, csvSeparator, formatExternalReferencesToString(code.getExternalReferences()), true);
             flatInt++;
         }
         return csv.toString();
@@ -95,7 +96,8 @@ public class CodeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
-        rowhead.createCell(j).setCellValue(CONTENT_HEADER_MODIFIED);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_HREF);
         int i = 1;
         int flatInt = 1;
         for (final CodeDTO code : codes) {
@@ -121,7 +123,8 @@ public class CodeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(code.getStartDate() != null ? formatDateWithISO8601(code.getStartDate()) : "");
             row.createCell(k++).setCellValue(code.getEndDate() != null ? formatDateWithISO8601(code.getEndDate()) : "");
             row.createCell(k++).setCellValue(code.getCreated() != null ? formatDateWithSeconds(code.getCreated()) : "");
-            row.createCell(k).setCellValue(code.getModified() != null ? formatDateWithSeconds(code.getModified()) : "");
+            row.createCell(k++).setCellValue(code.getModified() != null ? formatDateWithSeconds(code.getModified()) : "");
+            row.createCell(k).setCellValue(checkEmptyValue(formatExternalReferencesToString(code.getExternalReferences())));
             flatInt++;
         }
     }

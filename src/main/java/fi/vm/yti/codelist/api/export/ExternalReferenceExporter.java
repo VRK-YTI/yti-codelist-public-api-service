@@ -22,6 +22,7 @@ public class ExternalReferenceExporter extends BaseExporter {
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_HREF);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_LOCALNAME);
         titleLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
@@ -30,6 +31,7 @@ public class ExternalReferenceExporter extends BaseExporter {
         for (final ExternalReferenceDTO externalReference : externalReferences) {
             appendValue(csv, csvSeparator, externalReference.getHref());
             appendValue(csv, csvSeparator, externalReference.getId().toString());
+            appendValue(csv, csvSeparator, externalReference.getPropertyType().getLocalName());
             titleLanguages.forEach(language -> appendValue(csv, csvSeparator, externalReference.getTitle().get(language)));
             descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, externalReference.getDescription().get(language)));
             appendValue(csv, csvSeparator, externalReference.getCreated() != null ? formatDateWithSeconds(externalReference.getCreated()) : "");
@@ -42,13 +44,21 @@ public class ExternalReferenceExporter extends BaseExporter {
     public Workbook createExcel(final Set<ExternalReferenceDTO> externalReferences,
                                 final String format) {
         final Workbook workbook = createWorkBook(format);
+        addExternalReferencesSheet(workbook, EXCEL_SHEET_EXTERNALREFERENCES, externalReferences);
+        return workbook;
+    }
+
+    public void addExternalReferencesSheet(final Workbook workbook,
+                                           final String sheetName,
+                                           final Set<ExternalReferenceDTO> externalReferences) {
         final Set<String> titleLanguages = resolveExternalReferenceTitleLanguages(externalReferences);
         final Set<String> descriptionLanguages = resolveExternalReferenceDescriptionLanguages(externalReferences);
-        final Sheet sheet = workbook.createSheet(EXCEL_SHEET_EXTERNALREFERENCES);
+        final Sheet sheet = workbook.createSheet(sheetName);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_HREF);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LOCALNAME);
         for (final String language : titleLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_TITLE_PREFIX + language.toUpperCase());
         }
@@ -63,6 +73,7 @@ public class ExternalReferenceExporter extends BaseExporter {
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(externalReference.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(externalReference.getHref()));
+            row.createCell(k++).setCellValue(checkEmptyValue(externalReference.getPropertyType().getLocalName()));
             for (final String language : titleLanguages) {
                 row.createCell(k++).setCellValue(externalReference.getTitle().get(language));
             }
@@ -72,7 +83,6 @@ public class ExternalReferenceExporter extends BaseExporter {
             row.createCell(k++).setCellValue(externalReference.getCreated() != null ? formatDateWithSeconds(externalReference.getCreated()) : "");
             row.createCell(k).setCellValue(externalReference.getModified() != null ? formatDateWithSeconds(externalReference.getModified()) : "");
         }
-        return workbook;
     }
 
     private Set<String> resolveExternalReferenceTitleLanguages(final Set<ExternalReferenceDTO> externalReferences) {

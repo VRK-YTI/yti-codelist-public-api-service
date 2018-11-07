@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.Set;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -11,6 +12,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
+import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
@@ -67,6 +69,10 @@ abstract class BaseExporter {
         return truncateSheetName(EXCEL_SHEET_CODES + "_" + codeScheme.getCodeValue());
     }
 
+    String createExternalReferencesSheetName(final CodeSchemeDTO codeScheme) {
+        return truncateSheetName(EXCEL_SHEET_EXTERNALREFERENCES + "_" + codeScheme.getCodeValue());
+    }
+
     String truncateSheetName(final String sheetName) {
         if (sheetName.length() <= MAX_SHEETNAME_SIZE) {
             return sheetName;
@@ -92,5 +98,18 @@ abstract class BaseExporter {
     String formatDateWithSeconds(final Date date) {
         final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT_WITH_SECONDS);
         return dateFormat.format(date);
+    }
+
+    String formatExternalReferencesToString(final Set<ExternalReferenceDTO> externalReferences) {
+        final StringBuilder csvExternalReferences = new StringBuilder();
+        int i = 0;
+        for (final ExternalReferenceDTO externalReference : externalReferences) {
+            i++;
+            csvExternalReferences.append(externalReference.getHref());
+            if (i < externalReferences.size()) {
+                csvExternalReferences.append("|");
+            }
+        }
+        return csvExternalReferences.toString();
     }
 }
