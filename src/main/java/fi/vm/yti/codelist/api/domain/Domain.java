@@ -100,6 +100,8 @@ public interface Domain {
 
     ExternalReferenceDTO getExternalReference(final String externalReferenceId);
 
+    Set<ExternalReferenceDTO> getExternalReferences(final CodeSchemeDTO codeScheme);
+
     Set<ExternalReferenceDTO> getExternalReferences(final Integer pageSize,
                                                     final Integer from,
                                                     final String externalReferencePrefLabel,

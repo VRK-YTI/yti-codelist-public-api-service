@@ -669,6 +669,10 @@ public class DomainImpl implements Domain {
         return null;
     }
 
+    public Set<ExternalReferenceDTO> getExternalReferences(final CodeSchemeDTO codeScheme) {
+        return getExternalReferences(null, null, null, codeScheme, false, null, null);
+    }
+
     public Set<ExternalReferenceDTO> getExternalReferences(final Integer pageSize,
                                                            final Integer from,
                                                            final String externalReferencePrefLabel,

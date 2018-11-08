@@ -14,6 +14,7 @@ import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExtensionDTO;
+import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import fi.vm.yti.codelist.common.dto.OrganizationDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
@@ -99,7 +100,8 @@ public class CodeSchemeExporter extends BaseExporter {
         codeSchemes.add(codeScheme);
         addCodeSchemeSheet(workbook, EXCEL_SHEET_CODESCHEMES, codeSchemes);
         final String externalReferenceSheetName = createExternalReferencesSheetName(codeScheme);
-        externalReferenceExporter.addExternalReferencesSheet(workbook, externalReferenceSheetName, codeScheme.getExternalReferences());
+        final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(codeScheme);
+        externalReferenceExporter.addExternalReferencesSheet(workbook, externalReferenceSheetName, externalReferences);
         final String codeSheetName = createCodesSheetName(codeScheme);
         codeExporter.addCodeSheet(workbook, codeSheetName, domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeScheme.getCodeRegistry().getCodeValue(), codeScheme.getCodeValue()));
         final Set<ExtensionDTO> extensions = domain.getExtensions(null, null, null, codeScheme, null, null);
