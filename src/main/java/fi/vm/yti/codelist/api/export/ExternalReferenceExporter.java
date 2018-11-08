@@ -22,7 +22,7 @@ public class ExternalReferenceExporter extends BaseExporter {
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_HREF);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_LOCALNAME);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_PROPERTYTYPE);
         titleLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
@@ -58,7 +58,7 @@ public class ExternalReferenceExporter extends BaseExporter {
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_HREF);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LOCALNAME);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PROPERTYTYPE);
         for (final String language : titleLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_TITLE_PREFIX + language.toUpperCase());
         }
