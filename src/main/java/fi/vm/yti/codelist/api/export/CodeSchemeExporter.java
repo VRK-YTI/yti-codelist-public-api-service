@@ -245,12 +245,14 @@ public class CodeSchemeExporter extends BaseExporter {
 
     private String formatOrganizationsToString(final Set<OrganizationDTO> organizations) {
         final StringBuilder csvOrganizations = new StringBuilder();
-        int i = 0;
-        for (final OrganizationDTO organization : organizations) {
-            i++;
-            csvOrganizations.append(organization.getId());
-            if (i < organizations.size()) {
-                csvOrganizations.append(";");
+        if (organizations != null && !organizations.isEmpty()) {
+            int i = 0;
+            for (final OrganizationDTO organization : organizations) {
+                i++;
+                csvOrganizations.append(organization.getId());
+                if (i < organizations.size()) {
+                    csvOrganizations.append(";");
+                }
             }
         }
         return csvOrganizations.toString();
@@ -258,12 +260,14 @@ public class CodeSchemeExporter extends BaseExporter {
 
     private String formatCodesToString(final Set<CodeDTO> codes) {
         final StringBuilder csvCodes = new StringBuilder();
-        int i = 0;
-        for (final CodeDTO code : codes) {
-            i++;
-            csvCodes.append(code.getCodeValue().trim());
-            if (i < codes.size()) {
-                csvCodes.append(";");
+        if (codes != null && !codes.isEmpty()) {
+            int i = 0;
+            for (final CodeDTO code : codes) {
+                i++;
+                csvCodes.append(code.getCodeValue().trim());
+                if (i < codes.size()) {
+                    csvCodes.append(";");
+                }
             }
         }
         return csvCodes.toString();

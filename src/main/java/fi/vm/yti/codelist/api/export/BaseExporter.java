@@ -102,12 +102,14 @@ abstract class BaseExporter {
 
     String formatExternalReferencesToString(final Set<ExternalReferenceDTO> externalReferences) {
         final StringBuilder csvExternalReferences = new StringBuilder();
-        int i = 0;
-        for (final ExternalReferenceDTO externalReference : externalReferences) {
-            i++;
-            csvExternalReferences.append(externalReference.getHref());
-            if (i < externalReferences.size()) {
-                csvExternalReferences.append("|");
+        if (externalReferences != null && !externalReferences.isEmpty()) {
+            int i = 0;
+            for (final ExternalReferenceDTO externalReference : externalReferences) {
+                i++;
+                csvExternalReferences.append(externalReference.getHref());
+                if (i < externalReferences.size()) {
+                    csvExternalReferences.append("|");
+                }
             }
         }
         return csvExternalReferences.toString();
