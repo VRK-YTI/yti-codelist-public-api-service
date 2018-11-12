@@ -21,7 +21,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import fi.vm.yti.codelist.api.api.ApiUtils;
 import fi.vm.yti.codelist.api.domain.Domain;
@@ -70,6 +72,8 @@ public class UriResolverResource extends AbstractBaseResource {
         ensureSuomiFiUriHost(resolveUri.getHost());
         final String uriPath = resolveUri.getPath();
         final ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        objectMapper.registerModule(new JavaTimeModule());
         final ObjectNode json = objectMapper.createObjectNode();
         json.put("uri", uri);
         checkResourceValidity(uriPath);
