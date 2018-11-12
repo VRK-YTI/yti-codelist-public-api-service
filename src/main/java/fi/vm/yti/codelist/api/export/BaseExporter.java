@@ -69,8 +69,8 @@ abstract class BaseExporter {
         return truncateSheetName(EXCEL_SHEET_CODES + "_" + codeScheme.getCodeValue());
     }
 
-    String createExternalReferencesSheetName(final CodeSchemeDTO codeScheme) {
-        return truncateSheetName(EXCEL_SHEET_EXTERNALREFERENCES + "_" + codeScheme.getCodeValue());
+    String createLinksSheetName(final CodeSchemeDTO codeScheme) {
+        return truncateSheetName(EXCEL_SHEET_LINKS + "_" + codeScheme.getCodeValue());
     }
 
     String truncateSheetName(final String sheetName) {

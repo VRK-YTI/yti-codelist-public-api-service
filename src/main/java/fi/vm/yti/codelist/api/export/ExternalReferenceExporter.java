@@ -44,7 +44,7 @@ public class ExternalReferenceExporter extends BaseExporter {
     public Workbook createExcel(final Set<ExternalReferenceDTO> externalReferences,
                                 final String format) {
         final Workbook workbook = createWorkBook(format);
-        addExternalReferencesSheet(workbook, EXCEL_SHEET_EXTERNALREFERENCES, externalReferences);
+        addExternalReferencesSheet(workbook, EXCEL_SHEET_LINKS, externalReferences);
         return workbook;
     }
 

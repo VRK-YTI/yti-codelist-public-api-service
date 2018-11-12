@@ -99,7 +99,7 @@ public class CodeSchemeExporter extends BaseExporter {
         final Set<CodeSchemeDTO> codeSchemes = new HashSet<>();
         codeSchemes.add(codeScheme);
         addCodeSchemeSheet(workbook, EXCEL_SHEET_CODESCHEMES, codeSchemes);
-        final String externalReferenceSheetName = createExternalReferencesSheetName(codeScheme);
+        final String externalReferenceSheetName = createLinksSheetName(codeScheme);
         final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(codeScheme);
         externalReferenceExporter.addExternalReferencesSheet(workbook, externalReferenceSheetName, externalReferences);
         final String codeSheetName = createCodesSheetName(codeScheme);
@@ -166,7 +166,7 @@ public class CodeSchemeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_HREF);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODESSHEET);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_EXTERNALREFERENCESSHEET);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LINKSSHEET);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_EXTENSIONSSHEET);
         int i = 1;
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
@@ -202,7 +202,7 @@ public class CodeSchemeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(codeScheme.getModified() != null ? formatDateWithSeconds(codeScheme.getModified()) : "");
             row.createCell(k++).setCellValue(checkEmptyValue(formatExternalReferencesToString(codeScheme.getExternalReferences())));
             row.createCell(k++).setCellValue(checkEmptyValue(createCodesSheetName(codeScheme)));
-            row.createCell(k++).setCellValue(checkEmptyValue(createExternalReferencesSheetName(codeScheme)));
+            row.createCell(k++).setCellValue(checkEmptyValue(createLinksSheetName(codeScheme)));
             row.createCell(k).setCellValue(checkEmptyValue(createExtensionsSheetName(codeScheme)));
         }
     }
