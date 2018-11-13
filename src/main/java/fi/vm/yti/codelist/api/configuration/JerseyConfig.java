@@ -12,6 +12,7 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import fi.vm.yti.codelist.api.exception.exceptionmapping.YtiCodeListExceptionMapper;
 import fi.vm.yti.codelist.api.filter.CacheFilter;
+import fi.vm.yti.codelist.api.filter.CharsetResponseFilter;
 import fi.vm.yti.codelist.api.filter.RequestLoggingFilter;
 import fi.vm.yti.codelist.api.resource.CodeRegistryResource;
 import fi.vm.yti.codelist.api.resource.CodeSchemeResource;
@@ -68,6 +69,9 @@ public class JerseyConfig extends ResourceConfig {
 
         // ExceptionMappers
         register(YtiCodeListExceptionMapper.class);
+
+        // Charset filter
+        register(CharsetResponseFilter.class);
 
         // Cache control headers to no cache.
         register(CacheFilter.class);
