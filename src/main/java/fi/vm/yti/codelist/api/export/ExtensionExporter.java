@@ -47,7 +47,7 @@ public class ExtensionExporter extends BaseExporter {
             appendValue(csv, csvSeparator, extension.getStatus());
             appendValue(csv, csvSeparator, extension.getPropertyType().getLocalName());
             appendValue(csv, csvSeparator, getCodeSchemeUris(extension.getCodeSchemes()));
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, extension.getPrefLabel().get(language)));
+            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, checkEmptyValue(extension.getPrefLabel() != null ? extension.getPrefLabel().get(language) : null)));
             appendValue(csv, csvSeparator, extension.getStartDate() != null ? formatDateWithISO8601(extension.getStartDate()) : "");
             appendValue(csv, csvSeparator, extension.getEndDate() != null ? formatDateWithISO8601(extension.getEndDate()) : "");
             appendValue(csv, csvSeparator, extension.getCreated() != null ? formatDateWithSeconds(extension.getCreated()) : "");
@@ -104,7 +104,7 @@ public class ExtensionExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(extension.getPropertyType().getLocalName()));
             row.createCell(k++).setCellValue(checkEmptyValue(getCodeSchemeUris(extension.getCodeSchemes())));
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(extension.getPrefLabel().get(language));
+                row.createCell(k++).setCellValue(checkEmptyValue(extension.getPrefLabel() != null ? extension.getPrefLabel().get(language) : null));
             }
             row.createCell(k++).setCellValue(extension.getStartDate() != null ? formatDateWithISO8601(extension.getStartDate()) : "");
             row.createCell(k++).setCellValue(extension.getEndDate() != null ? formatDateWithISO8601(extension.getEndDate()) : "");
@@ -133,7 +133,9 @@ public class ExtensionExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final ExtensionDTO extension : extensions) {
             final Map<String, String> prefLabel = extension.getPrefLabel();
-            languages.addAll(prefLabel.keySet());
+            if (prefLabel != null && !prefLabel.isEmpty()) {
+                languages.addAll(prefLabel.keySet());
+            }
         }
         return languages;
     }
