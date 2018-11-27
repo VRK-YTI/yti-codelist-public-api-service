@@ -77,6 +77,7 @@ public class MemberExporter extends BaseExporter {
             valueTypes.forEach(valueType -> appendValue(csv, csvSeparator, valueType.getLocalName().toUpperCase()));
         }
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
+        appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_URI1);
         appendValue(csv, csvSeparator, CONTENT_HEADER_URI2, true);
         for (final MemberDTO member : members) {
@@ -94,6 +95,7 @@ public class MemberExporter extends BaseExporter {
                 });
             }
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getCode().getPrefLabel().get(language)));
+            appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getCodeValue() : "");
             appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getUri() : "");
             appendValue(csv, csvSeparator, member.getRelatedMember().getCode().getUri(), true);
         }
@@ -179,6 +181,7 @@ public class MemberExporter extends BaseExporter {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
 
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI1);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI2);
 
@@ -204,6 +207,7 @@ public class MemberExporter extends BaseExporter {
                 row.createCell(k++).setCellValue(member.getCode().getPrefLabel().get(language));
             }
 
+            row.createCell(k++).setCellValue(member.getCode().getCodeValue());
             row.createCell(k++).setCellValue(member.getCode().getUri());
             row.createCell(k++).setCellValue(member.getRelatedMember().getCode().getUri());
         }
