@@ -129,15 +129,6 @@ public class CodeExporter extends BaseExporter {
         }
     }
 
-    private Set<String> resolveCodePrefLabelLanguages(final Set<CodeDTO> codes) {
-        final Set<String> languages = new LinkedHashSet<>();
-        for (final CodeDTO code : codes) {
-            final Map<String, String> prefLabel = code.getPrefLabel();
-            languages.addAll(prefLabel.keySet());
-        }
-        return languages;
-    }
-
     private Set<String> resolveCodeDefinitionLanguages(final Set<CodeDTO> codes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeDTO code : codes) {

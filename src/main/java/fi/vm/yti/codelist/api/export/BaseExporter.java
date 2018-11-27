@@ -4,6 +4,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.Date;
+import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -11,6 +13,7 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
+import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
@@ -113,5 +116,14 @@ abstract class BaseExporter {
             }
         }
         return csvExternalReferences.toString();
+    }
+
+    protected Set<String> resolveCodePrefLabelLanguages(final Set<CodeDTO> codes) {
+        final Set<String> languages = new LinkedHashSet<>();
+        for (final CodeDTO code : codes) {
+            final Map<String, String> prefLabel = code.getPrefLabel();
+            languages.addAll(prefLabel.keySet());
+        }
+        return languages;
     }
 }

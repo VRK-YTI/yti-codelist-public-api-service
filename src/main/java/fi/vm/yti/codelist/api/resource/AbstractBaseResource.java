@@ -45,6 +45,7 @@ abstract class AbstractBaseResource {
     private static final String DOWNLOAD_FILENAME_EXTENSIONS = "extensions";
     private static final String DOWNLOAD_FILENAME_MEMBERS = "members";
     private static final String HEADER_CONTENT_DISPOSITION = "content-disposition";
+    private static final String DOWNLOAD_FILENAME_CROSS_REFERENCE_LIST = "crossreferencelist";
 
     SimpleFilterProvider createSimpleFilterProvider(final String baseFilter) {
         return createSimpleFilterProvider(baseFilter, null);
@@ -148,6 +149,10 @@ abstract class AbstractBaseResource {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_MEMBERS);
     }
 
+    Response streamCsvCrossReferenceListOutput(final String csv) {
+        return streamCsvOutput(csv, DOWNLOAD_FILENAME_CROSS_REFERENCE_LIST);
+    }
+
     private Response streamCsvOutput(final String csv,
                                      final String filename) {
         final StreamingOutput stream = output -> {
@@ -187,6 +192,10 @@ abstract class AbstractBaseResource {
 
     Response streamExcelExtensionsOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_EXTENSIONS);
+    }
+
+    Response streamExcelCrossReferenceListOutput(final Workbook workbook) {
+        return streamExcelOutput(workbook, DOWNLOAD_FILENAME_CROSS_REFERENCE_LIST);
     }
 
     Response streamExcelMembersOutput(final Workbook workbook) {

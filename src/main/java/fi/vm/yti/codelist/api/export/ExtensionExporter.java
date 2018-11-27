@@ -20,6 +20,7 @@ public class ExtensionExporter extends BaseExporter {
 
     private final Domain domain;
     private final MemberExporter memberExporter;
+    public static final String CROSS_REFERENCE_LIST_PRETTY_TYPED = "Cross-Reference List";
 
     public ExtensionExporter(final Domain domain,
                              final MemberExporter memberExporter) {
@@ -64,13 +65,20 @@ public class ExtensionExporter extends BaseExporter {
     }
 
     public Workbook createExcel(final ExtensionDTO extension,
-                                final String format) {
+                                final String format,
+                                final boolean exportAsSimplifiedCrossReferenceList) {
         final Workbook workbook = createWorkBook(format);
         final Set<ExtensionDTO> extensions = new HashSet<>();
         extensions.add(extension);
-        addExtensionSheet(workbook, EXCEL_SHEET_EXTENSIONS, extensions);
+        if (!exportAsSimplifiedCrossReferenceList) {
+            addExtensionSheet(workbook, EXCEL_SHEET_EXTENSIONS, extensions);
+        }
         final String extensionSheetName = truncateSheetNameWithIndex(EXCEL_SHEET_MEMBERS + "_" + extension.getParentCodeScheme().getCodeValue() + "_" + extension.getCodeValue(), 1);
-        memberExporter.addMembersSheet(extension, workbook, extensionSheetName, domain.getMembers(null, null, extension, null, null));
+        if (exportAsSimplifiedCrossReferenceList) {
+            memberExporter.addMembersSheetWithCrossRerefences(extension, workbook, CROSS_REFERENCE_LIST_PRETTY_TYPED, domain.getMembers(null, null, extension, null, null));
+        } else {
+            memberExporter.addMembersSheet(extension, workbook, extensionSheetName, domain.getMembers(null, null, extension, null, null));
+        }
         return workbook;
     }
 

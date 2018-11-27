@@ -3,6 +3,7 @@ package fi.vm.yti.codelist.api.export;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -65,6 +66,40 @@ public class MemberExporter extends BaseExporter {
         return csv.toString();
     }
 
+    public String createSimplifiedCsvForCrossReferenceList(final ExtensionDTO extension,
+                            final Set<MemberDTO> members) {
+        Set<CodeDTO> codesInMembers = members.stream().map(m -> m.getCode()).collect(Collectors.toSet());
+        final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codesInMembers);
+        final String csvSeparator = ",";
+        final StringBuilder csv = new StringBuilder();
+        final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
+        if (valueTypes != null && !valueTypes.isEmpty()) {
+            valueTypes.forEach(valueType -> appendValue(csv, csvSeparator, valueType.getLocalName().toUpperCase()));
+        }
+        prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
+        appendValue(csv, csvSeparator, CONTENT_HEADER_URI1);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_URI2, true);
+        for (final MemberDTO member : members) {
+            if (member.getRelatedMember() == null) {
+                continue;
+            }
+            if (valueTypes != null && !valueTypes.isEmpty()) {
+                valueTypes.forEach(valueType -> {
+                    final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
+                    if (memberValue != null) {
+                        appendValue(csv, csvSeparator, member.getMemberValueWithLocalName(valueType.getLocalName()).getValue());
+                    } else {
+                        appendValue(csv, csvSeparator, "");
+                    }
+                });
+            }
+            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getCode().getPrefLabel().get(language)));
+            appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getUri() : "");
+            appendValue(csv, csvSeparator, member.getRelatedMember().getCode().getUri(), true);
+        }
+        return csv.toString();
+    }
+
     public void addMembersSheet(final ExtensionDTO extension,
                                 final Workbook workbook,
                                 final String sheetName,
@@ -120,6 +155,57 @@ public class MemberExporter extends BaseExporter {
             row.createCell(k++).setCellValue(member.getCreated() != null ? formatDateWithSeconds(member.getCreated()) : "");
             row.createCell(k++).setCellValue(member.getModified() != null ? formatDateWithSeconds(member.getModified()) : "");
             row.createCell(k).setCellValue(checkEmptyValue(member.getOrder() != null ? member.getOrder().toString() : ""));
+        }
+    }
+
+    public void addMembersSheetWithCrossRerefences(final ExtensionDTO extension,
+                                final Workbook workbook,
+                                final String sheetName,
+                                final Set<MemberDTO> members) {
+        Set<CodeDTO> codesInMembers = members.stream().map(m -> m.getCode()).collect(Collectors.toSet());
+        final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codesInMembers);
+        final Sheet sheet = workbook.createSheet(sheetName);
+
+        final Row rowhead = sheet.createRow((short) 0);
+        int j = 0;
+
+        final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
+        if (valueTypes != null && !valueTypes.isEmpty()) {
+            for (final ValueTypeDTO valueType : valueTypes) {
+                rowhead.createCell(j++).setCellValue(valueType.getLocalName().toUpperCase());
+            }
+        }
+        for (final String language : prefLabelLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
+        }
+
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI1);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI2);
+
+        int i = 1;
+        for (final MemberDTO member : members) {
+            if (member.getRelatedMember() == null) {
+                continue;
+            }
+            final Row row = sheet.createRow(i++);
+            int k = 0;
+
+            if (valueTypes != null && !valueTypes.isEmpty()) {
+                for (final ValueTypeDTO valueType : valueTypes) {
+                    final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
+                    if (memberValue != null) {
+                        row.createCell(k++).setCellValue(checkEmptyValue(memberValue.getValue()));
+                    } else {
+                        row.createCell(k++).setCellValue("");
+                    }
+                }
+            }
+            for (final String language : prefLabelLanguages) {
+                row.createCell(k++).setCellValue(member.getCode().getPrefLabel().get(language));
+            }
+
+            row.createCell(k++).setCellValue(member.getCode().getUri());
+            row.createCell(k++).setCellValue(member.getRelatedMember().getCode().getUri());
         }
     }
 

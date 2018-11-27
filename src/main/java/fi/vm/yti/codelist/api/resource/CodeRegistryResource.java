@@ -316,6 +316,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                        @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                        @ApiParam(value = "Extension CodeValue.", required = true) @PathParam("extensionCodeValue") final String extensionCodeValue,
                                                        @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
+                                                       @ApiParam(value = "Is this a Cross-Refence List or not.") @QueryParam("crossreferencelist") @DefaultValue("false") final boolean exportAsSimplifiedCrossReferenceList,
                                                        @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
         if (extension != null) {
@@ -325,8 +326,12 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 final String csv = extensionExporter.createCsv(extensions);
                 return streamCsvExtensionsOutput(csv);
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                final Workbook workbook = extensionExporter.createExcel(extension, format);
-                return streamExcelExtensionsOutput(workbook);
+                final Workbook workbook = extensionExporter.createExcel(extension, format, exportAsSimplifiedCrossReferenceList);
+                if (exportAsSimplifiedCrossReferenceList) {
+                    return streamExcelCrossReferenceListOutput(workbook);
+                } else {
+                    return streamExcelExtensionsOutput(workbook);
+                }
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
                 return Response.ok(extension).build();
@@ -349,6 +354,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                               @ApiParam(value = "Extension PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                                                               @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                               @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
+                                                              @ApiParam(value = "Is this a Cross-Refence List or not.") @QueryParam("crossreferencelist") @DefaultValue("false") final boolean exportAsSimplifiedCrossReferenceList,
                                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
 
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
@@ -356,8 +362,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
         if (extension != null) {
             if (FORMAT_CSV.startsWith(format.toLowerCase())) {
                 final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
-                final String csv = memberExporter.createCsv(extension, members);
-                return streamCsvMembersOutput(csv);
+                if (exportAsSimplifiedCrossReferenceList) {
+                    return streamCsvCrossReferenceListOutput(memberExporter.createSimplifiedCsvForCrossReferenceList(extension, members));
+                } else {
+                    return streamCsvMembersOutput(memberExporter.createCsv(extension, members));
+                }
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
                 final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
                 final Workbook workbook = memberExporter.createExcel(extension, members, format);
