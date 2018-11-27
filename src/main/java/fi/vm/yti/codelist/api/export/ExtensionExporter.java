@@ -78,6 +78,9 @@ public class ExtensionExporter extends BaseExporter {
             memberExporter.addMembersSheetWithCrossRerefences(extension, workbook, CROSS_REFERENCE_LIST_PRETTY_TYPED, domain.getMembers(null, null, extension, null, null));
         } else {
             memberExporter.addMembersSheet(extension, workbook, extensionSheetName, domain.getMembers(null, null, extension, null, null));
+            if (extension.getPropertyType().getLocalName().equals("crossReferenceList")) { //Cross-Reference List containing sheet will always be included as well in the normal Excel
+                memberExporter.addMembersSheetWithCrossRerefences(extension, workbook, CROSS_REFERENCE_LIST_PRETTY_TYPED, domain.getMembers(null, null, extension, null, null));
+            }
         }
         return workbook;
     }
