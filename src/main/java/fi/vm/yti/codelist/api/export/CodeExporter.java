@@ -32,6 +32,7 @@ public class CodeExporter extends BaseExporter {
         descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_SHORTNAME);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CONCEPTURI);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_SUBCODESCHEME);
         appendValue(csv, csvSeparator, CONTENT_HEADER_HIERARCHYLEVEL);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
@@ -49,6 +50,7 @@ public class CodeExporter extends BaseExporter {
             descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, code.getDescription().get(language)));
             appendValue(csv, csvSeparator, code.getShortName());
             appendValue(csv, csvSeparator, code.getConceptUriInVocabularies());
+            appendValue(csv, csvSeparator, code.getSubCodeScheme() != null ? code.getSubCodeScheme().getUri() : null);
             appendValue(csv, csvSeparator, code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null);
             appendValue(csv, csvSeparator, code.getStartDate() != null ? formatDateWithISO8601(code.getStartDate()) : "");
             appendValue(csv, csvSeparator, code.getEndDate() != null ? formatDateWithISO8601(code.getEndDate()) : "");
@@ -91,6 +93,7 @@ public class CodeExporter extends BaseExporter {
         }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_SHORTNAME);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CONCEPTURI);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_SUBCODESCHEME);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_HIERARCHYLEVEL);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ORDER);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
@@ -118,6 +121,7 @@ public class CodeExporter extends BaseExporter {
             }
             row.createCell(k++).setCellValue(checkEmptyValue(code.getShortName()));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getConceptUriInVocabularies()));
+            row.createCell(k++).setCellValue(checkEmptyValue(code.getSubCodeScheme() != null ? code.getSubCodeScheme().getUri() : null));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getHierarchyLevel() != null ? code.getHierarchyLevel().toString() : null));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getOrder() != null ? code.getOrder().toString() : Integer.toString(flatInt)));
             row.createCell(k++).setCellValue(code.getStartDate() != null ? formatDateWithISO8601(code.getStartDate()) : "");
