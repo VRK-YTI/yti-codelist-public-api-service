@@ -21,7 +21,6 @@ import fi.vm.yti.codelist.api.api.ApiUtils;
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.api.dto.ResourceDTO;
-import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
