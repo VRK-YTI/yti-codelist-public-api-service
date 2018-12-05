@@ -183,7 +183,7 @@ public class MemberExporter extends BaseExporter {
 
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI1);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI2);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_URI2);
 
         int i = 1;
         for (final MemberDTO member : members) {
@@ -209,7 +209,7 @@ public class MemberExporter extends BaseExporter {
 
             row.createCell(k++).setCellValue(member.getCode().getCodeValue());
             row.createCell(k++).setCellValue(member.getCode().getUri());
-            row.createCell(k++).setCellValue(member.getRelatedMember().getCode().getUri());
+            row.createCell(k).setCellValue(member.getRelatedMember().getCode().getUri());
         }
     }
 
