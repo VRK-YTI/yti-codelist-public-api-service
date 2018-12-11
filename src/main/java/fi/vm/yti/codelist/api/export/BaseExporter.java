@@ -94,7 +94,6 @@ abstract class BaseExporter {
     }
 
     String formatDateWithISO8601(final LocalDate date) {
-        final DateFormat dateFormat = new SimpleDateFormat(DATEFORMAT);
         return date.toString();
     }
 
