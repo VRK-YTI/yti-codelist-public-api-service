@@ -76,11 +76,11 @@ public class MemberExporter extends BaseExporter {
         if (valueTypes != null && !valueTypes.isEmpty()) {
             valueTypes.forEach(valueType -> appendValue(csv, csvSeparator, valueType.getLocalName().toUpperCase()));
         }
-        prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_URI1 + "_" + CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_URI1 + "_" +  CONTENT_HEADER_CODEVALUE);
+        prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_URI1 + "_" + CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_URI1);
-        prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_URI2 + "_" + CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_URI2 + "_" +  CONTENT_HEADER_CODEVALUE);
+        prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_URI2 + "_" + CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_URI2, true);
         for (final MemberDTO member : members) {
             if (member.getRelatedMember() == null) {
@@ -96,14 +96,13 @@ public class MemberExporter extends BaseExporter {
                     }
                 });
             }
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getCode().getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getCodeValue() : "");
+            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getCode().getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getUri() : "");
 
             if (member.getRelatedMember() != null) {
-                prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getRelatedMember().getCode().getPrefLabel().get(language)));
                 appendValue(csv, csvSeparator, member.getRelatedMember().getCode() != null ? member.getRelatedMember().getCode().getCodeValue() : "");
-
+                prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getRelatedMember().getCode().getPrefLabel().get(language)));
                 appendValue(csv, csvSeparator, member.getRelatedMember().getCode().getUri(), true);
             }
         }
@@ -185,15 +184,15 @@ public class MemberExporter extends BaseExporter {
                 rowhead.createCell(j++).setCellValue(valueType.getLocalName().toUpperCase());
             }
         }
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI1 + "_" + CONTENT_HEADER_CODEVALUE);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI1 + "_" + CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI1 + "_" + CONTENT_HEADER_CODEVALUE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI1);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI2 + "_" + CONTENT_HEADER_CODEVALUE);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI2 + "_" + CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI2 + "_" + CONTENT_HEADER_CODEVALUE);
         rowhead.createCell(j).setCellValue(CONTENT_HEADER_URI2);
 
         int i = 1;
@@ -214,16 +213,16 @@ public class MemberExporter extends BaseExporter {
                     }
                 }
             }
+            row.createCell(k++).setCellValue(member.getCode().getCodeValue());
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(member.getCode().getPrefLabel().get(language));
             }
-            row.createCell(k++).setCellValue(member.getCode().getCodeValue());
             row.createCell(k++).setCellValue(member.getCode().getUri());
             if (member.getRelatedMember() != null) {
+                row.createCell(k++).setCellValue(member.getRelatedMember().getCode().getCodeValue());
                 for (final String language : prefLabelLanguages) {
                     row.createCell(k++).setCellValue(member.getRelatedMember().getCode().getPrefLabel().get(language));
                 }
-                row.createCell(k++).setCellValue(member.getRelatedMember().getCode().getCodeValue());
                 row.createCell(k++).setCellValue(member.getRelatedMember().getCode().getUri());
             }
         }
