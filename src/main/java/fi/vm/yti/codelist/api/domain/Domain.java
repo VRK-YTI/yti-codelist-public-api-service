@@ -56,6 +56,7 @@ public interface Domain {
                                       final boolean searchCodes,
                                       final List<String> statuses,
                                       final List<String> infoDomains,
+                                      final String extensionPropertyType,
                                       final Date after,
                                       final Meta meta);
 
