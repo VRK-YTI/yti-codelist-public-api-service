@@ -15,7 +15,7 @@ import org.elasticsearch.action.admin.indices.flush.FlushRequest;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,7 +224,7 @@ abstract public class AbstractTestBase {
         if (!exists) {
             final CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(indexName);
             try {
-                builder.setSettings(Settings.builder().loadFromSource(jsonBuilder()
+                final XContentBuilder contentBuilder = jsonBuilder()
                     .startObject()
                     .startObject("index")
                     .field(MAX_RESULT_WINDOW, MAX_RESULT_WINDOW_SIZE)
@@ -234,17 +234,18 @@ abstract public class AbstractTestBase {
                     .startObject("text_analyzer")
                     .field("type", "custom")
                     .field("tokenizer", "keyword")
-                    .field("filter", new String[]{"lowercase", "standard"})
+                    .field("filter", new String[]{ "lowercase", "standard" })
                     .endObject()
                     .endObject()
                     .startObject("normalizer")
                     .startObject("keyword_normalizer")
                     .field("type", "custom")
-                    .field("filter", new String[]{"lowercase"})
+                    .field("filter", new String[]{ "lowercase" })
                     .endObject()
                     .endObject()
                     .endObject()
-                    .endObject().string(), XContentType.JSON));
+                    .endObject();
+                builder.setSource(contentBuilder);
             } catch (final IOException e) {
                 LOG.error("Error parsing index request settings JSON!", e);
             }
