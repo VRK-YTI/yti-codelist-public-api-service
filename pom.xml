@@ -415,7 +415,7 @@
                         </image>
                         <!-- Postgres started here for ensuring delay, as wait does not work with Elastic. -->
                         <image>
-                            <name>yti-postgres:dev</name>
+                            <name>yti-postgres:latest</name>
                             <alias>${project.artifactId}_test_postgres</alias>
                             <run>
                                 <namingStrategy>alias</namingStrategy>
