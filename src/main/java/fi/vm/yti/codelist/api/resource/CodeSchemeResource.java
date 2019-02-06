@@ -63,7 +63,8 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @ApiParam(value = "CodeScheme PrefLabel as string value.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
                                    @ApiParam(value = "Language code for sorting results.") @QueryParam("language") @DefaultValue("fi") final String language,
                                    @ApiParam(value = "Search term for matching codeValue and prefLabel.") @QueryParam("searchTerm") final String searchTerm,
-                                   @ApiParam(value = "Boolean that controls is search also matches codes codeValues and prefLabels inside CodeSchemes.") @QueryParam("searchCodes") @DefaultValue("false") final Boolean searchCodes,
+                                   @ApiParam(value = "Boolean that controls is search also matches codes' codeValues and prefLabels inside CodeSchemes.") @QueryParam("searchCodes") @DefaultValue("false") final Boolean searchCodes,
+                                   @ApiParam(value = "Boolean that controls is search also matches extensions' codeValues and prefLabels inside CodeSchemes.") @QueryParam("searchExtensions") @DefaultValue("false") final Boolean searchExtensions,
                                    @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
                                    @ApiParam(value = "Extension PropertyType localName as string value for searching.") @QueryParam("extensionPropertyType") final String extensionPropertyType,
                                    @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
@@ -77,17 +78,73 @@ public class CodeSchemeResource extends AbstractBaseResource {
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
         final List<String> statusList = parseStatus(status);
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizations, userOrganizations, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, statusList, infoDomainsList, extensionPropertyType, Meta.parseAfterFromString(after), null);
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize,
+                from,
+                sortMode,
+                organizations,
+                userOrganizations,
+                codeRegistryCodeValue,
+                codeRegistryPrefLabel,
+                codeSchemeCodeValue,
+                codeSchemePrefLabel,
+                language,
+                searchTerm,
+                searchCodes,
+                searchExtensions,
+                statusList,
+                infoDomainsList,
+                extensionPropertyType,
+                Meta.parseAfterFromString(after),
+                null);
             final String csv = codeSchemeExporter.createCsv(codeSchemes);
             return streamCsvCodeSchemesOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizations, userOrganizations, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, statusList, infoDomainsList, extensionPropertyType, Meta.parseAfterFromString(after), null);
-            final Workbook workbook = codeSchemeExporter.createExcel(codeSchemes, format);
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize,
+                from,
+                sortMode,
+                organizations,
+                userOrganizations,
+                codeRegistryCodeValue,
+                codeRegistryPrefLabel,
+                codeSchemeCodeValue,
+                codeSchemePrefLabel,
+                language,
+                searchTerm,
+                searchCodes,
+                searchExtensions,
+                statusList,
+                infoDomainsList,
+                extensionPropertyType,
+                Meta.parseAfterFromString(after),
+                null);
+            final Workbook workbook = codeSchemeExporter.createExcel(codeSchemes,
+                format);
             return streamExcelCodeSchemesOutput(workbook);
         } else {
-            final Meta meta = new Meta(200, pageSize, from, after);
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
-            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizations, userOrganizations, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, statusList, infoDomainsList, extensionPropertyType, meta.getAfter(), meta);
+            final Meta meta = new Meta(200,
+                pageSize,
+                from,
+                after);
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME,
+                expand)));
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize,
+                from,
+                sortMode,
+                organizations,
+                userOrganizations,
+                codeRegistryCodeValue,
+                codeRegistryPrefLabel,
+                codeSchemeCodeValue,
+                codeSchemePrefLabel,
+                language,
+                searchTerm,
+                searchCodes,
+                searchExtensions,
+                statusList,
+                infoDomainsList,
+                extensionPropertyType,
+                meta.getAfter(),
+                meta);
             meta.setResultCount(codeSchemes.size());
             final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(codeSchemes);
@@ -103,7 +160,8 @@ public class CodeSchemeResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeScheme(@ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeId") final String codeSchemeId,
                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand)));
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME,
+            expand)));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeSchemeId);
         if (codeScheme != null) {
             return Response.ok(codeScheme).build();

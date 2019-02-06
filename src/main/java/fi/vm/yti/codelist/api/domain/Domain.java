@@ -54,6 +54,7 @@ public interface Domain {
                                       final String language,
                                       final String searchTerm,
                                       final boolean searchCodes,
+                                      final boolean searchExtensions,
                                       final List<String> statuses,
                                       final List<String> infoDomains,
                                       final String extensionPropertyType,

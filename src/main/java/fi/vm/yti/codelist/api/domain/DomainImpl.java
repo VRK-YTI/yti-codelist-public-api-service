@@ -261,6 +261,7 @@ public class DomainImpl implements Domain {
             language,
             null,
             false,
+            false,
             null,
             null,
             null,
@@ -280,6 +281,7 @@ public class DomainImpl implements Domain {
             null,
             language,
             null,
+            false,
             false,
             null,
             null,
@@ -324,6 +326,44 @@ public class DomainImpl implements Domain {
         return codeSchemeUuids;
     }
 
+    private Set<String> getCodeSchemesMatchingExtensions(final String searchTerm) {
+        final Set<String> codeSchemeUuids = new HashSet<>();
+        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
+        if (exists) {
+            final ObjectMapper mapper = new ObjectMapper();
+            registerModulesToMapper(mapper);
+            final SearchRequestBuilder searchRequest = client
+                .prepareSearch(ELASTIC_INDEX_EXTENSION)
+                .setTypes(ELASTIC_TYPE_EXTENSION);
+            final BoolQueryBuilder builder = boolQuery();
+            if (searchTerm != null) {
+                if (searchTerm != null && !searchTerm.isEmpty()) {
+                    builder.should(prefixQuery("codeValue",
+                        searchTerm.toLowerCase()));
+                    builder.should(nestedQuery("prefLabel",
+                        multiMatchQuery(searchTerm.toLowerCase() + "*",
+                            "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX),
+                        ScoreMode.None));
+                }
+                builder.minimumShouldMatch(1);
+            }
+            searchRequest.setQuery(builder);
+            final SearchResponse response = searchRequest.execute().actionGet();
+            response.getHits().forEach(hit -> {
+                try {
+                    codeSchemeUuids.add(mapper.readValue(hit.getSourceAsString(),
+                        ExtensionDTO.class).getParentCodeScheme().getId().toString().toLowerCase());
+                } catch (final IOException e) {
+                    LOG.error("getCodeSchemesMatchingExtensions reading value from JSON string failed: " + hit.getSourceAsString(),
+                        e);
+                    throw new JsonParsingException(ERR_MSG_USER_406);
+                }
+            });
+            return codeSchemeUuids;
+        }
+        return codeSchemeUuids;
+    }
+
     public Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
                                              final Integer from,
                                              final String sortMode,
@@ -336,6 +376,7 @@ public class DomainImpl implements Domain {
                                              final String language,
                                              final String searchTerm,
                                              final boolean searchCodes,
+                                             final boolean searchExtensions,
                                              final List<String> statuses,
                                              final List<String> infoDomains,
                                              final String extensionPropertyType,
@@ -345,6 +386,9 @@ public class DomainImpl implements Domain {
         final Set<String> codeSchemeUuids = new HashSet<>();
         if (searchCodes) {
             codeSchemeUuids.addAll(getCodeSchemesMatchingCodes(searchTerm));
+        }
+        if (searchExtensions) {
+            codeSchemeUuids.addAll(getCodeSchemesMatchingExtensions(searchTerm));
         }
         final Set<CodeSchemeDTO> codeSchemes = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
