@@ -326,7 +326,7 @@ public class DomainImpl implements Domain {
         return codeSchemeUuids;
     }
 
-    private Set<String> getCodeSchemesMatchingExtensions(final String searchTerm) {
+    private Set<String> getCodeSchemesMatchingExtensions(final String searchTerm, final String extensionPropertyType) {
         final Set<String> codeSchemeUuids = new HashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
         if (exists) {
@@ -345,8 +345,13 @@ public class DomainImpl implements Domain {
                             "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX),
                         ScoreMode.None));
                 }
-                builder.minimumShouldMatch(1);
+
             }
+            if (extensionPropertyType != null) {
+                builder.should(prefixQuery("propertyType.localName",
+                    searchTerm.toLowerCase()));
+            }
+            builder.minimumShouldMatch(1);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             response.getHits().forEach(hit -> {
@@ -388,7 +393,8 @@ public class DomainImpl implements Domain {
             codeSchemeUuids.addAll(getCodeSchemesMatchingCodes(searchTerm));
         }
         if (searchExtensions) {
-            codeSchemeUuids.addAll(getCodeSchemesMatchingExtensions(searchTerm));
+            codeSchemeUuids.addAll(getCodeSchemesMatchingExtensions(searchTerm,
+                extensionPropertyType));
         }
         final Set<CodeSchemeDTO> codeSchemes = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
