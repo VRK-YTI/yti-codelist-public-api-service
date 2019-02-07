@@ -337,21 +337,22 @@ public class DomainImpl implements Domain {
                 .setTypes(ELASTIC_TYPE_EXTENSION);
             final BoolQueryBuilder builder = boolQuery();
             if (searchTerm != null) {
+                final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 if (searchTerm != null && !searchTerm.isEmpty()) {
-                    builder.should(prefixQuery("codeValue",
+                    boolQueryBuilder.should(prefixQuery("codeValue",
                         searchTerm.toLowerCase()));
-                    builder.should(nestedQuery("prefLabel",
+                    boolQueryBuilder.should(nestedQuery("prefLabel",
                         multiMatchQuery(searchTerm.toLowerCase() + "*",
                             "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX),
                         ScoreMode.None));
                 }
-
+                boolQueryBuilder.minimumShouldMatch(1);
+                builder.must(boolQueryBuilder);
             }
             if (extensionPropertyType != null) {
-                builder.should(prefixQuery("propertyType.localName",
+                builder.must(matchQuery("propertyType.localName",
                     extensionPropertyType));
             }
-            builder.minimumShouldMatch(1);
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
             response.getHits().forEach(hit -> {
