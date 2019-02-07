@@ -349,7 +349,7 @@ public class DomainImpl implements Domain {
             }
             if (extensionPropertyType != null) {
                 builder.should(prefixQuery("propertyType.localName",
-                    searchTerm.toLowerCase()));
+                    extensionPropertyType));
             }
             builder.minimumShouldMatch(1);
             searchRequest.setQuery(builder);
