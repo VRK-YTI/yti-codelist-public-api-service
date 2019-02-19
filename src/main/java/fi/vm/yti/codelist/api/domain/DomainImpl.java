@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -45,6 +46,8 @@ import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import fi.vm.yti.codelist.common.dto.MemberDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
 import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
+import fi.vm.yti.codelist.common.dto.SearchHitDTO;
+import fi.vm.yti.codelist.common.dto.SearchResultWithMetaDataDTO;
 import fi.vm.yti.codelist.common.dto.ValueTypeDTO;
 import fi.vm.yti.codelist.common.model.Status;
 import static fi.vm.yti.codelist.api.exception.ErrorConstants.ERR_MSG_USER_406;
@@ -290,7 +293,7 @@ public class DomainImpl implements Domain {
             null);
     }
 
-    private Set<String> getCodeSchemesMatchingCodes(final String searchTerm) {
+    private SearchResultWithMetaDataDTO getCodeSchemesMatchingCodes(final String searchTerm, final SearchResultWithMetaDataDTO result) {
         final Set<String> codeSchemeUuids = new HashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
         if (exists) {
@@ -313,20 +316,28 @@ public class DomainImpl implements Domain {
             final SearchResponse response = searchRequest.execute().actionGet();
             response.getHits().forEach(hit -> {
                 try {
-                    codeSchemeUuids.add(mapper.readValue(hit.getSourceAsString(),
-                        CodeDTO.class).getCodeScheme().getId().toString().toLowerCase());
+                    CodeDTO codeDTO = mapper.readValue(hit.getSourceAsString(),
+                        CodeDTO.class);
+                    String uuidOfTheCodeScheme = codeDTO.getCodeScheme().getId().toString().toLowerCase();
+                    populateSearchHits(codeSchemeUuids,
+                        result,
+                        codeDTO.getPrefLabel(),
+                        codeDTO.getUri(),
+                        uuidOfTheCodeScheme,
+                        SEARCH_HIT_TYPE_CODE);
                 } catch (final IOException e) {
                     LOG.error("getCodeSchemesMatchingCodes reading value from JSON string failed: " + hit.getSourceAsString(),
                         e);
                     throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             });
-            return codeSchemeUuids;
+            result.getResults().addAll(codeSchemeUuids);
+            return result;
         }
-        return codeSchemeUuids;
+        return result;
     }
 
-    private Set<String> getCodeSchemesMatchingExtensions(final String searchTerm, final String extensionPropertyType) {
+    private SearchResultWithMetaDataDTO getCodeSchemesMatchingExtensions(final String searchTerm, final String extensionPropertyType, final SearchResultWithMetaDataDTO result) {
         final Set<String> codeSchemeUuids = new HashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
         if (exists) {
@@ -357,17 +368,49 @@ public class DomainImpl implements Domain {
             final SearchResponse response = searchRequest.execute().actionGet();
             response.getHits().forEach(hit -> {
                 try {
-                    codeSchemeUuids.add(mapper.readValue(hit.getSourceAsString(),
-                        ExtensionDTO.class).getParentCodeScheme().getId().toString().toLowerCase());
+                    ExtensionDTO extensionDTO = mapper.readValue(hit.getSourceAsString(),
+                        ExtensionDTO.class);
+                    String uuidOfTheCodeScheme = extensionDTO.getParentCodeScheme().getId().toString().toLowerCase();
+                    codeSchemeUuids.add(uuidOfTheCodeScheme);
+                    populateSearchHits(codeSchemeUuids,
+                        result,
+                        extensionDTO.getPrefLabel(),
+                        extensionDTO.getUri(),
+                        uuidOfTheCodeScheme,
+                        SEARCH_HIT_TYPE_EXTENSION);
                 } catch (final IOException e) {
                     LOG.error("getCodeSchemesMatchingExtensions reading value from JSON string failed: " + hit.getSourceAsString(),
                         e);
                     throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             });
-            return codeSchemeUuids;
+            result.getResults().addAll(codeSchemeUuids);
+            return result;
         }
-        return codeSchemeUuids;
+        return result;
+    }
+
+    private void populateSearchHits(final Set<String> codeSchemeUuids, final SearchResultWithMetaDataDTO result, final Map<String, String> prefLabel, final String uri, final String uuidOfTheCodeScheme, final String typeOfHit) {
+        codeSchemeUuids.add(uuidOfTheCodeScheme);
+        SearchHitDTO searchHit = new SearchHitDTO();
+        searchHit.setType(typeOfHit);
+        searchHit.setPrefLabel(prefLabel);
+        searchHit.setUri(uri);
+
+        Map<String, ArrayList<SearchHitDTO>> searchHits = result.getSearchHitDTOMap();
+        if (searchHits.containsKey(uuidOfTheCodeScheme)) {
+            ArrayList<SearchHitDTO> searchHitList = searchHits.get(uuidOfTheCodeScheme);
+            searchHitList.add(searchHit);
+            searchHits.put(uuidOfTheCodeScheme,
+                searchHitList);
+        } else {
+            ArrayList<SearchHitDTO> searchHitList = new ArrayList<>();
+            searchHitList.add(searchHit);
+            searchHits.put(uuidOfTheCodeScheme,
+                searchHitList);
+        }
+        result.getSearchHitDTOMap().put(uuidOfTheCodeScheme,
+            searchHits.get(uuidOfTheCodeScheme));
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
@@ -390,13 +433,21 @@ public class DomainImpl implements Domain {
                                              final Meta meta) {
         validatePageSize(pageSize);
         final Set<String> codeSchemeUuids = new HashSet<>();
-        if (searchCodes) {
-            codeSchemeUuids.addAll(getCodeSchemesMatchingCodes(searchTerm));
+        SearchResultWithMetaDataDTO searchResultWithMetaData = new SearchResultWithMetaDataDTO();
+
+        if (searchExtensions && searchTerm != null) {
+            searchResultWithMetaData = getCodeSchemesMatchingExtensions(searchTerm,
+                extensionPropertyType,
+                searchResultWithMetaData);
+            codeSchemeUuids.addAll(searchResultWithMetaData.getResults());
         }
-        if (searchExtensions) {
-            codeSchemeUuids.addAll(getCodeSchemesMatchingExtensions(searchTerm,
-                extensionPropertyType));
+
+        if (searchCodes && searchTerm != null) {
+            searchResultWithMetaData = getCodeSchemesMatchingCodes(searchTerm,
+                searchResultWithMetaData);
+            codeSchemeUuids.addAll(searchResultWithMetaData.getResults());
         }
+
         final Set<CodeSchemeDTO> codeSchemes = new LinkedHashSet<>();
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
         if (exists) {
@@ -533,6 +584,10 @@ public class DomainImpl implements Domain {
                     throw new JsonParsingException(ERR_MSG_USER_406);
                 }
             });
+        }
+
+        for (CodeSchemeDTO cs : codeSchemes) {
+            cs.setSearchHits(searchResultWithMetaData.getSearchHitDTOMap().get(cs.getId().toString().toLowerCase()));
         }
         return codeSchemes;
     }
