@@ -568,7 +568,7 @@ public class DomainImpl implements Domain {
                     boolQueryBuilder.should(unfinishedQueryBuilder);
                 }
                 boolQueryBuilder.minimumShouldMatch(1);
-                builder.must(boolQueryBuilder);
+                builder.must(boolQueryBuilder); // TODO remove this just testing GIT pre-push hook
             }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
