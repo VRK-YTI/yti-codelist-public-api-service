@@ -3,6 +3,7 @@ package fi.vm.yti.codelist.api.domain;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -61,6 +62,7 @@ public class DomainImpl implements Domain {
 
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
     private static final int MAX_SIZE = 50000;
+    private static final int MAX_DEEP_SEARCH_SIZE = 31; // FOR SOME REASON 31 RETURNS 30 RESULTS, 10 RETURNS 9 ETC.
     private static final String TEXT_ANALYZER = "text_analyzer";
     private static final String BOOSTSTATUS = "boostStatus";
     private static final Set<String> sortLanguages = new HashSet<>(Arrays.asList(LANGUAGE_CODE_FI,
@@ -302,6 +304,7 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_CODE)
                 .setTypes(ELASTIC_TYPE_CODE);
+            searchRequest.setSize(MAX_DEEP_SEARCH_SIZE);
             final BoolQueryBuilder builder = boolQuery();
             if (searchTerm != null) {
                 builder.should(prefixQuery("codeValue",
@@ -346,6 +349,7 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_EXTENSION)
                 .setTypes(ELASTIC_TYPE_EXTENSION);
+            searchRequest.setSize(MAX_DEEP_SEARCH_SIZE);
             final BoolQueryBuilder builder = boolQuery();
             if (searchTerm != null) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
@@ -568,7 +572,7 @@ public class DomainImpl implements Domain {
                     boolQueryBuilder.should(unfinishedQueryBuilder);
                 }
                 boolQueryBuilder.minimumShouldMatch(1);
-                builder.must(boolQueryBuilder); // TODO remove this just testing GIT pre-push hook
+                builder.must(boolQueryBuilder);
             }
             searchRequest.setQuery(builder);
             final SearchResponse response = searchRequest.execute().actionGet();
@@ -587,7 +591,11 @@ public class DomainImpl implements Domain {
         }
 
         for (CodeSchemeDTO cs : codeSchemes) {
-            cs.setSearchHits(searchResultWithMetaData.getSearchHitDTOMap().get(cs.getId().toString().toLowerCase()));
+            ArrayList<SearchHitDTO> searchHits = searchResultWithMetaData.getSearchHitDTOMap().get(cs.getId().toString().toLowerCase());
+            if (language != null) {
+                searchHits.sort(Comparator.comparing(searchHitDTO -> searchHitDTO.getPrefLabel().get(language), Comparator.nullsLast(Comparator.naturalOrder())));
+            }
+            cs.setSearchHits(searchHits);
         }
         return codeSchemes;
     }
