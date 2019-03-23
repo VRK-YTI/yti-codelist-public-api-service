@@ -592,7 +592,7 @@ public class DomainImpl implements Domain {
 
         for (CodeSchemeDTO cs : codeSchemes) {
             ArrayList<SearchHitDTO> searchHits = searchResultWithMetaData.getSearchHitDTOMap().get(cs.getId().toString().toLowerCase());
-            if (language != null) {
+            if (language != null && searchHits != null) {
                 searchHits.sort(Comparator.comparing(searchHitDTO -> searchHitDTO.getPrefLabel().get(language), Comparator.nullsLast(Comparator.naturalOrder())));
             }
             cs.setSearchHits(searchHits);
