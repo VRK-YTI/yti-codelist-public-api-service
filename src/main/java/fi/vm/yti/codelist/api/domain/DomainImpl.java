@@ -326,6 +326,9 @@ public class DomainImpl implements Domain {
                         result,
                         codeDTO.getPrefLabel(),
                         codeDTO.getUri(),
+                        codeDTO.getCodeValue(),
+                        codeDTO.getCodeScheme().getCodeValue(),
+                        codeDTO.getCodeScheme().getCodeRegistry().getCodeValue(),
                         uuidOfTheCodeScheme,
                         SEARCH_HIT_TYPE_CODE);
                 } catch (final IOException e) {
@@ -380,6 +383,9 @@ public class DomainImpl implements Domain {
                         result,
                         extensionDTO.getPrefLabel(),
                         extensionDTO.getUri(),
+                        extensionDTO.getCodeValue(),
+                        extensionDTO.getParentCodeScheme().getCodeValue(),
+                        extensionDTO.getParentCodeScheme().getCodeRegistry().getCodeValue(),
                         uuidOfTheCodeScheme,
                         SEARCH_HIT_TYPE_EXTENSION);
                 } catch (final IOException e) {
@@ -394,12 +400,15 @@ public class DomainImpl implements Domain {
         return result;
     }
 
-    private void populateSearchHits(final Set<String> codeSchemeUuids, final SearchResultWithMetaDataDTO result, final Map<String, String> prefLabel, final String uri, final String uuidOfTheCodeScheme, final String typeOfHit) {
+    private void populateSearchHits(final Set<String> codeSchemeUuids, final SearchResultWithMetaDataDTO result, final Map<String, String> prefLabel, final String uri, final String entityCodeValue, final String codeSchemeCodeValue, final String codeRegistryCodeValue, final String uuidOfTheCodeScheme, final String typeOfHit) {
         codeSchemeUuids.add(uuidOfTheCodeScheme);
         SearchHitDTO searchHit = new SearchHitDTO();
         searchHit.setType(typeOfHit);
         searchHit.setPrefLabel(prefLabel);
         searchHit.setUri(uri);
+        searchHit.setEntityCodeValue(entityCodeValue);
+        searchHit.setCodeSchemeCodeValue(codeSchemeCodeValue);
+        searchHit.setCodeRegistryCodeValue(codeRegistryCodeValue);
 
         Map<String, ArrayList<SearchHitDTO>> searchHits = result.getSearchHitDTOMap();
         if (searchHits.containsKey(uuidOfTheCodeScheme)) {
