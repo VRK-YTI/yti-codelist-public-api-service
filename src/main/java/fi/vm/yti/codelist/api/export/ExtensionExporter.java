@@ -33,7 +33,6 @@ public class ExtensionExporter extends BaseExporter {
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
         appendValue(csv, csvSeparator, CONTENT_HEADER_PROPERTYTYPE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODESCHEMES);
@@ -44,7 +43,6 @@ public class ExtensionExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
         for (final ExtensionDTO extension : extensions) {
             appendValue(csv, csvSeparator, extension.getCodeValue());
-            appendValue(csv, csvSeparator, extension.getId().toString());
             appendValue(csv, csvSeparator, extension.getStatus());
             appendValue(csv, csvSeparator, extension.getPropertyType().getLocalName());
             appendValue(csv, csvSeparator, getCodeSchemeUris(extension.getCodeSchemes()));
@@ -92,7 +90,6 @@ public class ExtensionExporter extends BaseExporter {
         final Sheet sheet = workbook.createSheet(sheetName);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STATUS);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PROPERTYTYPE);
@@ -109,7 +106,6 @@ public class ExtensionExporter extends BaseExporter {
         for (final ExtensionDTO extension : extensions) {
             final Row row = sheet.createRow(++i);
             int k = 0;
-            row.createCell(k++).setCellValue(checkEmptyValue(extension.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(extension.getCodeValue()));
             row.createCell(k++).setCellValue(checkEmptyValue(extension.getStatus()));
             row.createCell(k++).setCellValue(checkEmptyValue(extension.getPropertyType().getLocalName()));

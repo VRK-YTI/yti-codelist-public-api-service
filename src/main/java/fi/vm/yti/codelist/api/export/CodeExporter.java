@@ -23,7 +23,6 @@ public class CodeExporter extends BaseExporter {
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_BROADER);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
@@ -41,7 +40,6 @@ public class CodeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_HREF, true);
         for (final CodeDTO code : codes) {
             appendValue(csv, csvSeparator, code.getCodeValue());
-            appendValue(csv, csvSeparator, code.getId().toString());
             appendValue(csv, csvSeparator, code.getOrder() != null ? code.getOrder().toString() : flatInt.toString());
             appendValue(csv, csvSeparator, code.getBroaderCode() != null ? code.getBroaderCode().getCodeValue() : "");
             appendValue(csv, csvSeparator, code.getStatus());
@@ -78,7 +76,6 @@ public class CodeExporter extends BaseExporter {
         final Sheet sheet = workbook.createSheet(sheetName);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_BROADER);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STATUS);
@@ -106,7 +103,6 @@ public class CodeExporter extends BaseExporter {
         for (final CodeDTO code : codes) {
             final Row row = sheet.createRow(i++);
             int k = 0;
-            row.createCell(k++).setCellValue(code.getId().toString());
             row.createCell(k++).setCellValue(code.getCodeValue());
             row.createCell(k++).setCellValue(code.getBroaderCode() != null ? code.getBroaderCode().getCodeValue() : "");
             row.createCell(k++).setCellValue(code.getStatus());

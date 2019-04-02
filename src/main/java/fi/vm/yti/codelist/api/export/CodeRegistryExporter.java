@@ -21,7 +21,6 @@ public class CodeRegistryExporter extends BaseExporter {
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
@@ -29,7 +28,6 @@ public class CodeRegistryExporter extends BaseExporter {
         csv.append("\n");
         for (final CodeRegistryDTO codeRegistry : registries) {
             appendValue(csv, csvSeparator, codeRegistry.getCodeValue());
-            appendValue(csv, csvSeparator, codeRegistry.getId().toString());
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, codeRegistry.getPrefLabel().get(language)));
             descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeRegistry.getDescription().get(language)));
             appendValue(csv, csvSeparator, codeRegistry.getCreated() != null ? formatDateWithSeconds(codeRegistry.getCreated()) : "");
@@ -47,7 +45,6 @@ public class CodeRegistryExporter extends BaseExporter {
         final Sheet sheet = workbook.createSheet(EXCEL_SHEET_CODEREGISTRIES);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
         for (final String language : prefLabelLanguages) {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
@@ -61,7 +58,6 @@ public class CodeRegistryExporter extends BaseExporter {
         for (final CodeRegistryDTO codeRegistry : registries) {
             final Row row = sheet.createRow(i++);
             int k = 0;
-            row.createCell(k++).setCellValue(checkEmptyValue(codeRegistry.getId().toString()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeRegistry.getCodeValue()));
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(codeRegistry.getPrefLabel().get(language));
