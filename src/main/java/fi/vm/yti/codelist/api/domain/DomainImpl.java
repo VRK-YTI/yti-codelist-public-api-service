@@ -62,7 +62,7 @@ public class DomainImpl implements Domain {
 
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
     private static final int MAX_SIZE = 50000;
-    private static final int MAX_DEEP_SEARCH_SIZE = 31; // FOR SOME REASON 31 RETURNS 30 RESULTS, 10 RETURNS 9 ETC.
+    private static final int MAX_DEEP_SEARCH_SIZE = 3100; // FOR SOME REASON 31 RETURNS 30 RESULTS, 10 RETURNS 9 ETC.
     private static final String TEXT_ANALYZER = "text_analyzer";
     private static final String BOOSTSTATUS = "boostStatus";
     private static final Set<String> sortLanguages = new HashSet<>(Arrays.asList(LANGUAGE_CODE_FI,
