@@ -34,14 +34,14 @@ public class MemberExporter extends BaseExporter {
             valueTypes.forEach(valueType -> appendValue(csv, csvSeparator, valueType.getLocalName().toUpperCase()));
         }
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_RELATION);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER, true);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_SEQUENCE_ID, true);
         for (final MemberDTO member : members) {
             if (valueTypes != null && !valueTypes.isEmpty()) {
                 valueTypes.forEach(valueType -> {
@@ -54,14 +54,14 @@ public class MemberExporter extends BaseExporter {
                 });
             }
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getPrefLabel().get(language)));
-            appendValue(csv, csvSeparator, member.getId().toString());
             appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getUri() : "");
             appendValue(csv, csvSeparator, resolveRelatedMemberIdentifier(members, member.getRelatedMember()));
             appendValue(csv, csvSeparator, member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
             appendValue(csv, csvSeparator, member.getEndDate() != null ? formatDateWithISO8601(member.getEndDate()) : "");
             appendValue(csv, csvSeparator, member.getCreated() != null ? formatDateWithSeconds(member.getCreated()) : "");
             appendValue(csv, csvSeparator, member.getModified() != null ? formatDateWithSeconds(member.getModified()) : "");
-            appendValue(csv, csvSeparator, member.getOrder().toString(), true);
+            appendValue(csv, csvSeparator, member.getOrder().toString());
+            appendValue(csv, csvSeparator, member.getSequenceId().toString(), true);
         }
         return csv.toString();
     }
@@ -118,7 +118,6 @@ public class MemberExporter extends BaseExporter {
 
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ID);
         final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
         if (valueTypes != null && !valueTypes.isEmpty()) {
             for (final ValueTypeDTO valueType : valueTypes) {
@@ -134,12 +133,12 @@ public class MemberExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
-        rowhead.createCell(j).setCellValue(CONTENT_HEADER_ORDER);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ORDER);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_SEQUENCE_ID);
         int i = 1;
         for (final MemberDTO member : members) {
             final Row row = sheet.createRow(i++);
             int k = 0;
-            row.createCell(k++).setCellValue(checkEmptyValue(member.getId().toString()));
             if (valueTypes != null && !valueTypes.isEmpty()) {
                 for (final ValueTypeDTO valueType : valueTypes) {
                     final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
@@ -163,7 +162,8 @@ public class MemberExporter extends BaseExporter {
             row.createCell(k++).setCellValue(member.getEndDate() != null ? formatDateWithISO8601(member.getEndDate()) : "");
             row.createCell(k++).setCellValue(member.getCreated() != null ? formatDateWithSeconds(member.getCreated()) : "");
             row.createCell(k++).setCellValue(member.getModified() != null ? formatDateWithSeconds(member.getModified()) : "");
-            row.createCell(k).setCellValue(checkEmptyValue(member.getOrder() != null ? member.getOrder().toString() : ""));
+            row.createCell(k++).setCellValue(checkEmptyValue(member.getOrder() != null ? member.getOrder().toString() : ""));
+            row.createCell(k).setCellValue(checkEmptyValue(member.getSequenceId() != null ? member.getSequenceId().toString() : ""));
         }
     }
 
