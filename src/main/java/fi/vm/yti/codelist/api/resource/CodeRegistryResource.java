@@ -403,7 +403,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
         if (extension != null) {
-            final MemberDTO member = domain.getMember(memberId);
+            final MemberDTO member = domain.getMember(memberId, extensionCodeValue);
             if (member != null) {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand)));
                 return Response.ok(member).build();

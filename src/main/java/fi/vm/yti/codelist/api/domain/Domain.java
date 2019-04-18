@@ -145,7 +145,7 @@ public interface Domain {
                               final Date after,
                               final Meta meta);
 
-    MemberDTO getMember(final String memberId);
+    MemberDTO getMember(final String memberId, final String extensionCodeValue);
 
     Set<ResourceDTO> getContainers(final Integer pageSize,
                                    final Integer from,

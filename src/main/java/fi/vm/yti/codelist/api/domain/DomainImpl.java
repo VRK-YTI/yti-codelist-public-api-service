@@ -1310,7 +1310,13 @@ public class DomainImpl implements Domain {
         return members;
     }
 
-    public MemberDTO getMember(final String memberId) {
+    public MemberDTO getMember(final String memberId, final String extensionCodeValue) {
+        boolean memberIdIsUUID = true;
+        try {
+            UUID theUuid = UUID.fromString(memberId);
+        } catch (Exception e) {
+            memberIdIsUUID = false;
+        }
         final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
         if (exists) {
             final ObjectMapper mapper = new ObjectMapper();
@@ -1318,10 +1324,20 @@ public class DomainImpl implements Domain {
             final SearchRequestBuilder searchRequest = client
                 .prepareSearch(ELASTIC_INDEX_MEMBER)
                 .setTypes(ELASTIC_TYPE_MEMBER);
-            final BoolQueryBuilder builder = boolQuery()
-                .must(matchQuery("id",
-                    memberId.toLowerCase()));
-            searchRequest.setQuery(builder);
+            if (memberIdIsUUID) {
+                final BoolQueryBuilder builder = boolQuery()
+                    .must(matchQuery("id",
+                        memberId.toLowerCase()));
+                searchRequest.setQuery(builder);
+            } else {
+                final BoolQueryBuilder builder = boolQuery()
+                    .must(matchQuery("sequenceId",
+                        memberId))
+                    .must(matchQuery("extension.codeValue",
+                        extensionCodeValue));
+                searchRequest.setQuery(builder);
+            }
+
             final SearchResponse response = searchRequest.execute().actionGet();
             if (response.getHits().getTotalHits() > 0) {
                 final SearchHit hit = response.getHits().getAt(0);

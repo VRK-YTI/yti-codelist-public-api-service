@@ -80,10 +80,11 @@ public class MemberResource extends AbstractBaseResource {
     @ApiOperation(value = "Return one specific Member.", response = CodeSchemeDTO.class)
     @ApiResponse(code = 200, message = "Returns one specific Member in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getMember(@ApiParam(value = "Member UUID.", required = true) @PathParam("memberId") final String memberId,
+    public Response getMember(@ApiParam(value = "Member UUID or sequenceId depending on the context of the call.", required = true) @PathParam("memberId") final String memberId,
+                              @ApiParam(value = "Member's extension's codeValue", required = true) @QueryParam("extensionCodeValue") final String extensionCodeValue,
                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand)));
-        final MemberDTO member = domain.getMember(memberId);
+        final MemberDTO member = domain.getMember(memberId, extensionCodeValue);
         if (member != null) {
             return Response.ok(member).build();
         } else {

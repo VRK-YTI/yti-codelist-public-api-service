@@ -291,7 +291,7 @@ public class UriResolverResource extends AbstractBaseResource {
                                    final String memberId) {
         final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
         if (extension != null) {
-            final MemberDTO member = domain.getMember(memberId);
+            final MemberDTO member = domain.getMember(memberId, extensionCodeValue);
             if (member == null) {
                 throw new NotFoundException();
             }
