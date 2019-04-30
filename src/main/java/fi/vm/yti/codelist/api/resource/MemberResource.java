@@ -54,7 +54,8 @@ public class MemberResource extends AbstractBaseResource {
                                @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                               @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
             final Set<MemberDTO> members = domain.getMembers(pageSize, from, Meta.parseAfterFromString(after), null);
             final String csv = memberExporter.createCsv(null, members);
@@ -65,7 +66,7 @@ public class MemberResource extends AbstractBaseResource {
             return streamExcelMembersOutput(workbook);
         } else {
             final Meta meta = new Meta(200, pageSize, from, after);
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand)));
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand), pretty));
             final Set<MemberDTO> members = domain.getMembers(pageSize, from, meta.getAfter(), meta);
             meta.setResultCount(members.size());
             final ResponseWrapper<MemberDTO> wrapper = new ResponseWrapper<>();
@@ -82,8 +83,9 @@ public class MemberResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getMember(@ApiParam(value = "Member UUID or sequenceId depending on the context of the call.", required = true) @PathParam("memberId") final String memberId,
                               @ApiParam(value = "Member's extension's codeValue", required = true) @QueryParam("extensionCodeValue") final String extensionCodeValue,
-                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand)));
+                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                              @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand), pretty));
         final MemberDTO member = domain.getMember(memberId, extensionCodeValue);
         if (member != null) {
             return Response.ok(member).build();

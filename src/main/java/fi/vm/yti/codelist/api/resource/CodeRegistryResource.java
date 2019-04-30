@@ -18,8 +18,6 @@ import javax.ws.rs.core.Response;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.jaxrs.annotation.JacksonFeatures;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.api.ApiUtils;
@@ -92,7 +90,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                       @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                       @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
-                                      @ApiParam(value = "Organizations filtering parameter, results will be registries belonging to these organizations") @QueryParam("organizations") final String organizationsCsv) {
+                                      @ApiParam(value = "Organizations filtering parameter, results will be registries belonging to these organizations") @QueryParam("organizations") final String organizationsCsv,
+                                      @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final List<String> organizations = organizationsCsv == null ? null : asList(organizationsCsv.split(","));
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
             final Set<CodeRegistryDTO> codeRegistries = domain.getCodeRegistries(pageSize,
@@ -121,7 +120,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 from,
                 after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY,
-                expand)));
+                expand), pretty));
             final Set<CodeRegistryDTO> codeRegistries = domain.getCodeRegistries(pageSize,
                 from,
                 codeRegistryCodeValue,
@@ -146,9 +145,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                     @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                                     @ApiParam(value = "Language code for sorting results.") @QueryParam("language") @DefaultValue("fi") final String language,
                                     @ApiParam(value = "Boolean that controls whether to embed CodeSchemes in payload or not.") @QueryParam("embedCodeSchemes") @DefaultValue("false") final Boolean embedCodeSchemes,
-                                    @ApiParam(value = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv) {
+                                    @ApiParam(value = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv,
+                                    @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY,
-            expand)));
+            expand), pretty));
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
@@ -184,7 +184,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                                                @ApiParam(value = "Sort mode for response values.") @QueryParam("sortMode") @DefaultValue("default") final String sortMode,
-                                               @ApiParam(value = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv) {
+                                               @ApiParam(value = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv,
+                                               @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final Meta meta = new Meta(200,
             pageSize,
             from,
@@ -239,7 +240,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 return streamExcelCodeSchemesOutput(workbook);
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME,
-                    expand)));
+                    expand), pretty));
                 final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize,
                     from,
                     sortMode,
@@ -270,30 +271,6 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     @GET
-    @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/prettyPrint")
-    @ApiOperation(value = "Return one specific CodeScheme.", response = CodeSchemeDTO.class)
-    @ApiResponse(code = 200, message = "Returns one specific CodeScheme in JSON format.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN + ";charset=utf-8" })
-    @JacksonFeatures(serializationEnable = { SerializationFeature.INDENT_OUTPUT })
-    public Response getCodeRegistryCodeSchemePrettyPrint(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
-                                                         @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
-                                                         @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
-                                                         @ApiParam(value = "Download JSON as a file.") @QueryParam("downloadFile") @DefaultValue("false") final boolean downloadFile,
-                                                         @ApiParam(value = "Boolean that controls whether to embed Codes in the payload or not.") @QueryParam("embedCodes") @DefaultValue("false") final Boolean embedCodes,
-                                                         @ApiParam(value = "Boolean that controls whether to embed Extensions in the payload or not.") @QueryParam("embedExtensions") @DefaultValue("false") final Boolean embedExtensions,
-                                                         @ApiParam(value = "Boolean that controls whether to embed embedMembers in the payload or not.") @QueryParam("embedMembers") @DefaultValue("false") final Boolean embedMembers) {
-        return getCodeRegistryCodeScheme(codeRegistryCodeValue,
-            codeSchemeCodeValue,
-            expand,
-            format,
-            downloadFile,
-            embedCodes,
-            embedExtensions,
-            embedMembers);
-    }
-
-    @GET
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}")
     @ApiOperation(value = "Return one specific CodeScheme.", response = CodeSchemeDTO.class)
     @ApiResponse(code = 200, message = "Returns one specific CodeScheme in JSON format.")
@@ -305,9 +282,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                               @ApiParam(value = "Download JSON as a file.") @QueryParam("downloadFile") @DefaultValue("false") final boolean downloadFile,
                                               @ApiParam(value = "Boolean that controls whether to embed Codes in the payload or not.") @QueryParam("embedCodes") @DefaultValue("false") final Boolean embedCodes,
                                               @ApiParam(value = "Boolean that controls whether to embed Extensions in the payload or not.") @QueryParam("embedExtensions") @DefaultValue("false") final Boolean embedExtensions,
-                                              @ApiParam(value = "Boolean that controls whether to embed embedMembers in the payload or not.") @QueryParam("embedMembers") @DefaultValue("false") final Boolean embedMembers) {
+                                              @ApiParam(value = "Boolean that controls whether to embed embedMembers in the payload or not.") @QueryParam("embedMembers") @DefaultValue("false") final Boolean embedMembers,
+                                              @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME,
-            expand)));
+            expand), pretty));
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
             if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
@@ -376,7 +354,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                    @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                    @ApiParam(value = "Language code for sorting results.") @QueryParam("language") final String language,
-                                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                                   @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(),
             pageSize,
             from,
@@ -418,7 +397,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 return streamExcelCodesOutput(workbook);
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE,
-                    expand)));
+                    expand), pretty));
                 final Set<CodeDTO> codes = domain.getCodes(pageSize,
                     from,
                     codeRegistryCodeValue,
@@ -463,7 +442,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                         @ApiParam(value = "Extension PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                                                         @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                         @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                                        @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                                        @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                                        @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(),
             pageSize,
             from,
@@ -492,7 +472,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 return streamExcelExtensionsOutput(workbook);
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION,
-                    expand)));
+                    expand), pretty));
                 final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize,
                     from,
                     prefLabel,
@@ -529,7 +509,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                        @ApiParam(value = "Extension CodeValue.", required = true) @PathParam("extensionCodeValue") final String extensionCodeValue,
                                                        @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                        @ApiParam(value = "Is this a Cross-Refence List or not.") @QueryParam("crossreferencelist") @DefaultValue("false") final boolean exportAsSimplifiedCrossReferenceList,
-                                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                                       @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                                       @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue,
             codeSchemeCodeValue,
             extensionCodeValue);
@@ -550,7 +531,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 }
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION,
-                    expand)));
+                    expand), pretty));
                 return Response.ok(extension).build();
             }
         } else {
@@ -572,7 +553,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                               @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                               @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                               @ApiParam(value = "Is this a Cross-Refence List or not.") @QueryParam("crossreferencelist") @DefaultValue("false") final boolean exportAsSimplifiedCrossReferenceList,
-                                                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                                              @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
 
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(),
             pageSize,
@@ -607,7 +589,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 return streamExcelMembersOutput(workbook);
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER,
-                    expand)));
+                    expand), pretty));
                 final Set<MemberDTO> members = domain.getMembers(pageSize,
                     from,
                     extension,
@@ -642,7 +624,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                              @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                              @ApiParam(value = "Extension CodeValue.", required = true) @PathParam("extensionCodeValue") final String extensionCodeValue,
                                                              @ApiParam(value = "Member ID.", required = true) @PathParam("memberId") final String memberId,
-                                                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                                             @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue,
             codeSchemeCodeValue,
             extensionCodeValue);
@@ -651,7 +634,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 extensionCodeValue);
             if (member != null) {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER,
-                    expand)));
+                    expand), pretty));
                 return Response.ok(member).build();
             } else {
                 throw new NotFoundException();
@@ -672,7 +655,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                                 @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                                 @ApiParam(value = "Extension PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                                                                 @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                                                @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(),
             pageSize,
             from,
@@ -681,7 +665,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
             codeSchemeCodeValue);
         if (codeScheme != null) {
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE,
-                expand)));
+                expand), pretty));
             final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize,
                 from,
                 prefLabel,
@@ -716,9 +700,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
     public Response getCodeRegistryCodeSchemeCode(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                   @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                   @ApiParam(value = "Code code.", required = true) @PathParam("codeCodeValue") final String codeCodeValue,
-                                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                                  @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE,
-            expand)));
+            expand), pretty));
         final CodeDTO code = domain.getCode(codeRegistryCodeValue,
             codeSchemeCodeValue,
             codeCodeValue);
@@ -741,7 +726,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                          @ApiParam(value = "Code code.", required = true) @PathParam("codeCodeValue") final String codeCodeValue,
                                                          @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                          @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                                         @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(),
             pageSize,
             from,
@@ -771,7 +757,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 return streamExcelMembersOutput(workbook);
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER,
-                    expand)));
+                    expand), pretty));
                 final Set<MemberDTO> members = domain.getMembers(pageSize,
                     from,
                     code,
@@ -804,9 +790,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeSchemeVersions(@ApiParam(value = "CodeRegistry codevalue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                           @ApiParam(value = "CodeScheme codevalue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                          @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME,
-            expand)));
+            expand), pretty));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue,
             codeSchemeCodeValue);
         if (codeScheme == null) {
@@ -839,9 +826,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeSchemeVariants(@ApiParam(value = "CodeRegistry codevalue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                           @ApiParam(value = "CodeScheme codevalue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                          @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME,
-            expand)));
+            expand), pretty));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue,
             codeSchemeCodeValue);
 
@@ -874,9 +862,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeSchemeVariantMothers(@ApiParam(value = "CodeRegistry codevalue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                 @ApiParam(value = "CodeScheme codevalue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                                @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME,
-            expand)));
+            expand), pretty));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue,
             codeSchemeCodeValue);
 

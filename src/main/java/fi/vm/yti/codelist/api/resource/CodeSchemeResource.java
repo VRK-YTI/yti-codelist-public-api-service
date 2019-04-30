@@ -72,7 +72,8 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                                    @ApiParam(value = "Sort mode for response values.") @QueryParam("sortMode") @DefaultValue("default") final String sortMode,
                                    @ApiParam(value = "Organizations filtering parameter, results will be codeschemes belonging to these organizations") @QueryParam("organizations") final String organizationsCsv,
-                                   @ApiParam(value = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv) {
+                                   @ApiParam(value = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv,
+                                   @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final List<String> infoDomainsList = parseInfoDomains(infoDomain);
         final List<String> organizations = organizationsCsv == null ? null : asList(organizationsCsv.toLowerCase().split(","));
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
@@ -126,7 +127,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
                 from,
                 after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME,
-                expand)));
+                expand), pretty));
             final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize,
                 from,
                 sortMode,
@@ -159,9 +160,10 @@ public class CodeSchemeResource extends AbstractBaseResource {
     @ApiResponse(code = 200, message = "Returns one specific CodeScheme in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeScheme(@ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeId") final String codeSchemeId,
-                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                  @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME,
-            expand)));
+            expand), pretty));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeSchemeId);
         if (codeScheme != null) {
             return Response.ok(codeScheme).build();

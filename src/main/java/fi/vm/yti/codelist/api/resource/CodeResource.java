@@ -45,8 +45,9 @@ public class CodeResource extends AbstractBaseResource {
     @ApiResponse(code = 200, message = "Returns one specific Code in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCode(@ApiParam(value = "Code Id.", required = true) @PathParam("codeId") final String codeId,
-                            @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand)));
+                            @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                            @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand), pretty));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeId);
         if (codeScheme != null) {
             return Response.ok(codeScheme).build();

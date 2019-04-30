@@ -54,7 +54,8 @@ public class ValueTypeResource extends AbstractBaseResource {
                                   @ApiParam(value = "ValueType localName as string value.") @QueryParam("localName") final String localName,
                                   @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                   @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                  @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
             final Set<ValueTypeDTO> valueTypes = domain.getValueTypes(pageSize, from, localName, Meta.parseAfterFromString(after), null);
             final String csv = valueTypeExporter.createCsv(valueTypes);
@@ -65,7 +66,7 @@ public class ValueTypeResource extends AbstractBaseResource {
             return streamExcelValueTypesOutput(workbook);
         } else {
             final Meta meta = new Meta(200, pageSize, from, after);
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand)));
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand), pretty));
             final Set<ValueTypeDTO> valueTypes = domain.getValueTypes(pageSize, from, localName, meta.getAfter(), meta);
             meta.setResultCount(valueTypes.size());
             final ResponseWrapper<ValueTypeDTO> wrapper = new ResponseWrapper<>();
@@ -81,8 +82,9 @@ public class ValueTypeResource extends AbstractBaseResource {
     @ApiResponse(code = 200, message = "Returns one specific ValueType in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getValueType(@ApiParam(value = "ValueType ID.", required = true) @PathParam("valueTypeIdentifier") final String valueTypeIdentifier,
-                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand)));
+                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                 @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand), pretty));
         final ValueTypeDTO valueType = domain.getValueType(valueTypeIdentifier);
         if (valueType != null) {
             return Response.ok(valueType).build();

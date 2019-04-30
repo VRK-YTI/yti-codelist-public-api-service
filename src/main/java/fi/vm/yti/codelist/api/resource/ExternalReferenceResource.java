@@ -57,7 +57,8 @@ public class ExternalReferenceResource extends AbstractBaseResource {
                                           @ApiParam(value = "Return all links from the system.") @QueryParam("all") @DefaultValue("false") final Boolean all,
                                           @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                           @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                          @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         CodeSchemeDTO codeScheme = null;
         if (codeSchemeId != null && !codeSchemeId.isEmpty()) {
             codeScheme = domain.getCodeScheme(codeSchemeId);
@@ -75,7 +76,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
             return streamExcelExternalReferencesOutput(workbook);
         } else {
             final Meta meta = new Meta(200, pageSize, from, after);
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand)));
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand), pretty));
             final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, all, meta.getAfter(), meta);
             meta.setResultCount(externalReferences.size());
             final ResponseWrapper<ExternalReferenceDTO> wrapper = new ResponseWrapper<>();
@@ -91,8 +92,9 @@ public class ExternalReferenceResource extends AbstractBaseResource {
     @ApiResponse(code = 200, message = "Returns one specific ExternalReference in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getExternalReference(@ApiParam(value = "ExternalReference CodeValue.", required = true) @PathParam("externalReferenceId") final String externalReferenceId,
-                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand)));
+                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                         @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand), pretty));
         final ExternalReferenceDTO externalReference = domain.getExternalReference(externalReferenceId);
         if (externalReference != null) {
             return Response.ok(externalReference).build();

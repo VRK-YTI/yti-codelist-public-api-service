@@ -54,7 +54,8 @@ public class ExtensionResource extends AbstractBaseResource {
                                   @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                   @ApiParam(value = "Extension PrefLabel.") @QueryParam("prefLabel") final String prefLabel,
                                   @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                  @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
             final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, prefLabel, null, Meta.parseAfterFromString(after), null);
             final String csv = extensionExporter.createCsv(extensions);
@@ -65,7 +66,7 @@ public class ExtensionResource extends AbstractBaseResource {
             return streamExcelExtensionsOutput(workbook);
         } else {
             final Meta meta = new Meta(200, pageSize, from, after);
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand), pretty));
             final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, prefLabel, null, meta.getAfter(), meta);
             meta.setResultCount(extensions.size());
             final ResponseWrapper<ExtensionDTO> wrapper = new ResponseWrapper<>();
@@ -81,8 +82,9 @@ public class ExtensionResource extends AbstractBaseResource {
     @ApiResponse(code = 200, message = "Returns one specific Extension in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getExtension(@ApiParam(value = "Extension UUID.", required = true) @PathParam("extensionId") final String extensionId,
-                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand)));
+                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                 @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand), pretty));
         final ExtensionDTO extension = domain.getExtension(extensionId);
         if (extension != null) {
             return Response.ok(extension).build();

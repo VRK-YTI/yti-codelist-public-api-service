@@ -57,7 +57,8 @@ public class PropertyTypeResource extends AbstractBaseResource {
                                      @ApiParam(value = "Type as string value.") @QueryParam("type") final String type,
                                      @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                      @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                     @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
+                                     @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                     @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
             final Set<PropertyTypeDTO> propertyTypes = domain.getPropertyTypes(pageSize, from, name, context, language, type, Meta.parseAfterFromString(after), null);
             final String csv = propertyTypeExporter.createCsv(propertyTypes);
@@ -68,7 +69,7 @@ public class PropertyTypeResource extends AbstractBaseResource {
             return streamExcelPropertyTypesOutput(workbook);
         } else {
             final Meta meta = new Meta(200, pageSize, from, after);
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand)));
+            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand), pretty));
             final Set<PropertyTypeDTO> propertyTypes = domain.getPropertyTypes(pageSize, from, name, context, language, type, meta.getAfter(), meta);
             meta.setResultCount(propertyTypes.size());
             final ResponseWrapper<PropertyTypeDTO> wrapper = new ResponseWrapper<>();
@@ -84,8 +85,9 @@ public class PropertyTypeResource extends AbstractBaseResource {
     @ApiResponse(code = 200, message = "Returns one specific PropertyType in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getPropertyType(@ApiParam(value = "PropertyType ID.", required = true) @PathParam("propertyTypeIdentifier") final String propertyTypeIdentifier,
-                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand)));
+                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                    @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand), pretty));
         final PropertyTypeDTO propertyType = domain.getPropertyType(propertyTypeIdentifier);
         if (propertyType != null) {
             return Response.ok(propertyType).build();

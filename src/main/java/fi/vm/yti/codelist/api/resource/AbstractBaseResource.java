@@ -224,24 +224,6 @@ abstract class AbstractBaseResource {
         }
     }
 
-    static class FilterModifier extends ObjectWriterModifier {
-
-        private final FilterProvider provider;
-
-        FilterModifier(final FilterProvider provider) {
-            this.provider = provider;
-        }
-
-        @Override
-        public ObjectWriter modify(final EndpointConfigBase<?> endpoint,
-                                   final MultivaluedMap<String, Object> responseHeaders,
-                                   final Object valueToWrite,
-                                   final ObjectWriter w,
-                                   final JsonGenerator g) {
-            return w.with(provider);
-        }
-    }
-
     void ensureSuomiFiUriHost(final String host) {
         if (!SUOMI_URI_HOST.equalsIgnoreCase(host)) {
             LOG.error("This URI is not resolvable as a codelist resource, wrong host.");
@@ -255,6 +237,30 @@ abstract class AbstractBaseResource {
         } else {
             LOG.error("URI string was not valid!");
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "URI string was not valid!"));
+        }
+    }
+
+    static class FilterModifier extends ObjectWriterModifier {
+
+        private final FilterProvider provider;
+        private final boolean pretty;
+
+        FilterModifier(final FilterProvider provider,
+                       final String pretty) {
+            this.provider = provider;
+            this.pretty = pretty != null;
+        }
+
+        @Override
+        public ObjectWriter modify(final EndpointConfigBase<?> endpoint,
+                                   final MultivaluedMap<String, Object> responseHeaders,
+                                   final Object valueToWrite,
+                                   final ObjectWriter writer,
+                                   final JsonGenerator jsonGenerator) {
+            if (pretty) {
+                jsonGenerator.useDefaultPrettyPrinter();
+            }
+            return writer.with(provider);
         }
     }
 }

@@ -54,8 +54,9 @@ public class IntegrationResource extends AbstractBaseResource {
                                   @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                   @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
                                   @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                  @ApiParam(value = "Include pagination related meta element and wrap response items in bulk array.") @QueryParam("includeMeta") @DefaultValue("false") final boolean includeMeta) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_RESOURCE)));
+                                  @ApiParam(value = "Include pagination related meta element and wrap response items in bulk array.") @QueryParam("includeMeta") @DefaultValue("false") final boolean includeMeta,
+                                  @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_RESOURCE), pretty));
         final Meta meta = new Meta(200, pageSize, from, after);
         final List<String> statusList = parseStatus(status);
         final Set<ResourceDTO> containers = domain.getContainers(pageSize, from, language, statusList, meta.getAfter(), meta);
@@ -84,10 +85,11 @@ public class IntegrationResource extends AbstractBaseResource {
                                  @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
                                  @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                  @ApiParam(value = "Container URI.", required = true) @QueryParam("uri") final String codeSchemeUri,
-                                 @ApiParam(value = "Include pagination related meta element and wrap response items in bulk array.") @QueryParam("includeMeta") @DefaultValue("false") final boolean includeMeta) {
+                                 @ApiParam(value = "Include pagination related meta element and wrap response items in bulk array.") @QueryParam("includeMeta") @DefaultValue("false") final boolean includeMeta,
+                                 @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final URI resolveUri = parseUriFromString(codeSchemeUri);
         ensureSuomiFiUriHost(resolveUri.getHost());
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_RESOURCE)));
+        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_RESOURCE), pretty));
         final List<String> statusList = parseStatus(status);
         final Meta meta = new Meta(200, pageSize, from, after);
         final Set<ResourceDTO> resources = domain.getResources(pageSize, from, codeSchemeUri, language, statusList, meta.getAfter(), meta);
