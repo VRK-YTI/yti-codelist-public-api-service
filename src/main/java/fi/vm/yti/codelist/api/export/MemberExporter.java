@@ -242,7 +242,7 @@ public class MemberExporter extends BaseExporter {
             if (member.getCode().getId().equals(relatedCode.getId())) {
                 count++;
                 if (count > 1) {
-                    return relatedMember.getId().toString();
+                    return relatedMember.getSequenceId().toString();
                 }
             }
         }
