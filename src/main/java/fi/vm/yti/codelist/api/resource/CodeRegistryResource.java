@@ -309,13 +309,16 @@ public class CodeRegistryResource extends AbstractBaseResource {
                             codeScheme,
                             null,
                             null);
+                        filterExtensions(extensions);
                         if (embedMembers) {
                             for (ExtensionDTO extension : extensions) {
-                                extension.setMembers(domain.getMembers(null,
+                                final Set<MemberDTO> members = domain.getMembers(null,
                                     null,
                                     extension,
                                     null,
-                                    null));
+                                    null);
+                                filterMembers(members);
+                                extension.setMembers(members);
                             }
                         }
                         codeScheme.setExtensions(extensions);
@@ -889,5 +892,16 @@ public class CodeRegistryResource extends AbstractBaseResource {
         wrapper.setResults(result);
         wrapper.setMeta(meta);
         return Response.ok(wrapper).build();
+    }
+
+    private void filterExtensions(final Set<ExtensionDTO> extensions) {
+        extensions.stream().forEach(extension -> extension.setParentCodeScheme(null));
+    }
+
+    private void filterMembers(final Set<MemberDTO> members) {
+        members.stream().forEach(member -> {
+            member.getCode().setCodeScheme(null);
+            member.setExtension(null);
+        });
     }
 }
