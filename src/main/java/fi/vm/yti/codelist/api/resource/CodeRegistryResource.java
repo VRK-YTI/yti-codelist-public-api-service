@@ -299,8 +299,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
                     codeSchemeCodeValue);
                 if (codeScheme != null) {
                     if (embedCodes) {
-                        codeScheme.setCodes(domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeRegistryCodeValue,
-                            codeSchemeCodeValue));
+                        final Set<CodeDTO> codes = domain.getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(codeRegistryCodeValue,
+                            codeSchemeCodeValue);
+                        filterCodes(codes);
+                        codeScheme.setCodes(codes);
                     }
                     if (embedExtensions) {
                         Set<ExtensionDTO> extensions = domain.getExtensions(null,
@@ -892,6 +894,10 @@ public class CodeRegistryResource extends AbstractBaseResource {
         wrapper.setResults(result);
         wrapper.setMeta(meta);
         return Response.ok(wrapper).build();
+    }
+
+    private void filterCodes(final Set<CodeDTO> codes) {
+        codes.stream().forEach(code -> code.setCodeScheme(null));
     }
 
     private void filterExtensions(final Set<ExtensionDTO> extensions) {
