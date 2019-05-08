@@ -29,6 +29,7 @@ public class MemberExporter extends BaseExporter {
         final Set<String> prefLabelLanguages = resolveMemberPrefLabelLanguages(members);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
+        appendValue(csv, csvSeparator, CONTENT_HEADER_MEMBER);
         final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
         if (valueTypes != null && !valueTypes.isEmpty()) {
             valueTypes.forEach(valueType -> appendValue(csv, csvSeparator, valueType.getLocalName().toUpperCase()));
@@ -40,9 +41,9 @@ public class MemberExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_SEQUENCE_ID, true);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER, true);
         for (final MemberDTO member : members) {
+            appendValue(csv, csvSeparator, member.getSequenceId().toString());
             if (valueTypes != null && !valueTypes.isEmpty()) {
                 valueTypes.forEach(valueType -> {
                     final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
@@ -55,19 +56,18 @@ public class MemberExporter extends BaseExporter {
             }
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getPrefLabel().get(language)));
             appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getUri() : "");
-            appendValue(csv, csvSeparator, resolveRelatedMemberIdentifier(members, member.getRelatedMember()));
+            appendValue(csv, csvSeparator, resolveRelatedMemberIdentifier(member.getRelatedMember()));
             appendValue(csv, csvSeparator, member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
             appendValue(csv, csvSeparator, member.getEndDate() != null ? formatDateWithISO8601(member.getEndDate()) : "");
             appendValue(csv, csvSeparator, member.getCreated() != null ? formatDateWithSeconds(member.getCreated()) : "");
             appendValue(csv, csvSeparator, member.getModified() != null ? formatDateWithSeconds(member.getModified()) : "");
-            appendValue(csv, csvSeparator, member.getOrder().toString());
-            appendValue(csv, csvSeparator, member.getSequenceId().toString(), true);
+            appendValue(csv, csvSeparator, member.getOrder().toString(), true);
         }
         return csv.toString();
     }
 
     public String createSimplifiedCsvForCrossReferenceList(final ExtensionDTO extension,
-                            final Set<MemberDTO> members) {
+                                                           final Set<MemberDTO> members) {
         Set<CodeDTO> codesInMembers = members.stream().map(m -> m.getCode()).collect(Collectors.toSet());
         final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codesInMembers);
         final String csvSeparator = ",";
@@ -76,10 +76,10 @@ public class MemberExporter extends BaseExporter {
         if (valueTypes != null && !valueTypes.isEmpty()) {
             valueTypes.forEach(valueType -> appendValue(csv, csvSeparator, valueType.getLocalName().toUpperCase()));
         }
-        appendValue(csv, csvSeparator, CONTENT_HEADER_URI1 + "_" +  CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_URI1 + "_" + CONTENT_HEADER_CODEVALUE);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_URI1 + "_" + CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_URI1);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_URI2 + "_" +  CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_URI2 + "_" + CONTENT_HEADER_CODEVALUE);
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_URI2 + "_" + CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_URI2, true);
         for (final MemberDTO member : members) {
@@ -118,6 +118,7 @@ public class MemberExporter extends BaseExporter {
 
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBER);
         final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
         if (valueTypes != null && !valueTypes.isEmpty()) {
             for (final ValueTypeDTO valueType : valueTypes) {
@@ -133,12 +134,12 @@ public class MemberExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ORDER);
-        rowhead.createCell(j).setCellValue(CONTENT_HEADER_SEQUENCE_ID);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_ORDER);
         int i = 1;
         for (final MemberDTO member : members) {
             final Row row = sheet.createRow(i++);
             int k = 0;
+            row.createCell(k++).setCellValue(checkEmptyValue(member.getSequenceId() != null ? member.getSequenceId().toString() : ""));
             if (valueTypes != null && !valueTypes.isEmpty()) {
                 for (final ValueTypeDTO valueType : valueTypes) {
                     final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
@@ -157,20 +158,19 @@ public class MemberExporter extends BaseExporter {
             } else {
                 row.createCell(k++).setCellValue("");
             }
-            row.createCell(k++).setCellValue(resolveRelatedMemberIdentifier(members, member.getRelatedMember()));
+            row.createCell(k++).setCellValue(resolveRelatedMemberIdentifier(member.getRelatedMember()));
             row.createCell(k++).setCellValue(member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
             row.createCell(k++).setCellValue(member.getEndDate() != null ? formatDateWithISO8601(member.getEndDate()) : "");
             row.createCell(k++).setCellValue(member.getCreated() != null ? formatDateWithSeconds(member.getCreated()) : "");
             row.createCell(k++).setCellValue(member.getModified() != null ? formatDateWithSeconds(member.getModified()) : "");
-            row.createCell(k++).setCellValue(checkEmptyValue(member.getOrder() != null ? member.getOrder().toString() : ""));
-            row.createCell(k).setCellValue(checkEmptyValue(member.getSequenceId() != null ? member.getSequenceId().toString() : ""));
+            row.createCell(k).setCellValue(checkEmptyValue(member.getOrder() != null ? member.getOrder().toString() : ""));
         }
     }
 
     public void addMembersSheetWithCrossRerefences(final ExtensionDTO extension,
-                                final Workbook workbook,
-                                final String sheetName,
-                                final Set<MemberDTO> members) {
+                                                   final Workbook workbook,
+                                                   final String sheetName,
+                                                   final Set<MemberDTO> members) {
         Set<CodeDTO> codesInMembers = members.stream().map(m -> m.getCode()).collect(Collectors.toSet());
         final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codesInMembers);
         final Sheet sheet = workbook.createSheet(sheetName);
@@ -228,8 +228,7 @@ public class MemberExporter extends BaseExporter {
         }
     }
 
-    private String resolveRelatedMemberIdentifier(final Set<MemberDTO> members,
-                                                  final MemberDTO relatedMember) {
+    private String resolveRelatedMemberIdentifier(final MemberDTO relatedMember) {
         if (relatedMember == null) {
             return "";
         }
@@ -237,16 +236,7 @@ public class MemberExporter extends BaseExporter {
         if (relatedCode == null) {
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), ERR_MSG_USER_406));
         }
-        int count = 0;
-        for (final MemberDTO member : members) {
-            if (member.getCode().getId().equals(relatedCode.getId())) {
-                count++;
-                if (count > 1) {
-                    return relatedMember.getSequenceId().toString();
-                }
-            }
-        }
-        return relatedCode.getUri();
+        return relatedMember.getSequenceId().toString();
     }
 
     private Set<String> resolveMemberPrefLabelLanguages(final Set<MemberDTO> members) {
