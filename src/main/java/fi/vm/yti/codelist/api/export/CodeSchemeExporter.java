@@ -47,6 +47,7 @@ public class CodeSchemeExporter extends BaseExporter {
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_URI);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ORGANIZATION);
         appendValue(csv, csvSeparator, CONTENT_HEADER_INFODOMAIN);
         appendValue(csv, csvSeparator, CONTENT_HEADER_LANGUAGECODE);
@@ -68,6 +69,7 @@ public class CodeSchemeExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_HREF, true);
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             appendValue(csv, csvSeparator, codeScheme.getCodeValue());
+            appendValue(csv, csvSeparator, codeScheme.getUri());
             appendValue(csv, csvSeparator, formatOrganizationsToString(codeScheme.getOrganizations()));
             appendValue(csv, csvSeparator, formatCodesToString(codeScheme.getInfoDomains()));
             appendValue(csv, csvSeparator, formatCodesToString(codeScheme.getLanguageCodes()));
@@ -135,6 +137,7 @@ public class CodeSchemeExporter extends BaseExporter {
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ORGANIZATION);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_INFODOMAIN);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LANGUAGECODE);
@@ -170,6 +173,7 @@ public class CodeSchemeExporter extends BaseExporter {
             final Row row = sheet.createRow(i++);
             int k = 0;
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getCodeValue()));
+            row.createCell(k++).setCellValue(codeScheme.getUri());
             row.createCell(k++).setCellValue(checkEmptyValue(formatOrganizationsToString(codeScheme.getOrganizations())));
             row.createCell(k++).setCellValue(checkEmptyValue(formatCodesToString(codeScheme.getInfoDomains())));
             row.createCell(k++).setCellValue(checkEmptyValue(formatCodesToString(codeScheme.getLanguageCodes())));

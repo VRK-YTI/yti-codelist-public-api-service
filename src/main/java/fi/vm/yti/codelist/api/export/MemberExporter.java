@@ -30,6 +30,7 @@ public class MemberExporter extends BaseExporter {
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_MEMBER_ID);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_URI);
         final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
         if (valueTypes != null && !valueTypes.isEmpty()) {
             valueTypes.forEach(valueType -> appendValue(csv, csvSeparator, valueType.getLocalName().toUpperCase()));
@@ -43,7 +44,8 @@ public class MemberExporter extends BaseExporter {
         appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ORDER, true);
         for (final MemberDTO member : members) {
-            appendValue(csv, csvSeparator, member.getSequenceId().toString());
+            appendValue(csv, csvSeparator, member.getSequenceId() != null ? member.getSequenceId().toString() : "");
+            appendValue(csv, csvSeparator, member.getUri());
             if (valueTypes != null && !valueTypes.isEmpty()) {
                 valueTypes.forEach(valueType -> {
                     final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
@@ -119,6 +121,7 @@ public class MemberExporter extends BaseExporter {
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBER_ID);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI);
         final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
         if (valueTypes != null && !valueTypes.isEmpty()) {
             for (final ValueTypeDTO valueType : valueTypes) {
@@ -139,7 +142,8 @@ public class MemberExporter extends BaseExporter {
         for (final MemberDTO member : members) {
             final Row row = sheet.createRow(i++);
             int k = 0;
-            row.createCell(k++).setCellValue(checkEmptyValue(member.getSequenceId() != null ? member.getSequenceId().toString() : ""));
+            row.createCell(k++).setCellValue(member.getSequenceId() != null ? member.getSequenceId().toString() : "");
+            row.createCell(k++).setCellValue(member.getUri());
             if (valueTypes != null && !valueTypes.isEmpty()) {
                 for (final ValueTypeDTO valueType : valueTypes) {
                     final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
