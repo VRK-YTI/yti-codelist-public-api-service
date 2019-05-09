@@ -29,7 +29,7 @@ public class MemberExporter extends BaseExporter {
         final Set<String> prefLabelLanguages = resolveMemberPrefLabelLanguages(members);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_MEMBER);
+        appendValue(csv, csvSeparator, CONTENT_HEADER_MEMBER_ID);
         final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
         if (valueTypes != null && !valueTypes.isEmpty()) {
             valueTypes.forEach(valueType -> appendValue(csv, csvSeparator, valueType.getLocalName().toUpperCase()));
@@ -118,7 +118,7 @@ public class MemberExporter extends BaseExporter {
 
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBER);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBER_ID);
         final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
         if (valueTypes != null && !valueTypes.isEmpty()) {
             for (final ValueTypeDTO valueType : valueTypes) {
