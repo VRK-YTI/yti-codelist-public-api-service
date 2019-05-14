@@ -16,12 +16,15 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.apache.lucene.search.join.ScoreMode;
-import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
+import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.sort.NestedSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -68,10 +71,10 @@ public class DomainImpl implements Domain {
     private static final Set<String> sortLanguages = new HashSet<>(Arrays.asList(LANGUAGE_CODE_FI,
         LANGUAGE_CODE_EN,
         LANGUAGE_CODE_SV));
-    private final Client client;
+    private final RestHighLevelClient client;
 
     @Inject
-    private DomainImpl(final Client client) {
+    private DomainImpl(final RestHighLevelClient client) {
         this.client = client;
     }
 
@@ -81,38 +84,53 @@ public class DomainImpl implements Domain {
             false);
     }
 
+    private boolean checkIfIndexExists(final String indexName) {
+        final GetIndexRequest request = new GetIndexRequest();
+        request.indices(indexName);
+        try {
+            return client.indices().exists(request, RequestOptions.DEFAULT);
+        } catch (final IOException e) {
+            LOG.error("Index checking request failed for index: " + indexName, e);
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+        }
+    }
+
     public CodeRegistryDTO getCodeRegistry(final String codeRegistryCodeValue) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODEREGISTRY).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_CODEREGISTRY)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODEREGISTRY)
-                .setTypes(ELASTIC_TYPE_CODEREGISTRY)
-                .addSort("codeValue.raw",
-                    SortOrder.ASC);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_CODEREGISTRY);
+            searchRequest.types(ELASTIC_TYPE_CODEREGISTRY);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.sort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
                 .should(matchQuery("id",
                     codeRegistryCodeValue.toLowerCase()))
                 .should(matchQuery("codeValue",
                     codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .minimumShouldMatch(1);
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            if (response.getHits().getTotalHits() > 0) {
-                final SearchHit hit = response.getHits().getAt(0);
-                LOG.debug(String.format("Found %d CodeRegistries",
-                    response.getHits().getTotalHits()));
-                try {
-                    if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(),
-                            CodeRegistryDTO.class);
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                if (response.getHits().getTotalHits() > 0) {
+                    final SearchHit hit = response.getHits().getAt(0);
+                    LOG.debug(String.format("Found %d CodeRegistries",
+                        response.getHits().getTotalHits()));
+                    try {
+                        if (hit != null) {
+                            return mapper.readValue(hit.getSourceAsString(),
+                                CodeRegistryDTO.class);
+                        }
+                    } catch (final IOException e) {
+                        LOG.error("getCodeRegistry reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
                     }
-                } catch (final IOException e) {
-                    LOG.error("getCodeRegistry reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
         }
         return null;
@@ -137,17 +155,16 @@ public class DomainImpl implements Domain {
                                                   final List<String> organizations) {
         validatePageSize(pageSize);
         final Set<CodeRegistryDTO> codeRegistries = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODEREGISTRY).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_CODEREGISTRY)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODEREGISTRY)
-                .setTypes(ELASTIC_TYPE_CODEREGISTRY)
-                .addSort("codeValue.raw",
-                    SortOrder.ASC)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_CODEREGISTRY);
+            searchRequest.types(ELASTIC_TYPE_CODEREGISTRY);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.sort("codeValue.raw", SortOrder.ASC);
+            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
+            searchBuilder.from(from != null ? from : 0);
 
             final BoolQueryBuilder builder = constructSearchQuery(codeRegistryCodeValue,
                 codeRegistryPrefLabel,
@@ -156,55 +173,65 @@ public class DomainImpl implements Domain {
                 builder.must(termsQuery("organizations.id.keyword",
                     organizations));
             }
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            setResultCounts(meta,
-                response);
-            response.getHits().forEach(hit -> {
-                LOG.debug(String.format("Found %d CodeRegistries",
-                    response.getHits().getTotalHits()));
-                try {
-                    codeRegistries.add(mapper.readValue(hit.getSourceAsString(),
-                        CodeRegistryDTO.class));
-                } catch (final IOException e) {
-                    LOG.error("getCodeRegistries reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
-                }
-            });
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+
+                setResultCounts(meta,
+                    response);
+                response.getHits().forEach(hit -> {
+                    LOG.debug(String.format("Found %d CodeRegistries",
+                        response.getHits().getTotalHits()));
+                    try {
+                        codeRegistries.add(mapper.readValue(hit.getSourceAsString(),
+                            CodeRegistryDTO.class));
+                    } catch (final IOException e) {
+                        LOG.error("getCodeRegistries reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
         }
         return codeRegistries;
     }
 
     public CodeSchemeDTO getCodeScheme(final String codeSchemeId) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_CODESCHEME)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODESCHEME)
-                .setTypes(ELASTIC_TYPE_CODESCHEME)
-                .addSort("codeValue.raw",
-                    SortOrder.ASC);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_CODESCHEME);
+            searchRequest.types(ELASTIC_TYPE_CODESCHEME);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.sort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
                 .must(matchQuery("id",
                     codeSchemeId.toLowerCase()));
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            if (response.getHits().getTotalHits() > 0) {
-                LOG.debug(String.format("Found %d CodeSchemes",
-                    response.getHits().getTotalHits()));
-                final SearchHit hit = response.getHits().getAt(0);
-                try {
-                    if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(),
-                            CodeSchemeDTO.class);
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                if (response.getHits().getTotalHits() > 0) {
+                    LOG.debug(String.format("Found %d CodeSchemes",
+                        response.getHits().getTotalHits()));
+                    final SearchHit hit = response.getHits().getAt(0);
+                    try {
+                        if (hit != null) {
+                            return mapper.readValue(hit.getSourceAsString(),
+                                CodeSchemeDTO.class);
+                        }
+                    } catch (final IOException e) {
+                        LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
                     }
-                } catch (final IOException e) {
-                    LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
         }
         return null;
@@ -212,15 +239,14 @@ public class DomainImpl implements Domain {
 
     public CodeSchemeDTO getCodeScheme(final String codeRegistryCodeValue,
                                        final String codeSchemeCodeValue) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_CODESCHEME)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODESCHEME)
-                .setTypes(ELASTIC_TYPE_CODESCHEME)
-                .addSort("codeValue.raw",
-                    SortOrder.ASC);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_CODESCHEME);
+            searchRequest.types(ELASTIC_TYPE_CODESCHEME);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.sort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
                 .should(matchQuery("id",
                     codeSchemeCodeValue.toLowerCase()))
@@ -229,23 +255,30 @@ public class DomainImpl implements Domain {
                 .minimumShouldMatch(1);
             builder.must(matchQuery("codeRegistry.codeValue",
                 codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            if (response.getHits().getTotalHits() > 0) {
-                LOG.debug(String.format("Found %d CodeSchemes",
-                    response.getHits().getTotalHits()));
-                final SearchHit hit = response.getHits().getAt(0);
-                try {
-                    if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(),
-                            CodeSchemeDTO.class);
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+
+                if (response.getHits().getTotalHits() > 0) {
+                    LOG.debug(String.format("Found %d CodeSchemes",
+                        response.getHits().getTotalHits()));
+                    final SearchHit hit = response.getHits().getAt(0);
+                    try {
+                        if (hit != null) {
+                            return mapper.readValue(hit.getSourceAsString(),
+                                CodeSchemeDTO.class);
+                        }
+                    } catch (final IOException e) {
+                        LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
                     }
-                } catch (final IOException e) {
-                    LOG.error("getCodeScheme reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
+
         }
         return null;
     }
@@ -295,16 +328,18 @@ public class DomainImpl implements Domain {
             null);
     }
 
-    private SearchResultWithMetaDataDTO getCodeSchemesMatchingCodes(final String searchTerm, final SearchResultWithMetaDataDTO result) {
+    private SearchResultWithMetaDataDTO getCodeSchemesMatchingCodes(final String searchTerm,
+                                                                    final SearchResultWithMetaDataDTO result) {
         final Set<String> codeSchemeUuids = new HashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODE)
-                .setTypes(ELASTIC_TYPE_CODE);
-            searchRequest.setSize(MAX_DEEP_SEARCH_SIZE);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_CODE);
+            searchRequest.types(ELASTIC_TYPE_CODE);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.sort("codeValue.raw", SortOrder.ASC);
+            searchBuilder.size(MAX_DEEP_SEARCH_SIZE);
             final BoolQueryBuilder builder = boolQuery();
             if (searchTerm != null) {
                 builder.should(prefixQuery("codeValue",
@@ -315,44 +350,51 @@ public class DomainImpl implements Domain {
                     ScoreMode.None));
                 builder.minimumShouldMatch(1);
             }
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            response.getHits().forEach(hit -> {
-                try {
-                    CodeDTO codeDTO = mapper.readValue(hit.getSourceAsString(),
-                        CodeDTO.class);
-                    String uuidOfTheCodeScheme = codeDTO.getCodeScheme().getId().toString().toLowerCase();
-                    populateSearchHits(codeSchemeUuids,
-                        result,
-                        codeDTO.getPrefLabel(),
-                        codeDTO.getUri(),
-                        codeDTO.getCodeValue(),
-                        codeDTO.getCodeScheme().getCodeValue(),
-                        codeDTO.getCodeScheme().getCodeRegistry().getCodeValue(),
-                        uuidOfTheCodeScheme,
-                        SEARCH_HIT_TYPE_CODE);
-                } catch (final IOException e) {
-                    LOG.error("getCodeSchemesMatchingCodes reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
-                }
-            });
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                response.getHits().forEach(hit -> {
+                    try {
+                        CodeDTO codeDTO = mapper.readValue(hit.getSourceAsString(),
+                            CodeDTO.class);
+                        String uuidOfTheCodeScheme = codeDTO.getCodeScheme().getId().toString().toLowerCase();
+                        populateSearchHits(codeSchemeUuids,
+                            result,
+                            codeDTO.getPrefLabel(),
+                            codeDTO.getUri(),
+                            codeDTO.getCodeValue(),
+                            codeDTO.getCodeScheme().getCodeValue(),
+                            codeDTO.getCodeScheme().getCodeRegistry().getCodeValue(),
+                            uuidOfTheCodeScheme,
+                            SEARCH_HIT_TYPE_CODE);
+                    } catch (final IOException e) {
+                        LOG.error("getCodeSchemesMatchingCodes reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
             result.getResults().addAll(codeSchemeUuids);
             return result;
         }
         return result;
     }
 
-    private SearchResultWithMetaDataDTO getCodeSchemesMatchingExtensions(final String searchTerm, final String extensionPropertyType, final SearchResultWithMetaDataDTO result) {
+    private SearchResultWithMetaDataDTO getCodeSchemesMatchingExtensions(final String searchTerm,
+                                                                         final String extensionPropertyType,
+                                                                         final SearchResultWithMetaDataDTO result) {
         final Set<String> codeSchemeUuids = new HashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_EXTENSION)
-                .setTypes(ELASTIC_TYPE_EXTENSION);
-            searchRequest.setSize(MAX_DEEP_SEARCH_SIZE);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_CODE);
+            searchRequest.types(ELASTIC_TYPE_CODE);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.size(MAX_DEEP_SEARCH_SIZE);
             final BoolQueryBuilder builder = boolQuery();
             if (searchTerm != null) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
@@ -371,36 +413,50 @@ public class DomainImpl implements Domain {
                 builder.must(matchQuery("propertyType.localName",
                     extensionPropertyType));
             }
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            response.getHits().forEach(hit -> {
-                try {
-                    ExtensionDTO extensionDTO = mapper.readValue(hit.getSourceAsString(),
-                        ExtensionDTO.class);
-                    String uuidOfTheCodeScheme = extensionDTO.getParentCodeScheme().getId().toString().toLowerCase();
-                    codeSchemeUuids.add(uuidOfTheCodeScheme);
-                    populateSearchHits(codeSchemeUuids,
-                        result,
-                        extensionDTO.getPrefLabel(),
-                        extensionDTO.getUri(),
-                        extensionDTO.getCodeValue(),
-                        extensionDTO.getParentCodeScheme().getCodeValue(),
-                        extensionDTO.getParentCodeScheme().getCodeRegistry().getCodeValue(),
-                        uuidOfTheCodeScheme,
-                        SEARCH_HIT_TYPE_EXTENSION);
-                } catch (final IOException e) {
-                    LOG.error("getCodeSchemesMatchingExtensions reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
-                }
-            });
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+
+                response.getHits().forEach(hit -> {
+                    try {
+                        ExtensionDTO extensionDTO = mapper.readValue(hit.getSourceAsString(),
+                            ExtensionDTO.class);
+                        String uuidOfTheCodeScheme = extensionDTO.getParentCodeScheme().getId().toString().toLowerCase();
+                        codeSchemeUuids.add(uuidOfTheCodeScheme);
+                        populateSearchHits(codeSchemeUuids,
+                            result,
+                            extensionDTO.getPrefLabel(),
+                            extensionDTO.getUri(),
+                            extensionDTO.getCodeValue(),
+                            extensionDTO.getParentCodeScheme().getCodeValue(),
+                            extensionDTO.getParentCodeScheme().getCodeRegistry().getCodeValue(),
+                            uuidOfTheCodeScheme,
+                            SEARCH_HIT_TYPE_EXTENSION);
+                    } catch (final IOException e) {
+                        LOG.error("getCodeSchemesMatchingExtensions reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
             result.getResults().addAll(codeSchemeUuids);
             return result;
         }
         return result;
     }
 
-    private void populateSearchHits(final Set<String> codeSchemeUuids, final SearchResultWithMetaDataDTO result, final Map<String, String> prefLabel, final String uri, final String entityCodeValue, final String codeSchemeCodeValue, final String codeRegistryCodeValue, final String uuidOfTheCodeScheme, final String typeOfHit) {
+    private void populateSearchHits(final Set<String> codeSchemeUuids,
+                                    final SearchResultWithMetaDataDTO result,
+                                    final Map<String, String> prefLabel,
+                                    final String uri,
+                                    final String entityCodeValue,
+                                    final String codeSchemeCodeValue,
+                                    final String codeRegistryCodeValue,
+                                    final String uuidOfTheCodeScheme,
+                                    final String typeOfHit) {
         codeSchemeUuids.add(uuidOfTheCodeScheme);
         SearchHitDTO searchHit = new SearchHitDTO();
         searchHit.setType(typeOfHit);
@@ -462,15 +518,15 @@ public class DomainImpl implements Domain {
         }
 
         final Set<CodeSchemeDTO> codeSchemes = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_CODESCHEME)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODESCHEME)
-                .setTypes(ELASTIC_TYPE_CODESCHEME)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_CODESCHEME);
+            searchRequest.types(ELASTIC_TYPE_CODESCHEME);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
+            searchBuilder.from(from != null ? from : 0);
             final BoolQueryBuilder builder = boolQuery();
             if (searchTerm != null && !searchTerm.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
@@ -531,21 +587,19 @@ public class DomainImpl implements Domain {
                     ScoreMode.None));
             }
             if (BOOSTSTATUS.equalsIgnoreCase(sortMode)) {
-                searchRequest.addSort(SortBuilders.scoreSort());
+                searchBuilder.sort(SortBuilders.scoreSort());
                 boostStatus(builder);
             }
             if (language != null && !language.isEmpty()) {
-                searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
                 sortLanguages.forEach(sortLanguage -> {
                     if (!language.equalsIgnoreCase(sortLanguage)) {
-                        searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                        searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
                     }
                 });
-                searchRequest.addSort("codeValue.raw",
-                    SortOrder.ASC);
+                searchBuilder.sort("codeValue.raw", SortOrder.ASC);
             } else {
-                searchRequest.addSort("codeValue.raw",
-                    SortOrder.ASC);
+                searchBuilder.sort("codeValue.raw", SortOrder.ASC);
             }
             if (statuses != null && !statuses.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
@@ -583,20 +637,25 @@ public class DomainImpl implements Domain {
                 boolQueryBuilder.minimumShouldMatch(1);
                 builder.must(boolQueryBuilder);
             }
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            setResultCounts(meta,
-                response);
-            response.getHits().forEach(hit -> {
-                try {
-                    codeSchemes.add(mapper.readValue(hit.getSourceAsString(),
-                        CodeSchemeDTO.class));
-                } catch (final IOException e) {
-                    LOG.error("getCodeSchemes reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
-                }
-            });
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                setResultCounts(meta,
+                    response);
+                response.getHits().forEach(hit -> {
+                    try {
+                        codeSchemes.add(mapper.readValue(hit.getSourceAsString(),
+                            CodeSchemeDTO.class));
+                    } catch (final IOException e) {
+                        LOG.error("getCodeSchemes reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
         }
 
         for (CodeSchemeDTO cs : codeSchemes) {
@@ -624,13 +683,13 @@ public class DomainImpl implements Domain {
     public CodeDTO getCode(final String codeRegistryCodeValue,
                            final String codeSchemeCodeValue,
                            final String codeCodeValue) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODE)
-                .setTypes(ELASTIC_TYPE_CODE);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_CODE);
+            searchRequest.types(ELASTIC_TYPE_CODE);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
             final BoolQueryBuilder builder = boolQuery()
                 .should(matchQuery("id",
                     codeCodeValue.toLowerCase()))
@@ -645,23 +704,27 @@ public class DomainImpl implements Domain {
                 .minimumShouldMatch(1));
             builder.must(matchQuery("codeScheme.codeRegistry.codeValue",
                 codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
-            searchRequest.setQuery(builder);
-
-            final SearchResponse response = searchRequest.execute().actionGet();
-            LOG.debug(String.format("getCode found: %d hits.",
-                response.getHits().getTotalHits()));
-            if (response.getHits().getTotalHits() > 0) {
-                final SearchHit hit = response.getHits().getAt(0);
-                try {
-                    if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(),
-                            CodeDTO.class);
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                LOG.debug(String.format("getCode found: %d hits.",
+                    response.getHits().getTotalHits()));
+                if (response.getHits().getTotalHits() > 0) {
+                    final SearchHit hit = response.getHits().getAt(0);
+                    try {
+                        if (hit != null) {
+                            return mapper.readValue(hit.getSourceAsString(),
+                                CodeDTO.class);
+                        }
+                    } catch (final IOException e) {
+                        LOG.error("getCode reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
                     }
-                } catch (final IOException e) {
-                    LOG.error("getCode reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
             return null;
         } else {
@@ -699,16 +762,15 @@ public class DomainImpl implements Domain {
                                  final Meta meta) {
         validatePageSize(pageSize);
         final Set<CodeDTO> codes = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODE)
-                .setTypes(ELASTIC_TYPE_CODE)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0);
-
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_CODE);
+            searchRequest.types(ELASTIC_TYPE_CODE);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
+            searchBuilder.from(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(codeCodeValue,
                 prefLabel,
                 after);
@@ -720,7 +782,7 @@ public class DomainImpl implements Domain {
                 .should(matchQuery("codeScheme.id",
                     codeSchemeCodeValue.toLowerCase()))
                 .minimumShouldMatch(1));
-            searchRequest.setQuery(builder);
+            searchBuilder.query(builder);
             if (hierarchyLevel != null) {
                 builder.must(rangeQuery("hierarchyLevel").lte(hierarchyLevel));
             }
@@ -733,64 +795,76 @@ public class DomainImpl implements Domain {
                     statuses));
             }
             if (language != null && !language.isEmpty()) {
-                searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
                 sortLanguages.forEach(sortLanguage -> {
                     if (!language.equalsIgnoreCase(sortLanguage)) {
-                        searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                        searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
                     }
                 });
-                searchRequest.addSort("codeValue.raw",
+                searchBuilder.sort("codeValue.raw",
                     SortOrder.ASC);
             } else {
-                searchRequest.addSort("order",
+                searchBuilder.sort("order",
                     SortOrder.ASC);
             }
-            final SearchResponse response = searchRequest.execute().actionGet();
-            setResultCounts(meta,
-                response);
-            response.getHits().forEach(hit -> {
-                try {
-                    codes.add(mapper.readValue(hit.getSourceAsString(),
-                        CodeDTO.class));
-                } catch (final IOException e) {
-                    LOG.error("getCodes reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
-                }
-            });
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+
+                setResultCounts(meta,
+                    response);
+                response.getHits().forEach(hit -> {
+                    try {
+                        codes.add(mapper.readValue(hit.getSourceAsString(),
+                            CodeDTO.class));
+                    } catch (final IOException e) {
+                        LOG.error("getCodes reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
             return codes;
         }
         return codes;
     }
 
     public PropertyTypeDTO getPropertyType(final String propertyTypeIdentifier) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_PROPERTYTYPE).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_PROPERTYTYPE)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_PROPERTYTYPE)
-                .setTypes(ELASTIC_TYPE_PROPERTYTYPE);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_PROPERTYTYPE);
+            searchRequest.types(ELASTIC_TYPE_PROPERTYTYPE);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
             final BoolQueryBuilder builder = new BoolQueryBuilder()
                 .should(matchQuery("id",
                     propertyTypeIdentifier.toLowerCase()))
                 .should(matchQuery("localName",
                     propertyTypeIdentifier.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .minimumShouldMatch(1);
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            if (response.getHits().getTotalHits() > 0) {
-                final SearchHit hit = response.getHits().getAt(0);
-                try {
-                    if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(),
-                            PropertyTypeDTO.class);
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+
+                if (response.getHits().getTotalHits() > 0) {
+                    final SearchHit hit = response.getHits().getAt(0);
+                    try {
+                        if (hit != null) {
+                            return mapper.readValue(hit.getSourceAsString(),
+                                PropertyTypeDTO.class);
+                        }
+                    } catch (final IOException e) {
+                        LOG.error("getPropertyType reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
                     }
-                } catch (final IOException e) {
-                    LOG.error("getPropertyType reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
         }
         return null;
@@ -806,15 +880,15 @@ public class DomainImpl implements Domain {
                                                  final Meta meta) {
         validatePageSize(pageSize);
         final Set<PropertyTypeDTO> propertyTypes = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_PROPERTYTYPE).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_PROPERTYTYPE)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_PROPERTYTYPE)
-                .setTypes(ELASTIC_TYPE_PROPERTYTYPE)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_PROPERTYTYPE);
+            searchRequest.types(ELASTIC_TYPE_PROPERTYTYPE);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.size(pageSize != null ? pageSize : 0);
+            searchBuilder.from(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(null,
                 propertyTypePrefLabel,
                 after);
@@ -827,65 +901,77 @@ public class DomainImpl implements Domain {
                     type.toLowerCase()));
             }
             if (language != null && !language.isEmpty()) {
-                searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
                 sortLanguages.forEach(sortLanguage -> {
                     if (!language.equalsIgnoreCase(sortLanguage)) {
-                        searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                        searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
                     }
                 });
-                searchRequest.addSort("localName.keyword",
+                searchBuilder.sort("localName.keyword",
                     SortOrder.ASC);
             } else {
-                searchRequest.addSort("localName.keyword",
+                searchBuilder.sort("localName.keyword",
                     SortOrder.ASC);
             }
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            setResultCounts(meta,
-                response);
-            response.getHits().forEach(hit -> {
-                try {
-                    final PropertyTypeDTO propertyType = mapper.readValue(hit.getSourceAsString(),
-                        PropertyTypeDTO.class);
-                    propertyTypes.add(propertyType);
-                } catch (final IOException e) {
-                    LOG.error("getPropertyTypes reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
-                }
-            });
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+
+                setResultCounts(meta,
+                    response);
+                response.getHits().forEach(hit -> {
+                    try {
+                        final PropertyTypeDTO propertyType = mapper.readValue(hit.getSourceAsString(),
+                            PropertyTypeDTO.class);
+                        propertyTypes.add(propertyType);
+                    } catch (final IOException e) {
+                        LOG.error("getPropertyTypes reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
         }
         return propertyTypes;
     }
 
     public ValueTypeDTO getValueType(final String valueTypeIdentifier) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_VALUETYPE).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_VALUETYPE)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_VALUETYPE)
-                .setTypes(ELASTIC_TYPE_VALUETYPE);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_VALUETYPE);
+            searchRequest.types(ELASTIC_TYPE_VALUETYPE);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
             final BoolQueryBuilder builder = new BoolQueryBuilder()
                 .should(matchQuery("id",
                     valueTypeIdentifier.toLowerCase()))
                 .should(matchQuery("localName",
                     valueTypeIdentifier.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .minimumShouldMatch(1);
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            if (response.getHits().getTotalHits() > 0) {
-                final SearchHit hit = response.getHits().getAt(0);
-                try {
-                    if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(),
-                            ValueTypeDTO.class);
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+
+                if (response.getHits().getTotalHits() > 0) {
+                    final SearchHit hit = response.getHits().getAt(0);
+                    try {
+                        if (hit != null) {
+                            return mapper.readValue(hit.getSourceAsString(),
+                                ValueTypeDTO.class);
+                        }
+                    } catch (final IOException e) {
+                        LOG.error("getValueType reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
                     }
-                } catch (final IOException e) {
-                    LOG.error("getValueType reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
         }
         return null;
@@ -898,15 +984,15 @@ public class DomainImpl implements Domain {
                                            final Meta meta) {
         validatePageSize(pageSize);
         final Set<ValueTypeDTO> valueTypes = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_VALUETYPE).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_VALUETYPE)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_VALUETYPE)
-                .setTypes(ELASTIC_TYPE_VALUETYPE)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_VALUETYPE);
+            searchRequest.types(ELASTIC_TYPE_VALUETYPE);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
+            searchBuilder.from(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(null,
                 null,
                 after);
@@ -914,50 +1000,60 @@ public class DomainImpl implements Domain {
                 builder.must(prefixQuery("localName",
                     localName.toLowerCase()));
             }
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            setResultCounts(meta,
-                response);
-            response.getHits().forEach(hit -> {
-                try {
-                    final ValueTypeDTO valueType = mapper.readValue(hit.getSourceAsString(),
-                        ValueTypeDTO.class);
-                    valueTypes.add(valueType);
-                } catch (final IOException e) {
-                    LOG.error("getValueTypes reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
-                }
-            });
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                setResultCounts(meta,
+                    response);
+                response.getHits().forEach(hit -> {
+                    try {
+                        final ValueTypeDTO valueType = mapper.readValue(hit.getSourceAsString(),
+                            ValueTypeDTO.class);
+                        valueTypes.add(valueType);
+                    } catch (final IOException e) {
+                        LOG.error("getValueTypes reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
         }
         return valueTypes;
     }
 
     public ExternalReferenceDTO getExternalReference(final String externalReferenceId) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTERNALREFERENCE).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_EXTERNALREFERENCE)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_EXTERNALREFERENCE)
-                .setTypes(ELASTIC_TYPE_EXTERNALREFERENCE);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_EXTERNALREFERENCE);
+            searchRequest.types(ELASTIC_TYPE_EXTERNALREFERENCE);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
             final BoolQueryBuilder builder = boolQuery()
                 .must(matchQuery("id",
                     externalReferenceId.toLowerCase()));
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            if (response.getHits().getTotalHits() > 0) {
-                final SearchHit hit = response.getHits().getAt(0);
-                try {
-                    if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(),
-                            ExternalReferenceDTO.class);
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                if (response.getHits().getTotalHits() > 0) {
+                    final SearchHit hit = response.getHits().getAt(0);
+                    try {
+                        if (hit != null) {
+                            return mapper.readValue(hit.getSourceAsString(),
+                                ExternalReferenceDTO.class);
+                        }
+                    } catch (final IOException e) {
+                        LOG.error("getExternalReference reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
                     }
-                } catch (final IOException e) {
-                    LOG.error("getExternalReference reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
         }
         return null;
@@ -982,19 +1078,19 @@ public class DomainImpl implements Domain {
                                                            final Meta meta) {
         validatePageSize(pageSize);
         final Set<ExternalReferenceDTO> externalReferences = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTERNALREFERENCE).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_EXTERNALREFERENCE)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_EXTERNALREFERENCE)
-                .setTypes(ELASTIC_TYPE_EXTERNALREFERENCE)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_EXTERNALREFERENCE);
+            searchRequest.types(ELASTIC_TYPE_EXTERNALREFERENCE);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
+            searchBuilder.from(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(null,
                 externalReferencePrefLabel,
                 after);
-            searchRequest.setQuery(builder);
+            searchBuilder.query(builder);
             if (codeScheme != null) {
                 builder.should(boolQuery()
                     .should(boolQuery()
@@ -1009,20 +1105,26 @@ public class DomainImpl implements Domain {
                 builder.must(matchQuery("global",
                     true));
             }
-            final SearchResponse response = searchRequest.execute().actionGet();
-            setResultCounts(meta,
-                response);
-            response.getHits().forEach(hit -> {
-                try {
-                    final ExternalReferenceDTO externalReference = mapper.readValue(hit.getSourceAsString(),
-                        ExternalReferenceDTO.class);
-                    externalReferences.add(externalReference);
-                } catch (final IOException e) {
-                    LOG.error("getExternalReferences reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
-                }
-            });
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+
+                setResultCounts(meta,
+                    response);
+                response.getHits().forEach(hit -> {
+                    try {
+                        final ExternalReferenceDTO externalReference = mapper.readValue(hit.getSourceAsString(),
+                            ExternalReferenceDTO.class);
+                        externalReferences.add(externalReference);
+                    } catch (final IOException e) {
+                        LOG.error("getExternalReferences reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
         }
         return externalReferences;
     }
@@ -1035,54 +1137,58 @@ public class DomainImpl implements Domain {
                                            final Meta meta) {
         validatePageSize(pageSize);
         final Set<ExtensionDTO> extensions = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_EXTENSION)
-                .setTypes(ELASTIC_TYPE_EXTENSION)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0)
-                .addSort("codeValue.raw",
-                    SortOrder.ASC);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_EXTENSION);
+            searchRequest.types(ELASTIC_TYPE_EXTENSION);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
+            searchBuilder.from(from != null ? from : 0);
+            searchBuilder.sort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = constructSearchQuery(null,
                 extensionPrefLabel,
                 after);
-            searchRequest.setQuery(builder);
+            searchBuilder.query(builder);
             if (codeScheme != null) {
                 builder.must(matchQuery("parentCodeScheme.id",
                     codeScheme.getId().toString().toLowerCase()));
             }
-            final SearchResponse response = searchRequest.execute().actionGet();
-            setResultCounts(meta,
-                response);
-            response.getHits().forEach(hit -> {
-                try {
-                    final ExtensionDTO extension = mapper.readValue(hit.getSourceAsString(),
-                        ExtensionDTO.class);
-                    extensions.add(extension);
-                } catch (final IOException e) {
-                    LOG.error("getExtensions reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
-                }
-            });
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+
+                setResultCounts(meta,
+                    response);
+                response.getHits().forEach(hit -> {
+                    try {
+                        final ExtensionDTO extension = mapper.readValue(hit.getSourceAsString(),
+                            ExtensionDTO.class);
+                        extensions.add(extension);
+                    } catch (final IOException e) {
+                        LOG.error("getExtensions reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
         }
         return extensions;
     }
 
     public ExtensionDTO getExtension(final UUID codeSchemeUuid,
                                      final String extensionCodeValue) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_EXTENSION)
-                .setTypes(ELASTIC_TYPE_EXTENSION)
-                .addSort("codeValue.raw",
-                    SortOrder.ASC);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_EXTENSION);
+            searchRequest.types(ELASTIC_TYPE_EXTENSION);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.sort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
                 .should(matchQuery("id",
                     extensionCodeValue.toLowerCase()))
@@ -1091,22 +1197,28 @@ public class DomainImpl implements Domain {
                 .minimumShouldMatch(1);
             builder.must(matchQuery("parentCodeScheme.id",
                 codeSchemeUuid.toString().toLowerCase()));
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            if (response.getHits().getTotalHits() > 0) {
-                LOG.debug(String.format("Found %d Extensions",
-                    response.getHits().getTotalHits()));
-                final SearchHit hit = response.getHits().getAt(0);
-                try {
-                    if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(),
-                            ExtensionDTO.class);
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+
+                if (response.getHits().getTotalHits() > 0) {
+                    LOG.debug(String.format("Found %d Extensions",
+                        response.getHits().getTotalHits()));
+                    final SearchHit hit = response.getHits().getAt(0);
+                    try {
+                        if (hit != null) {
+                            return mapper.readValue(hit.getSourceAsString(),
+                                ExtensionDTO.class);
+                        }
+                    } catch (final IOException e) {
+                        LOG.error("getExtension reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
                     }
-                } catch (final IOException e) {
-                    LOG.error("getExtension reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
         }
         return null;
@@ -1115,15 +1227,14 @@ public class DomainImpl implements Domain {
     public ExtensionDTO getExtension(final String codeRegistryCodeValue,
                                      final String codeSchemeCodeValue,
                                      final String extensionCodeValue) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_EXTENSION)
-                .setTypes(ELASTIC_TYPE_EXTENSION)
-                .addSort("codeValue.raw",
-                    SortOrder.ASC);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_EXTENSION);
+            searchRequest.types(ELASTIC_TYPE_EXTENSION);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.sort("codeValue.raw", SortOrder.ASC);
             final BoolQueryBuilder builder = boolQuery()
                 .should(matchQuery("id",
                     extensionCodeValue.toLowerCase()))
@@ -1134,52 +1245,62 @@ public class DomainImpl implements Domain {
                 codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             builder.must(matchQuery("parentCodeScheme.codeValue",
                 codeSchemeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            if (response.getHits().getTotalHits() > 0) {
-                LOG.debug(String.format("Found %d Extensions",
-                    response.getHits().getTotalHits()));
-                final SearchHit hit = response.getHits().getAt(0);
-                try {
-                    if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(),
-                            ExtensionDTO.class);
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                if (response.getHits().getTotalHits() > 0) {
+                    LOG.debug(String.format("Found %d Extensions",
+                        response.getHits().getTotalHits()));
+                    final SearchHit hit = response.getHits().getAt(0);
+                    try {
+                        if (hit != null) {
+                            return mapper.readValue(hit.getSourceAsString(),
+                                ExtensionDTO.class);
+                        }
+                    } catch (final IOException e) {
+                        LOG.error("getExtension reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
                     }
-                } catch (final IOException e) {
-                    LOG.error("getExtension reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
         }
         return null;
     }
 
     public ExtensionDTO getExtension(final String extensionId) {
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_EXTENSION).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_EXTENSION)
-                .setTypes(ELASTIC_TYPE_EXTENSION);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_EXTENSION);
+            searchRequest.types(ELASTIC_TYPE_EXTENSION);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
             final BoolQueryBuilder builder = boolQuery()
                 .must(matchQuery("id",
                     extensionId.toLowerCase()));
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            if (response.getHits().getTotalHits() > 0) {
-                final SearchHit hit = response.getHits().getAt(0);
-                try {
-                    if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(),
-                            ExtensionDTO.class);
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                if (response.getHits().getTotalHits() > 0) {
+                    final SearchHit hit = response.getHits().getAt(0);
+                    try {
+                        if (hit != null) {
+                            return mapper.readValue(hit.getSourceAsString(),
+                                ExtensionDTO.class);
+                        }
+                    } catch (final IOException e) {
+                        LOG.error("getExtension reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
                     }
-                } catch (final IOException e) {
-                    LOG.error("getExtension reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
                 }
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
         }
         return null;
@@ -1192,39 +1313,43 @@ public class DomainImpl implements Domain {
                                      final Meta meta) {
         validatePageSize(pageSize);
         final Set<MemberDTO> members = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_MEMBER)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_MEMBER)
-                .setTypes(ELASTIC_TYPE_MEMBER)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0)
-                .addSort("order",
-                    SortOrder.ASC);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_MEMBER);
+            searchRequest.types(ELASTIC_TYPE_MEMBER);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
+            searchBuilder.from(from != null ? from : 0);
+            searchBuilder.sort("order", SortOrder.ASC);
             final BoolQueryBuilder builder = constructSearchQuery(null,
                 null,
                 after);
-            searchRequest.setQuery(builder);
+            searchBuilder.query(builder);
             if (code != null) {
                 builder.must(matchQuery("code.id",
                     code.getId().toString().toLowerCase()));
             }
-            final SearchResponse response = searchRequest.execute().actionGet();
-            setResultCounts(meta,
-                response);
-            response.getHits().forEach(hit -> {
-                try {
-                    final MemberDTO member = mapper.readValue(hit.getSourceAsString(),
-                        MemberDTO.class);
-                    members.add(member);
-                } catch (final IOException e) {
-                    LOG.error("getMembers reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
-                }
-            });
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                setResultCounts(meta,
+                    response);
+                response.getHits().forEach(hit -> {
+                    try {
+                        final MemberDTO member = mapper.readValue(hit.getSourceAsString(),
+                            MemberDTO.class);
+                        members.add(member);
+                    } catch (final IOException e) {
+                        LOG.error("getMembers reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
         }
         return members;
     }
@@ -1235,34 +1360,38 @@ public class DomainImpl implements Domain {
                                      final Meta meta) {
         validatePageSize(pageSize);
         final Set<MemberDTO> members = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_MEMBER)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_MEMBER)
-                .setTypes(ELASTIC_TYPE_MEMBER)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0)
-                .addSort("order",
-                    SortOrder.ASC);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_MEMBER);
+            searchRequest.types(ELASTIC_TYPE_MEMBER);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
+            searchBuilder.from(from != null ? from : 0);
+            searchBuilder.sort("order", SortOrder.ASC);
             final BoolQueryBuilder builder = constructSearchQuery(null,
                 null,
                 after);
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            setResultCounts(meta,
-                response);
-            response.getHits().forEach(hit -> {
-                try {
-                    final MemberDTO member = mapper.readValue(hit.getSourceAsString(),
-                        MemberDTO.class);
-                    members.add(member);
-                } catch (final IOException e) {
-                    LOG.error("getMembers reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                }
-            });
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                setResultCounts(meta,
+                    response);
+                response.getHits().forEach(hit -> {
+                    try {
+                        final MemberDTO member = mapper.readValue(hit.getSourceAsString(),
+                            MemberDTO.class);
+                        members.add(member);
+                    } catch (final IOException e) {
+                        LOG.error("getMembers reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
         }
         return members;
     }
@@ -1274,82 +1403,91 @@ public class DomainImpl implements Domain {
                                      final Meta meta) {
         validatePageSize(pageSize);
         final Set<MemberDTO> members = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_MEMBER)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_MEMBER)
-                .setTypes(ELASTIC_TYPE_MEMBER)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0)
-                .addSort("order",
-                    SortOrder.ASC);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_MEMBER);
+            searchRequest.types(ELASTIC_TYPE_MEMBER);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
+            searchBuilder.from(from != null ? from : 0);
+            searchBuilder.sort("order", SortOrder.ASC);
             final BoolQueryBuilder builder = constructSearchQuery(null,
                 null,
                 after);
-            searchRequest.setQuery(builder);
+            searchBuilder.query(builder);
             if (extension != null) {
                 builder.must(matchQuery("extension.id",
                     extension.getId().toString().toLowerCase()));
             }
-            final SearchResponse response = searchRequest.execute().actionGet();
-            setResultCounts(meta,
-                response);
-            response.getHits().forEach(hit -> {
-                try {
-                    final MemberDTO member = mapper.readValue(hit.getSourceAsString(),
-                        MemberDTO.class);
-                    members.add(member);
-                } catch (final IOException e) {
-                    LOG.error("getMembers reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                }
-            });
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                setResultCounts(meta,
+                    response);
+                response.getHits().forEach(hit -> {
+                    try {
+                        final MemberDTO member = mapper.readValue(hit.getSourceAsString(),
+                            MemberDTO.class);
+                        members.add(member);
+                    } catch (final IOException e) {
+                        LOG.error("getMembers reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
         }
         return members;
     }
 
-    public MemberDTO getMember(final String memberId, final String extensionCodeValue) {
+    public MemberDTO getMember(final String memberId,
+                               final String extensionCodeValue) {
         boolean memberIdIsUUID = true;
         try {
             UUID theUuid = UUID.fromString(memberId);
         } catch (Exception e) {
             memberIdIsUUID = false;
         }
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_MEMBER).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_MEMBER)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_MEMBER)
-                .setTypes(ELASTIC_TYPE_MEMBER);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_MEMBER);
+            searchRequest.types(ELASTIC_TYPE_MEMBER);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
             if (memberIdIsUUID) {
                 final BoolQueryBuilder builder = boolQuery()
                     .must(matchQuery("id",
                         memberId.toLowerCase()));
-                searchRequest.setQuery(builder);
+                searchBuilder.query(builder);
             } else {
                 final BoolQueryBuilder builder = boolQuery()
                     .must(matchQuery("sequenceId",
                         memberId))
                     .must(matchQuery("extension.codeValue",
                         extensionCodeValue));
-                searchRequest.setQuery(builder);
+                searchBuilder.query(builder);
             }
-
-            final SearchResponse response = searchRequest.execute().actionGet();
-            if (response.getHits().getTotalHits() > 0) {
-                final SearchHit hit = response.getHits().getAt(0);
-                try {
-                    if (hit != null) {
-                        return mapper.readValue(hit.getSourceAsString(),
-                            MemberDTO.class);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                if (response.getHits().getTotalHits() > 0) {
+                    final SearchHit hit = response.getHits().getAt(0);
+                    try {
+                        if (hit != null) {
+                            return mapper.readValue(hit.getSourceAsString(),
+                                MemberDTO.class);
+                        }
+                    } catch (final IOException e) {
+                        LOG.error("getMember reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
                     }
-                } catch (final IOException e) {
-                    LOG.error("getMember reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
                 }
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
         }
         return null;
@@ -1363,15 +1501,15 @@ public class DomainImpl implements Domain {
                                           final Meta meta) {
         validatePageSize(pageSize);
         final Set<ResourceDTO> containers = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODESCHEME).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_CODESCHEME)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODESCHEME)
-                .setTypes(ELASTIC_TYPE_CODESCHEME)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0);
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_MEMBER);
+            searchRequest.types(ELASTIC_TYPE_MEMBER);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
+            searchBuilder.from(from != null ? from : 0);
             final BoolQueryBuilder builder = boolQuery();
             if (after != null) {
                 final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
@@ -1379,17 +1517,15 @@ public class DomainImpl implements Domain {
                 builder.must(rangeQuery("modified").gt(afterString));
             }
             if (language != null && !language.isEmpty()) {
-                searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
                 sortLanguages.forEach(sortLanguage -> {
                     if (!language.equalsIgnoreCase(sortLanguage)) {
-                        searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                        searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
                     }
                 });
-                searchRequest.addSort("codeValue.raw",
-                    SortOrder.ASC);
+                searchBuilder.sort("codeValue.raw", SortOrder.ASC);
             } else {
-                searchRequest.addSort("codeValue.raw",
-                    SortOrder.ASC);
+                searchBuilder.sort("codeValue.raw", SortOrder.ASC);
             }
             if (statuses != null && !statuses.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
@@ -1413,20 +1549,25 @@ public class DomainImpl implements Domain {
                 boolQueryBuilder.minimumShouldMatch(1);
                 builder.must(boolQueryBuilder);
             }
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            setResultCounts(meta,
-                response);
-            response.getHits().forEach(hit -> {
-                try {
-                    containers.add(mapper.readValue(hit.getSourceAsString(),
-                        ResourceDTO.class));
-                } catch (final IOException e) {
-                    LOG.error("getContainers reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
-                }
-            });
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                setResultCounts(meta,
+                    response);
+                response.getHits().forEach(hit -> {
+                    try {
+                        containers.add(mapper.readValue(hit.getSourceAsString(),
+                            ResourceDTO.class));
+                    } catch (final IOException e) {
+                        LOG.error("getContainers reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
+                    }
+                });
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
         }
         return containers;
     }
@@ -1440,16 +1581,15 @@ public class DomainImpl implements Domain {
                                          final Meta meta) {
         validatePageSize(pageSize);
         final Set<ResourceDTO> resources = new LinkedHashSet<>();
-        final boolean exists = client.admin().indices().prepareExists(ELASTIC_INDEX_CODE).execute().actionGet().isExists();
-        if (exists) {
+        if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
-            final SearchRequestBuilder searchRequest = client
-                .prepareSearch(ELASTIC_INDEX_CODE)
-                .setTypes(ELASTIC_TYPE_CODE)
-                .setSize(pageSize != null ? pageSize : MAX_SIZE)
-                .setFrom(from != null ? from : 0);
-
+            final SearchRequest searchRequest = new SearchRequest();
+            searchRequest.indices(ELASTIC_INDEX_CODE);
+            searchRequest.types(ELASTIC_TYPE_CODE);
+            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
+            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
+            searchBuilder.from(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(null,
                 null,
                 after);
@@ -1460,33 +1600,39 @@ public class DomainImpl implements Domain {
                     statuses));
             }
             if (language != null && !language.isEmpty()) {
-                searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
                 sortLanguages.forEach(sortLanguage -> {
                     if (!language.equalsIgnoreCase(sortLanguage)) {
-                        searchRequest.addSort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
+                        searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
                     }
                 });
-                searchRequest.addSort("codeValue.raw",
+                searchBuilder.sort("codeValue.raw",
                     SortOrder.ASC);
             } else {
-                searchRequest.addSort("order",
+                searchBuilder.sort("order",
                     SortOrder.ASC);
             }
-            searchRequest.setQuery(builder);
-            final SearchResponse response = searchRequest.execute().actionGet();
-            setResultCounts(meta,
-                response);
-            response.getHits().forEach(hit -> {
-                try {
-                    resources.add(mapper.readValue(hit.getSourceAsString(),
-                        ResourceDTO.class));
-                } catch (final IOException e) {
-                    LOG.error("getResources reading value from JSON string failed: " + hit.getSourceAsString(),
-                        e);
-                    throw new JsonParsingException(ERR_MSG_USER_406);
-                }
-            });
-            return resources;
+            searchBuilder.query(builder);
+            try {
+                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
+                setResultCounts(meta,
+                    response);
+                response.getHits().forEach(hit -> {
+                    try {
+                        resources.add(mapper.readValue(hit.getSourceAsString(),
+                            ResourceDTO.class));
+                    } catch (final IOException e) {
+                        LOG.error("getResources reading value from JSON string failed: " + hit.getSourceAsString(),
+                            e);
+                        throw new JsonParsingException(ERR_MSG_USER_406);
+                    }
+                });
+                return resources;
+            } catch (final IOException e) {
+                LOG.error("SearchRequest failed!", e);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
+
         }
         return resources;
     }

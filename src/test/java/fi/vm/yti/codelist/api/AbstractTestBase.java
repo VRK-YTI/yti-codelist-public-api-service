@@ -5,20 +5,24 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 import javax.inject.Inject;
 
-import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
+import org.elasticsearch.action.admin.indices.create.CreateIndexRequest;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.flush.FlushRequest;
-import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.admin.indices.get.GetIndexRequest;
+import org.elasticsearch.action.bulk.BulkRequest;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.client.Client;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.action.support.WriteRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,9 +32,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fi.vm.yti.codelist.api.domain.Domain;
+import fi.vm.yti.codelist.api.exception.YtiCodeListException;
+import fi.vm.yti.codelist.common.dto.AbstractIdentifyableCodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
+import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.model.Status;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
@@ -169,7 +176,7 @@ abstract public class AbstractTestBase {
         "}\n}";
 
     @Inject
-    private Client client;
+    private RestHighLevelClient client;
 
     @Inject
     private Domain domain;
@@ -218,11 +225,22 @@ abstract public class AbstractTestBase {
         LOG.debug("Indexed " + codes.size() + " Codes.");
     }
 
+    private boolean checkIfIndexExists(final String indexName) {
+        final GetIndexRequest request = new GetIndexRequest();
+        request.indices(indexName);
+        try {
+            return client.indices().exists(request, RequestOptions.DEFAULT);
+        } catch (final IOException e) {
+            LOG.error("Index checking request failed for index: " + indexName, e);
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+        }
+    }
+
     private void createIndexWithNestedPrefLabel(final String indexName,
                                                 final String type) {
-        final boolean exists = client.admin().indices().prepareExists(indexName).execute().actionGet().isExists();
-        if (!exists) {
-            final CreateIndexRequestBuilder builder = client.admin().indices().prepareCreate(indexName);
+        if (!checkIfIndexExists((indexName))) {
+            final CreateIndexRequest request = new CreateIndexRequest();
+            request.index(indexName);
             try {
                 final XContentBuilder contentBuilder = jsonBuilder()
                     .startObject()
@@ -245,25 +263,28 @@ abstract public class AbstractTestBase {
                     .endObject()
                     .endObject()
                     .endObject();
-                builder.setSource(contentBuilder);
+                request.source(contentBuilder);
             } catch (final IOException e) {
                 LOG.error("Error parsing index request settings JSON!", e);
             }
-
             switch (type) {
                 case ELASTIC_TYPE_CODESCHEME:
-                    builder.addMapping(type, CODESCHEME_MAPPING, XContentType.JSON);
+                    request.mapping(type, CODESCHEME_MAPPING, XContentType.JSON);
                     break;
                 case ELASTIC_TYPE_CODE:
-                    builder.addMapping(type, CODE_MAPPING, XContentType.JSON);
+                    request.mapping(type, CODE_MAPPING, XContentType.JSON);
                     break;
                 default:
-                    builder.addMapping(type, NESTED_PREFLABEL_MAPPING_JSON, XContentType.JSON);
+                    request.mapping(type, NESTED_PREFLABEL_MAPPING_JSON, XContentType.JSON);
                     break;
             }
-            final CreateIndexResponse response = builder.get();
-            if (!response.isAcknowledged()) {
-                LOG.error("Create failed for index: " + indexName);
+            try {
+                final CreateIndexResponse response = client.indices().create(request, RequestOptions.DEFAULT);
+                if (!response.isAcknowledged()) {
+                    LOG.error("Create failed for index: " + indexName);
+                }
+            } catch (final IOException e) {
+                LOG.error("Error creating index JSON!", e);
             }
         }
     }
@@ -277,18 +298,25 @@ abstract public class AbstractTestBase {
             mapper.registerModule(new JavaTimeModule());
             mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
             mapper.setFilterProvider(new SimpleFilterProvider().setFailOnUnknownId(false));
-            final BulkRequestBuilder bulkRequest = client.prepareBulk();
+            final BulkRequest bulkRequest = new BulkRequest();
             for (final T item : set) {
                 try {
-                    bulkRequest.add(client.prepareIndex(elasticIndex, elasticType).setSource(mapper.writeValueAsString(item), XContentType.JSON));
+                    final AbstractIdentifyableCodeDTO identifyableCode = (AbstractIdentifyableCodeDTO) item;
+                    final String itemPayload = mapper.writeValueAsString(item).replace("\\\\n", "\\n");
+                    bulkRequest.add(new IndexRequest(elasticIndex, elasticType, identifyableCode.getId().toString()).source(itemPayload, XContentType.JSON));
+                    bulkRequest.setRefreshPolicy(WriteRequest.RefreshPolicy.WAIT_UNTIL);
                 } catch (JsonProcessingException e) {
                     LOG.error("Error happened during indexing", e);
                 }
             }
-            final BulkResponse response = bulkRequest.get();
-            if (response.hasFailures()) {
-                LOG.error("Bulk indexing response failed: " + response.buildFailureMessage());
-                success = false;
+            try {
+                final BulkResponse response = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+                if (response.hasFailures()) {
+                    LOG.error("Bulk indexing response failed: " + response.buildFailureMessage());
+                    success = false;
+                }
+            } catch (final IOException e) {
+                LOG.error("Bulk index request failed!", e);
             }
         } else {
             LOG.error("Trying to index empty dataset..");
@@ -297,18 +325,13 @@ abstract public class AbstractTestBase {
         return success;
     }
 
-    /**
-     * Refreshes index with name.
-     *
-     * @param indexName The name of the index to be refreshed.
-     */
     @SuppressFBWarnings("RR_NOT_CHECKED")
     private void refreshIndex(final String indexName) {
         final FlushRequest request = new FlushRequest(indexName);
         try {
-            client.admin().indices().flush(request).get();
+            client.indices().flush(request, RequestOptions.DEFAULT);
             LOG.debug("Index flushed successfully: " + indexName);
-        } catch (final InterruptedException | ExecutionException e) {
+        } catch (final IOException e) {
             LOG.error("Index flush failed for index: " + indexName, e);
         }
     }

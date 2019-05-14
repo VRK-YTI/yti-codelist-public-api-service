@@ -127,20 +127,14 @@
         <dependency>
             <groupId>org.elasticsearch</groupId>
             <artifactId>elasticsearch</artifactId>
-            <version>${elastic.version}</version><!--$NO-MVN-MAN-VER$ -->
+            <version>${elastic.version}</version>
         </dependency>
 
-        <!-- Elastic Search Transport client -->
+        <!-- Elastic Search REST High Level Client -->
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
-            <artifactId>transport</artifactId>
-            <version>${elastic.version}</version><!--$NO-MVN-MAN-VER$ -->
-            <exclusions>
-                <exclusion>
-                    <groupId>org.elasticsearch</groupId>
-                    <artifactId>elasticsearch</artifactId>
-                </exclusion>
-            </exclusions>
+            <artifactId>elasticsearch-rest-high-level-client</artifactId>
+            <version>${elastic.version}</version>
         </dependency>
 
         <!-- Spring Cloud -->
@@ -396,7 +390,6 @@
                                     <color>yellow</color>
                                 </log>
                                 <ports>
-                                    <port>testelasticsearch.transport.port:9300</port>
                                     <port>testelasticsearch.http.port:9200</port>
                                 </ports>
                                 <env>
