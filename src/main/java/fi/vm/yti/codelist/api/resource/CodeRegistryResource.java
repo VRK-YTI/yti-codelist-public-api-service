@@ -18,6 +18,8 @@ import javax.ws.rs.core.Response;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.api.ApiUtils;
@@ -360,6 +362,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                    @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                                    @ApiParam(value = "Language code for sorting results.") @QueryParam("language") final String language,
                                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
+                                                   @ApiParam(value = "Returns code codeValues in JSON array format") @QueryParam("array") final String array,
                                                    @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(),
             pageSize,
@@ -400,6 +403,23 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 final Workbook workbook = codeExporter.createExcel(codes,
                     format);
                 return streamExcelCodesOutput(workbook);
+            } else if (array != null) {
+                final Set<CodeDTO> codes = domain.getCodes(pageSize,
+                    from,
+                    codeRegistryCodeValue,
+                    codeSchemeCodeValue,
+                    codeCodeValue,
+                    prefLabel,
+                    hierarchyLevel,
+                    broaderCodeId,
+                    language,
+                    statusList,
+                    meta.getAfter(),
+                    meta);
+                final ObjectMapper mapper = new ObjectMapper();
+                final ArrayNode arrayNode = mapper.createArrayNode();
+                codes.stream().forEach(code -> arrayNode.add(code.getCodeValue()));
+                return Response.ok(arrayNode).build();
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE,
                     expand), pretty));
