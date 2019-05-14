@@ -892,7 +892,7 @@ public class DomainImpl implements Domain {
             searchRequest.indices(ELASTIC_INDEX_PROPERTYTYPE);
             searchRequest.types(ELASTIC_TYPE_PROPERTYTYPE);
             final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
-            searchBuilder.size(pageSize != null ? pageSize : 0);
+            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
             searchBuilder.from(from != null ? from : 0);
             final BoolQueryBuilder builder = constructSearchQuery(null,
                 propertyTypePrefLabel,
