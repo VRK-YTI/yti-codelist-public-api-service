@@ -786,8 +786,6 @@ public class DomainImpl implements Domain {
                 .should(matchQuery("codeScheme.id",
                     codeSchemeCodeValue.toLowerCase()))
                 .minimumShouldMatch(1));
-            searchBuilder.query(builder);
-            searchRequest.source(searchBuilder);
             if (hierarchyLevel != null) {
                 builder.must(rangeQuery("hierarchyLevel").lte(hierarchyLevel));
             }
@@ -812,6 +810,8 @@ public class DomainImpl implements Domain {
                 searchBuilder.sort("order",
                     SortOrder.ASC);
             }
+            searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
 
@@ -1095,8 +1095,6 @@ public class DomainImpl implements Domain {
             final BoolQueryBuilder builder = constructSearchQuery(null,
                 externalReferencePrefLabel,
                 after);
-            searchBuilder.query(builder);
-            searchRequest.source(searchBuilder);
             if (codeScheme != null) {
                 builder.should(boolQuery()
                     .should(boolQuery()
@@ -1111,9 +1109,10 @@ public class DomainImpl implements Domain {
                 builder.must(matchQuery("global",
                     true));
             }
+            searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-
                 setResultCounts(meta,
                     response);
                 response.getHits().forEach(hit -> {
@@ -1207,7 +1206,6 @@ public class DomainImpl implements Domain {
             searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-
                 if (response.getHits().getTotalHits() > 0) {
                     LOG.debug(String.format("Found %d Extensions",
                         response.getHits().getTotalHits()));
