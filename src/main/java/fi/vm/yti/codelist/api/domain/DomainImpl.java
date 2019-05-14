@@ -111,6 +111,7 @@ public class DomainImpl implements Domain {
                     codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .minimumShouldMatch(1);
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 if (response.getHits().getTotalHits() > 0) {
@@ -165,7 +166,6 @@ public class DomainImpl implements Domain {
             searchBuilder.sort("codeValue.raw", SortOrder.ASC);
             searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
             searchBuilder.from(from != null ? from : 0);
-
             final BoolQueryBuilder builder = constructSearchQuery(codeRegistryCodeValue,
                 codeRegistryPrefLabel,
                 after);
@@ -174,9 +174,9 @@ public class DomainImpl implements Domain {
                     organizations));
             }
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-
                 setResultCounts(meta,
                     response);
                 response.getHits().forEach(hit -> {
@@ -212,6 +212,7 @@ public class DomainImpl implements Domain {
                 .must(matchQuery("id",
                     codeSchemeId.toLowerCase()));
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 if (response.getHits().getTotalHits() > 0) {
@@ -256,9 +257,9 @@ public class DomainImpl implements Domain {
             builder.must(matchQuery("codeRegistry.codeValue",
                 codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-
                 if (response.getHits().getTotalHits() > 0) {
                     LOG.debug(String.format("Found %d CodeSchemes",
                         response.getHits().getTotalHits()));
@@ -351,6 +352,7 @@ public class DomainImpl implements Domain {
                 builder.minimumShouldMatch(1);
             }
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 response.getHits().forEach(hit -> {
@@ -414,9 +416,9 @@ public class DomainImpl implements Domain {
                     extensionPropertyType));
             }
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-
                 response.getHits().forEach(hit -> {
                     try {
                         ExtensionDTO extensionDTO = mapper.readValue(hit.getSourceAsString(),
@@ -638,6 +640,7 @@ public class DomainImpl implements Domain {
                 builder.must(boolQueryBuilder);
             }
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 setResultCounts(meta,
@@ -705,6 +708,7 @@ public class DomainImpl implements Domain {
             builder.must(matchQuery("codeScheme.codeRegistry.codeValue",
                 codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 LOG.debug(String.format("getCode found: %d hits.",
@@ -783,6 +787,7 @@ public class DomainImpl implements Domain {
                     codeSchemeCodeValue.toLowerCase()))
                 .minimumShouldMatch(1));
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             if (hierarchyLevel != null) {
                 builder.must(rangeQuery("hierarchyLevel").lte(hierarchyLevel));
             }
@@ -846,9 +851,9 @@ public class DomainImpl implements Domain {
                     propertyTypeIdentifier.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .minimumShouldMatch(1);
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-
                 if (response.getHits().getTotalHits() > 0) {
                     final SearchHit hit = response.getHits().getAt(0);
                     try {
@@ -914,11 +919,10 @@ public class DomainImpl implements Domain {
                     SortOrder.ASC);
             }
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-
-                setResultCounts(meta,
-                    response);
+                setResultCounts(meta, response);
                 response.getHits().forEach(hit -> {
                     try {
                         final PropertyTypeDTO propertyType = mapper.readValue(hit.getSourceAsString(),
@@ -953,9 +957,9 @@ public class DomainImpl implements Domain {
                     valueTypeIdentifier.toLowerCase()).analyzer(TEXT_ANALYZER))
                 .minimumShouldMatch(1);
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-
                 if (response.getHits().getTotalHits() > 0) {
                     final SearchHit hit = response.getHits().getAt(0);
                     try {
@@ -1001,10 +1005,10 @@ public class DomainImpl implements Domain {
                     localName.toLowerCase()));
             }
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-                setResultCounts(meta,
-                    response);
+                setResultCounts(meta, response);
                 response.getHits().forEach(hit -> {
                     try {
                         final ValueTypeDTO valueType = mapper.readValue(hit.getSourceAsString(),
@@ -1036,6 +1040,7 @@ public class DomainImpl implements Domain {
                 .must(matchQuery("id",
                     externalReferenceId.toLowerCase()));
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 if (response.getHits().getTotalHits() > 0) {
@@ -1091,6 +1096,7 @@ public class DomainImpl implements Domain {
                 externalReferencePrefLabel,
                 after);
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             if (codeScheme != null) {
                 builder.should(boolQuery()
                     .should(boolQuery()
@@ -1150,14 +1156,14 @@ public class DomainImpl implements Domain {
             final BoolQueryBuilder builder = constructSearchQuery(null,
                 extensionPrefLabel,
                 after);
-            searchBuilder.query(builder);
             if (codeScheme != null) {
                 builder.must(matchQuery("parentCodeScheme.id",
                     codeScheme.getId().toString().toLowerCase()));
             }
+            searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-
                 setResultCounts(meta,
                     response);
                 response.getHits().forEach(hit -> {
@@ -1198,6 +1204,7 @@ public class DomainImpl implements Domain {
             builder.must(matchQuery("parentCodeScheme.id",
                 codeSchemeUuid.toString().toLowerCase()));
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
 
@@ -1246,6 +1253,7 @@ public class DomainImpl implements Domain {
             builder.must(matchQuery("parentCodeScheme.codeValue",
                 codeSchemeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 if (response.getHits().getTotalHits() > 0) {
@@ -1283,6 +1291,7 @@ public class DomainImpl implements Domain {
                 .must(matchQuery("id",
                     extensionId.toLowerCase()));
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 if (response.getHits().getTotalHits() > 0) {
@@ -1326,11 +1335,12 @@ public class DomainImpl implements Domain {
             final BoolQueryBuilder builder = constructSearchQuery(null,
                 null,
                 after);
-            searchBuilder.query(builder);
             if (code != null) {
                 builder.must(matchQuery("code.id",
                     code.getId().toString().toLowerCase()));
             }
+            searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 setResultCounts(meta,
@@ -1374,6 +1384,7 @@ public class DomainImpl implements Domain {
                 null,
                 after);
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 setResultCounts(meta,
@@ -1417,6 +1428,7 @@ public class DomainImpl implements Domain {
                 null,
                 after);
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             if (extension != null) {
                 builder.must(matchQuery("extension.id",
                     extension.getId().toString().toLowerCase()));
@@ -1463,6 +1475,7 @@ public class DomainImpl implements Domain {
                     .must(matchQuery("id",
                         memberId.toLowerCase()));
                 searchBuilder.query(builder);
+                searchRequest.source(searchBuilder);
             } else {
                 final BoolQueryBuilder builder = boolQuery()
                     .must(matchQuery("sequenceId",
@@ -1470,6 +1483,7 @@ public class DomainImpl implements Domain {
                     .must(matchQuery("extension.codeValue",
                         extensionCodeValue));
                 searchBuilder.query(builder);
+                searchRequest.source(searchBuilder);
             }
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
@@ -1550,6 +1564,7 @@ public class DomainImpl implements Domain {
                 builder.must(boolQueryBuilder);
             }
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 setResultCounts(meta,
@@ -1613,6 +1628,7 @@ public class DomainImpl implements Domain {
                     SortOrder.ASC);
             }
             searchBuilder.query(builder);
+            searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 setResultCounts(meta,
