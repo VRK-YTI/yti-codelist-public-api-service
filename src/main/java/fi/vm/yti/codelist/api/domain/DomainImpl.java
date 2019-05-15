@@ -578,7 +578,7 @@ public class DomainImpl implements Domain {
             }
             if (infoDomains != null && !infoDomains.isEmpty()) {
                 builder.must(nestedQuery("infoDomains",
-                    matchQuery("infoDomains.codeValue",
+                    termsQuery("infoDomains.codeValue.raw",
                         infoDomains),
                     ScoreMode.None));
             }
@@ -643,15 +643,13 @@ public class DomainImpl implements Domain {
             searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-                setResultCounts(meta,
-                    response);
+                setResultCounts(meta, response);
                 response.getHits().forEach(hit -> {
                     try {
                         codeSchemes.add(mapper.readValue(hit.getSourceAsString(),
                             CodeSchemeDTO.class));
                     } catch (final IOException e) {
-                        LOG.error("getCodeSchemes reading value from JSON string failed: " + hit.getSourceAsString(),
-                            e);
+                        LOG.error("getCodeSchemes reading value from JSON string failed: " + hit.getSourceAsString(), e);
                         throw new JsonParsingException(ERR_MSG_USER_406);
                     }
                 });
@@ -660,9 +658,8 @@ public class DomainImpl implements Domain {
                 throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
         }
-
-        for (CodeSchemeDTO cs : codeSchemes) {
-            ArrayList<SearchHitDTO> searchHits = searchResultWithMetaData.getSearchHitDTOMap().get(cs.getId().toString().toLowerCase());
+        for (final CodeSchemeDTO cs : codeSchemes) {
+            final ArrayList<SearchHitDTO> searchHits = searchResultWithMetaData.getSearchHitDTOMap().get(cs.getId().toString().toLowerCase());
             if (language != null && searchHits != null) {
                 searchHits.sort(Comparator.comparing(searchHitDTO -> searchHitDTO.getPrefLabel().get(language) != null ? searchHitDTO.getPrefLabel().get(language) : searchHitDTO.getEntityCodeValue(), Comparator.nullsLast(Comparator.naturalOrder())));
             }
@@ -1517,8 +1514,8 @@ public class DomainImpl implements Domain {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
             final SearchRequest searchRequest = new SearchRequest();
-            searchRequest.indices(ELASTIC_INDEX_MEMBER);
-            searchRequest.types(ELASTIC_TYPE_MEMBER);
+            searchRequest.indices(ELASTIC_INDEX_CODESCHEME);
+            searchRequest.types(ELASTIC_TYPE_CODESCHEME);
             final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
             searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
             searchBuilder.from(from != null ? from : 0);
