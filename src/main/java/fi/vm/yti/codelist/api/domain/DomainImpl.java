@@ -393,8 +393,8 @@ public class DomainImpl implements Domain {
             final ObjectMapper mapper = new ObjectMapper();
             registerModulesToMapper(mapper);
             final SearchRequest searchRequest = new SearchRequest();
-            searchRequest.indices(ELASTIC_INDEX_CODE);
-            searchRequest.types(ELASTIC_TYPE_CODE);
+            searchRequest.indices(ELASTIC_INDEX_EXTENSION);
+            searchRequest.types(ELASTIC_TYPE_EXTENSION);
             final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
             searchBuilder.size(MAX_DEEP_SEARCH_SIZE);
             final BoolQueryBuilder builder = boolQuery();
