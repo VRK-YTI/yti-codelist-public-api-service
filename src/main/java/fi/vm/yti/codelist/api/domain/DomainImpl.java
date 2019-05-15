@@ -578,7 +578,7 @@ public class DomainImpl implements Domain {
             }
             if (infoDomains != null && !infoDomains.isEmpty()) {
                 builder.must(nestedQuery("infoDomains",
-                    termsQuery("infoDomains.codeValue.raw",
+                    termsQuery("infoDomains.codeValue.keyword",
                         infoDomains),
                     ScoreMode.None));
             }
