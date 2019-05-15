@@ -18,6 +18,8 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 @PropertySource(value = "classpath", ignoreResourceNotFound = true)
 public class SpringAppConfig {
 
+    private static final int ES_CONNECTION_TIMEOUT = 300000;
+
     @Value("${yti_codelist_public_api_service_elastic_host}")
     protected String elasticsearchHost;
 
@@ -52,6 +54,10 @@ public class SpringAppConfig {
     protected RestHighLevelClient elasticSearchRestHighLevelClient() {
         return new RestHighLevelClient(
             RestClient.builder(
-                new HttpHost(elasticsearchHost, elasticsearchPort, "http")));
+                new HttpHost(elasticsearchHost, elasticsearchPort, "http"))
+                .setRequestConfigCallback(
+                    requestConfigBuilder -> requestConfigBuilder
+                        .setConnectTimeout(ES_CONNECTION_TIMEOUT)
+                        .setSocketTimeout(ES_CONNECTION_TIMEOUT)));
     }
 }
