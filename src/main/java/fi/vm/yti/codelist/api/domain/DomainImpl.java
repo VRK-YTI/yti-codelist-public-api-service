@@ -672,7 +672,6 @@ public class DomainImpl implements Domain {
         final List<String> allStatuses = new ArrayList<>();
         allStatuses.add(Status.DRAFT.toString());
         allStatuses.add(Status.SUGGESTED.toString());
-        allStatuses.add(Status.SUBMITTED.toString());
         allStatuses.add(Status.VALID.toString());
         allStatuses.add(Status.INVALID.toString());
         allStatuses.add(Status.RETIRED.toString());
@@ -1685,8 +1684,6 @@ public class DomainImpl implements Domain {
     private void boostStatus(final BoolQueryBuilder builder) {
         builder.should(constantScoreQuery(termQuery("status.keyword",
             "VALID")).boost(1000f));
-        builder.should(constantScoreQuery(termQuery("status.keyword",
-            "SUBMITTED")).boost(900f));
         builder.should(constantScoreQuery(termQuery("status.keyword",
             "DRAFT")).boost(800f));
         builder.should(constantScoreQuery(termQuery("status.keyword",
