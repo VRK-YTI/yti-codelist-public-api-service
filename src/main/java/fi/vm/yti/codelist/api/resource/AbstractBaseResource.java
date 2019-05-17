@@ -121,6 +121,10 @@ abstract class AbstractBaseResource {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_CODES);
     }
 
+    Response streamCsvCodeSchemeOutput(final String csv, final String filename) {
+        return streamCsvOutput(csv, filename);
+    }
+
     Response streamCsvCodeSchemesOutput(final String csv) {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_CODESCHEMES);
     }
@@ -168,6 +172,11 @@ abstract class AbstractBaseResource {
 
     Response streamExcelCodesOutput(final Workbook workbook) {
         return streamExcelOutput(workbook, DOWNLOAD_FILENAME_CODES);
+    }
+
+    Response streamExcelCodeSchemeOutput(final Workbook workbook,
+                                         final String filename) {
+        return streamExcelOutput(workbook, filename);
     }
 
     Response streamExcelCodeSchemesOutput(final Workbook workbook) {

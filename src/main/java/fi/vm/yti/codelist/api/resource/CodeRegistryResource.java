@@ -276,7 +276,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}")
     @ApiOperation(value = "Return one specific CodeScheme.", response = CodeSchemeDTO.class)
     @ApiResponse(code = 200, message = "Returns one specific CodeScheme in JSON format.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN + ";charset=utf-8" })
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN + ";charset=UTF-8", "application/xlsx", "application/csv" })
     public Response getCodeRegistryCodeScheme(@ApiParam(value = "CodeRegistry CodeValue.", required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                               @ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
@@ -293,9 +293,22 @@ public class CodeRegistryResource extends AbstractBaseResource {
             if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
                 final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue,
                     codeSchemeCodeValue);
-                final Workbook workbook = codeSchemeExporter.createExcel(codeScheme,
-                    format);
-                return streamExcelCodesOutput(workbook);
+                if (codeScheme != null) {
+                    final Workbook workbook = codeSchemeExporter.createExcel(codeScheme,
+                        format);
+                    return streamExcelCodeSchemeOutput(workbook, "codelist_" + codeScheme.getCodeValue());
+                }  else {
+                    throw new NotFoundException();
+                }
+            } else if (FORMAT_CSV.equalsIgnoreCase(format)) {
+                    final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue,
+                        codeSchemeCodeValue);
+                    if (codeScheme != null) {
+                        final String csv = codeSchemeExporter.createCsv(codeScheme);
+                        return streamCsvCodeSchemeOutput(csv, "codelist_" + codeScheme.getCodeValue());
+                    } else {
+                        throw new NotFoundException();
+                    }
             } else {
                 final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue,
                     codeSchemeCodeValue);

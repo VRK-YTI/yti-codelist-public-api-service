@@ -39,6 +39,12 @@ public class CodeSchemeExporter extends BaseExporter {
         this.externalReferenceExporter = externalReferenceExporter;
     }
 
+    public String createCsv(final CodeSchemeDTO codeScheme) {
+        final Set<CodeSchemeDTO> codeSchemes = new HashSet<>();
+        codeSchemes.add(codeScheme);
+        return createCsv(codeSchemes);
+    }
+
     public String createCsv(final Set<CodeSchemeDTO> codeSchemes) {
         final Set<String> prefLabelLanguages = resolveCodeSchemePrefLabelLanguages(codeSchemes);
         final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
