@@ -27,6 +27,8 @@ public class MemberExporter extends BaseExporter {
     public String createCsv(final ExtensionDTO extension,
                             final Set<MemberDTO> members) {
         final Set<String> prefLabelLanguages = resolveMemberPrefLabelLanguages(members);
+        final Set<CodeDTO> codesInMembers = members.stream().map(MemberDTO::getCode).collect(Collectors.toSet());
+        final Set<String> codePrefLabelLanguages = resolveCodePrefLabelLanguages(codesInMembers);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, csvSeparator, CONTENT_HEADER_MEMBER_ID);
@@ -37,6 +39,7 @@ public class MemberExporter extends BaseExporter {
         }
         prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_CODE);
+        codePrefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_CODE_PREFLABEL_PREFIX + language.toUpperCase()));
         appendValue(csv, csvSeparator, CONTENT_HEADER_RELATION);
         appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
         appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
@@ -57,7 +60,9 @@ public class MemberExporter extends BaseExporter {
                 });
             }
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getPrefLabel().get(language)));
-            appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getUri() : "");
+            final CodeDTO memberCode = member.getCode();
+            appendValue(csv, csvSeparator, memberCode != null ? member.getCode().getUri() : "");
+            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, memberCode != null ? memberCode.getPrefLabel().get(language) : ""));
             appendValue(csv, csvSeparator, resolveRelatedMemberIdentifier(member.getRelatedMember()));
             appendValue(csv, csvSeparator, member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
             appendValue(csv, csvSeparator, member.getEndDate() != null ? formatDateWithISO8601(member.getEndDate()) : "");
@@ -116,8 +121,9 @@ public class MemberExporter extends BaseExporter {
                                 final String sheetName,
                                 final Set<MemberDTO> members) {
         final Set<String> prefLabelLanguages = resolveMemberPrefLabelLanguages(members);
+        final Set<CodeDTO> codesInMembers = members.stream().map(MemberDTO::getCode).collect(Collectors.toSet());
+        final Set<String> codePrefLabelLanguages = resolveCodePrefLabelLanguages(codesInMembers);
         final Sheet sheet = workbook.createSheet(sheetName);
-
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBER_ID);
@@ -132,6 +138,9 @@ public class MemberExporter extends BaseExporter {
             rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODE);
+        for (final String language : codePrefLabelLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODE_PREFLABEL_PREFIX + language.toUpperCase());
+        }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_RELATION);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
@@ -157,10 +166,14 @@ public class MemberExporter extends BaseExporter {
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(member.getPrefLabel().get(language));
             }
-            if (member.getCode() != null) {
+            final CodeDTO memberCode = member.getCode();
+            if (memberCode != null) {
                 row.createCell(k++).setCellValue(checkEmptyValue(member.getCode().getUri()));
             } else {
                 row.createCell(k++).setCellValue("");
+            }
+            for (final String language : codePrefLabelLanguages) {
+                row.createCell(k++).setCellValue(memberCode != null ? memberCode.getPrefLabel().get(language) : "");
             }
             row.createCell(k++).setCellValue(resolveRelatedMemberIdentifier(member.getRelatedMember()));
             row.createCell(k++).setCellValue(member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
