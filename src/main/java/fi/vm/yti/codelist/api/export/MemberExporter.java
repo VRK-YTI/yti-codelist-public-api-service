@@ -62,7 +62,7 @@ public class MemberExporter extends BaseExporter {
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getPrefLabel().get(language)));
             final CodeDTO memberCode = member.getCode();
             appendValue(csv, csvSeparator, memberCode != null ? member.getCode().getUri() : "");
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, memberCode != null ? memberCode.getPrefLabel().get(language) : ""));
+            codePrefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, memberCode != null ? memberCode.getPrefLabel().get(language) : ""));
             appendValue(csv, csvSeparator, resolveRelatedMemberIdentifier(member.getRelatedMember()));
             appendValue(csv, csvSeparator, member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
             appendValue(csv, csvSeparator, member.getEndDate() != null ? formatDateWithISO8601(member.getEndDate()) : "");
