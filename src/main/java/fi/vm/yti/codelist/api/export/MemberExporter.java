@@ -253,7 +253,7 @@ public class MemberExporter extends BaseExporter {
         if (relatedCode == null) {
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), ERR_MSG_USER_406));
         }
-        return relatedMember.getSequenceId().toString();
+        return relatedMember.getUri();
     }
 
     private Set<String> resolveMemberPrefLabelLanguages(final Set<MemberDTO> members) {
