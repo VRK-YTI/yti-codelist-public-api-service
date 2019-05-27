@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
+import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.MemberDTO;
@@ -61,7 +62,7 @@ public class MemberExporter extends BaseExporter {
             }
             prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getPrefLabel().get(language)));
             final CodeDTO memberCode = member.getCode();
-            appendValue(csv, csvSeparator, memberCode != null ? member.getCode().getUri() : "");
+            appendValue(csv, csvSeparator, resolveMemberCodeIdentifier(extension.getParentCodeScheme(), member.getCode()));
             codePrefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, memberCode != null ? memberCode.getPrefLabel().get(language) : ""));
             appendValue(csv, csvSeparator, resolveRelatedMemberIdentifier(member.getRelatedMember()));
             appendValue(csv, csvSeparator, member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
@@ -167,11 +168,7 @@ public class MemberExporter extends BaseExporter {
                 row.createCell(k++).setCellValue(member.getPrefLabel().get(language));
             }
             final CodeDTO memberCode = member.getCode();
-            if (memberCode != null) {
-                row.createCell(k++).setCellValue(checkEmptyValue(member.getCode().getUri()));
-            } else {
-                row.createCell(k++).setCellValue("");
-            }
+            row.createCell(k++).setCellValue(resolveMemberCodeIdentifier(extension.getParentCodeScheme(), memberCode));
             for (final String language : codePrefLabelLanguages) {
                 row.createCell(k++).setCellValue(memberCode != null ? memberCode.getPrefLabel().get(language) : "");
             }
@@ -245,6 +242,16 @@ public class MemberExporter extends BaseExporter {
         }
     }
 
+    private String resolveMemberCodeIdentifier(final CodeSchemeDTO codeScheme,
+                                               final CodeDTO code) {
+        if (codeScheme != null && code != null && codeScheme.getId().equals(code.getCodeScheme().getId())) {
+            return code.getCodeValue();
+        } else if (code != null) {
+            return code.getUri();
+        }
+        return "";
+    }
+
     private String resolveRelatedMemberIdentifier(final MemberDTO relatedMember) {
         if (relatedMember == null) {
             return "";
@@ -253,7 +260,7 @@ public class MemberExporter extends BaseExporter {
         if (relatedCode == null) {
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), ERR_MSG_USER_406));
         }
-        return relatedMember.getUri();
+        return relatedMember.getSequenceId().toString();
     }
 
     private Set<String> resolveMemberPrefLabelLanguages(final Set<MemberDTO> members) {
