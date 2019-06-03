@@ -23,9 +23,6 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiResponse;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_CODE;
 
-/**
- * REST resources for Codes.
- */
 @Component
 @Path("/v1/codes")
 @Api(value = "codes")

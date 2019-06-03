@@ -16,10 +16,10 @@ import fi.vm.yti.codelist.api.filter.CharsetResponseFilter;
 import fi.vm.yti.codelist.api.filter.RequestLoggingFilter;
 import fi.vm.yti.codelist.api.resource.CodeRegistryResource;
 import fi.vm.yti.codelist.api.resource.CodeSchemeResource;
-import fi.vm.yti.codelist.api.resource.MemberResource;
 import fi.vm.yti.codelist.api.resource.ExtensionResource;
 import fi.vm.yti.codelist.api.resource.ExternalReferenceResource;
 import fi.vm.yti.codelist.api.resource.IntegrationResource;
+import fi.vm.yti.codelist.api.resource.MemberResource;
 import fi.vm.yti.codelist.api.resource.PingResource;
 import fi.vm.yti.codelist.api.resource.PropertyTypeResource;
 import fi.vm.yti.codelist.api.resource.SwaggerResource;
@@ -63,8 +63,6 @@ public class JerseyConfig extends ResourceConfig {
     public JerseyConfig() {
         final JacksonJaxbJsonProvider provider = new JacksonJaxbJsonProvider();
         CustomObjectMapper cm = new CustomObjectMapper();
-        cm.registerModule(new JavaTimeModule());
-        cm.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         provider.setMapper(cm);
 
         // ExceptionMappers

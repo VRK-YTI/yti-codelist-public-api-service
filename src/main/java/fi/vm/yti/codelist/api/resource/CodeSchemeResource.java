@@ -31,9 +31,6 @@ import io.swagger.annotations.ApiResponse;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.util.Arrays.asList;
 
-/**
- * REST resources for CodeSchemes.
- */
 @Component
 @Path("/v1/codeschemes")
 @Api(value = "codeschemes")

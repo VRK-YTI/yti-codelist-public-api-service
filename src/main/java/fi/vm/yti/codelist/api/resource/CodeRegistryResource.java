@@ -46,9 +46,6 @@ import io.swagger.annotations.ApiResponse;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.util.Arrays.asList;
 
-/**
- * REST resources for CodeRegistries, CodeSchemes and Codes.
- */
 @Component
 @Path("/v1/coderegistries")
 @Api(value = "coderegistries")

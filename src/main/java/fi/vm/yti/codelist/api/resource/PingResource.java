@@ -11,9 +11,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 
-/**
- * REST resources for service responsiveness testing.
- */
 @Component
 @Path("/ping")
 @Api(value = "ping")

@@ -8,7 +8,7 @@ import javax.xml.bind.annotation.XmlType;
 import fi.vm.yti.codelist.common.dto.Meta;
 
 @XmlRootElement
-@XmlType(propOrder = {"meta", "results"})
+@XmlType(propOrder = { "meta", "results" })
 public class ResponseWrapper<T> {
 
     private Meta meta;

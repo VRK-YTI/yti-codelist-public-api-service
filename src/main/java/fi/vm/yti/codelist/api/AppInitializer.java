@@ -54,17 +54,11 @@ public class AppInitializer implements ApplicationRunner {
         initialize();
     }
 
-    /**
-     * Initialize the application, load data for services.
-     */
     private void initialize() {
         printLogo();
         updateSwaggerHost();
     }
 
-    /**
-     * Application logo printout to log.
-     */
     private void printLogo() {
         LOG.info("          __  .__                      ___.   .__  .__        ");
         LOG.info(" ___.__._/  |_|__|         ______  __ _\\_ |__ |  | |__| ____  ");
@@ -83,11 +77,6 @@ public class AppInitializer implements ApplicationRunner {
         LOG.info("");
     }
 
-    /**
-     * Updates the compile time generated swagger.json with the hostname of the current environment.
-     * <p>
-     * The file is stored in the {@value #LOCAL_SWAGGER_DATA_DIR} folder, where it will be served from the SwaggerResource.
-     */
     @SuppressFBWarnings("DMI_HARDCODED_ABSOLUTE_FILENAME")
     private void updateSwaggerHost() {
         final ObjectMapper mapper = new ObjectMapper();

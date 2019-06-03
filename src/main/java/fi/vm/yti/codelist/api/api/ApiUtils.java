@@ -32,16 +32,6 @@ public class ApiUtils {
         return builder.toString();
     }
 
-    /**
-     * Creates the next page resource URL for fetching more content from this resource.
-     *
-     * @param apiVersion The REST API version string.
-     * @param apiPath    The path for the API resource.
-     * @param after      After timestamp in ISO 8601 format for filtering content.
-     * @param pageSize   Page size used in pagination.
-     * @param from       Start index for pagination.
-     * @return The next page URL.
-     */
     public String createNextPageUrl(final String apiVersion,
                                     final String apiPath,
                                     final String after,
