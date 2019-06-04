@@ -32,7 +32,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Component
 @Path("/v1/propertytypes")
 @Api(value = "propertytypes")
-@Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
 public class PropertyTypeResource extends AbstractBaseResource {
 
     private final Domain domain;
@@ -48,7 +48,7 @@ public class PropertyTypeResource extends AbstractBaseResource {
     @GET
     @ApiOperation(value = "Return a list of available PropertyTypes.", response = PropertyTypeDTO.class, responseContainer = "List")
     @ApiResponse(code = 200, message = "Returns all PropertyTypes in specified format.")
-    @Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
     public Response getPropertyTypes(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
                                      @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                      @ApiParam(value = "PropertyType name as string value.") @QueryParam("name") final String name,

@@ -88,11 +88,7 @@ public class UriResolverResource extends AbstractBaseResource {
     @ApiOperation(value = "Redirect URI resource.")
     @Consumes({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
     @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-    @ApiResponses(value = {
-        @ApiResponse(code = 303, message = "Does a redirect from codelist resource URI to codelist API."),
-        @ApiResponse(code = 406, message = "Resource not found."),
-        @ApiResponse(code = 406, message = "Cannot redirect to given URI.")
-    })
+    @ApiResponses(value = { @ApiResponse(code = 303, message = "Does a redirect from codelist resource URI to codelist API."), @ApiResponse(code = 406, message = "Resource not found."), @ApiResponse(code = 406, message = "Cannot redirect to given URI.") })
     public Response redirectUri(@HeaderParam("Accept") String accept,
                                 @ApiParam(value = "Format for returning content.") @QueryParam("format") final String format,
                                 @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
