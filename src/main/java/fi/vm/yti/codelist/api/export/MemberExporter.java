@@ -60,10 +60,10 @@ public class MemberExporter extends BaseExporter {
                     }
                 });
             }
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getPrefLabel().get(language)));
+            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getMemberPrefLabel(member, language)));
             final CodeDTO memberCode = member.getCode();
             appendValue(csv, csvSeparator, resolveMemberCodeIdentifier(extension.getParentCodeScheme(), member.getCode()));
-            codePrefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, memberCode != null ? memberCode.getPrefLabel().get(language) : ""));
+            codePrefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, memberCode != null ? getCodePrefLabel(memberCode, language) : ""));
             appendValue(csv, csvSeparator, resolveRelatedMemberIdentifier(member.getRelatedMember()));
             appendValue(csv, csvSeparator, member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
             appendValue(csv, csvSeparator, member.getEndDate() != null ? formatDateWithISO8601(member.getEndDate()) : "");
@@ -105,12 +105,12 @@ public class MemberExporter extends BaseExporter {
                 });
             }
             appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getCodeValue() : "");
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getCode().getPrefLabel().get(language)));
+            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodePrefLabel(member.getCode(), language)));
             appendValue(csv, csvSeparator, member.getCode() != null ? member.getCode().getUri() : "");
 
             if (member.getRelatedMember() != null) {
                 appendValue(csv, csvSeparator, member.getRelatedMember().getCode() != null ? member.getRelatedMember().getCode().getCodeValue() : "");
-                prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, member.getRelatedMember().getCode().getPrefLabel().get(language)));
+                prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodePrefLabel(member.getRelatedMember().getCode(), language)));
                 appendValue(csv, csvSeparator, member.getRelatedMember().getCode().getUri(), true);
             }
         }
@@ -165,12 +165,12 @@ public class MemberExporter extends BaseExporter {
                 }
             }
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(member.getPrefLabel().get(language));
+                row.createCell(k++).setCellValue(getMemberPrefLabel(member, language));
             }
             final CodeDTO memberCode = member.getCode();
             row.createCell(k++).setCellValue(resolveMemberCodeIdentifier(extension.getParentCodeScheme(), memberCode));
             for (final String language : codePrefLabelLanguages) {
-                row.createCell(k++).setCellValue(memberCode != null ? memberCode.getPrefLabel().get(language) : "");
+                row.createCell(k++).setCellValue(memberCode != null ? getCodePrefLabel(memberCode, language) : "");
             }
             row.createCell(k++).setCellValue(resolveRelatedMemberIdentifier(member.getRelatedMember()));
             row.createCell(k++).setCellValue(member.getStartDate() != null ? formatDateWithISO8601(member.getStartDate()) : "");
@@ -229,13 +229,13 @@ public class MemberExporter extends BaseExporter {
             }
             row.createCell(k++).setCellValue(member.getCode().getCodeValue());
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(member.getCode().getPrefLabel().get(language));
+                row.createCell(k++).setCellValue(getCodePrefLabel(member.getCode(), language));
             }
             row.createCell(k++).setCellValue(member.getCode().getUri());
             if (member.getRelatedMember() != null) {
                 row.createCell(k++).setCellValue(member.getRelatedMember().getCode().getCodeValue());
                 for (final String language : prefLabelLanguages) {
-                    row.createCell(k++).setCellValue(member.getRelatedMember().getCode().getPrefLabel().get(language));
+                    row.createCell(k++).setCellValue(getCodePrefLabel(member.getRelatedMember().getCode(), language));
                 }
                 row.createCell(k++).setCellValue(member.getRelatedMember().getCode().getUri());
             }

@@ -48,7 +48,7 @@ public class ExtensionExporter extends BaseExporter {
             appendValue(csv, csvSeparator, extension.getStatus());
             appendValue(csv, csvSeparator, extension.getPropertyType().getLocalName());
             appendValue(csv, csvSeparator, getCodeSchemeUris(extension.getCodeSchemes()));
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, checkEmptyValue(extension.getPrefLabel() != null ? extension.getPrefLabel().get(language) : null)));
+            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getExtensionPrefLabel(extension, language)));
             appendValue(csv, csvSeparator, extension.getStartDate() != null ? formatDateWithISO8601(extension.getStartDate()) : "");
             appendValue(csv, csvSeparator, extension.getEndDate() != null ? formatDateWithISO8601(extension.getEndDate()) : "");
             appendValue(csv, csvSeparator, extension.getCreated() != null ? formatDateWithSeconds(extension.getCreated()) : "");
@@ -115,7 +115,7 @@ public class ExtensionExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(extension.getPropertyType().getLocalName()));
             row.createCell(k++).setCellValue(checkEmptyValue(getCodeSchemeUris(extension.getCodeSchemes())));
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(checkEmptyValue(extension.getPrefLabel() != null ? extension.getPrefLabel().get(language) : null));
+                row.createCell(k++).setCellValue(getExtensionPrefLabel(extension, language));
             }
             row.createCell(k++).setCellValue(extension.getStartDate() != null ? formatDateWithISO8601(extension.getStartDate()) : "");
             row.createCell(k++).setCellValue(extension.getEndDate() != null ? formatDateWithISO8601(extension.getEndDate()) : "");

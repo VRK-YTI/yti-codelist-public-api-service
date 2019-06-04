@@ -86,10 +86,10 @@ public class CodeSchemeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, codeScheme.getGovernancePolicy());
             appendValue(csv, csvSeparator, codeScheme.getConceptUriInVocabularies());
             appendValue(csv, csvSeparator, codeScheme.getDefaultCode() != null ? codeScheme.getDefaultCode().getCodeValue() : "");
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, codeScheme.getPrefLabel().get(language)));
-            definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeScheme.getDefinition().get(language)));
-            descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeScheme.getDescription().get(language)));
-            changeNoteLanguages.forEach(language -> appendValue(csv, csvSeparator, codeScheme.getChangeNote().get(language)));
+            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeSchemePrefLabel(codeScheme, language)));
+            definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeSchemeDefinition(codeScheme, language)));
+            descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeSchemeDescription(codeScheme, language)));
+            changeNoteLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeSchemeChangeNote(codeScheme, language)));
             appendValue(csv, csvSeparator, codeScheme.getStartDate() != null ? formatDateWithISO8601(codeScheme.getStartDate()) : "");
             appendValue(csv, csvSeparator, codeScheme.getEndDate() != null ? formatDateWithISO8601(codeScheme.getEndDate()) : "");
             appendValue(csv, csvSeparator, codeScheme.getCreated() != null ? formatDateWithSeconds(codeScheme.getCreated()) : "");
@@ -191,16 +191,16 @@ public class CodeSchemeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getConceptUriInVocabularies()));
             row.createCell(k++).setCellValue(checkEmptyValue(codeScheme.getDefaultCode() != null ? codeScheme.getDefaultCode().getCodeValue() : ""));
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(codeScheme.getPrefLabel().get(language));
+                row.createCell(k++).setCellValue(getCodeSchemePrefLabel(codeScheme, language));
             }
             for (final String language : definitionLanguages) {
-                row.createCell(k++).setCellValue(codeScheme.getDefinition().get(language));
+                row.createCell(k++).setCellValue(getCodeSchemeDefinition(codeScheme, language));
             }
             for (final String language : descriptionLanguages) {
-                row.createCell(k++).setCellValue(codeScheme.getDescription().get(language));
+                row.createCell(k++).setCellValue(getCodeSchemeDescription(codeScheme, language));
             }
             for (final String language : changeNoteLanguages) {
-                row.createCell(k++).setCellValue(codeScheme.getChangeNote().get(language));
+                row.createCell(k++).setCellValue(getCodeSchemeChangeNote(codeScheme, language));
             }
             row.createCell(k++).setCellValue(codeScheme.getStartDate() != null ? formatDateWithISO8601(codeScheme.getStartDate()) : "");
             row.createCell(k++).setCellValue(codeScheme.getEndDate() != null ? formatDateWithISO8601(codeScheme.getEndDate()) : "");

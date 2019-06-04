@@ -45,9 +45,9 @@ public class CodeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, code.getOrder() != null ? code.getOrder().toString() : flatInt.toString());
             appendValue(csv, csvSeparator, code.getBroaderCode() != null ? code.getBroaderCode().getCodeValue() : "");
             appendValue(csv, csvSeparator, code.getStatus());
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, code.getPrefLabel().get(language)));
-            definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, code.getDefinition().get(language)));
-            descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, code.getDescription().get(language)));
+            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodePrefLabel(code, language)));
+            definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeDefinition(code, language)));
+            descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeDescription(code, language)));
             appendValue(csv, csvSeparator, code.getShortName());
             appendValue(csv, csvSeparator, code.getConceptUriInVocabularies());
             appendValue(csv, csvSeparator, code.getSubCodeScheme() != null ? code.getSubCodeScheme().getUri() : null);
@@ -111,13 +111,13 @@ public class CodeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(code.getBroaderCode() != null ? code.getBroaderCode().getCodeValue() : "");
             row.createCell(k++).setCellValue(code.getStatus());
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(code.getPrefLabel().get(language));
+                row.createCell(k++).setCellValue(getCodePrefLabel(code, language));
             }
             for (final String language : definitionLanguages) {
-                row.createCell(k++).setCellValue(code.getDefinition().get(language));
+                row.createCell(k++).setCellValue(getCodeDefinition(code, language));
             }
             for (final String language : descriptionLanguages) {
-                row.createCell(k++).setCellValue(code.getDescription().get(language));
+                row.createCell(k++).setCellValue(getCodeDescription(code, language));
             }
             row.createCell(k++).setCellValue(checkEmptyValue(code.getShortName()));
             row.createCell(k++).setCellValue(checkEmptyValue(code.getConceptUriInVocabularies()));

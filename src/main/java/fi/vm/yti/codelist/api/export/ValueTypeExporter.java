@@ -33,7 +33,7 @@ public class ValueTypeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, valueType.getTypeUri());
             appendValue(csv, csvSeparator, valueType.getUri());
             appendValue(csv, csvSeparator, valueType.getRegexp(), true);
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, valueType.getPrefLabel().get(language)));
+            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getValueTypePrefLabel(valueType, language)));
             appendValue(csv, csvSeparator, Boolean.toString(valueType.getRequired()), true);
             csv.append("\n");
         }
@@ -66,7 +66,7 @@ public class ValueTypeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(valueType.getUri()));
             row.createCell(k++).setCellValue(checkEmptyValue(valueType.getRegexp()));
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(valueType.getPrefLabel().get(language));
+                row.createCell(k++).setCellValue(getValueTypePrefLabel(valueType, language));
             }
             row.createCell(k).setCellValue(Boolean.toString(valueType.getRequired()));
         }

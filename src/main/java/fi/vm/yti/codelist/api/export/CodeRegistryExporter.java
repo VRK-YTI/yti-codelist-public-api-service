@@ -30,8 +30,8 @@ public class CodeRegistryExporter extends BaseExporter {
         for (final CodeRegistryDTO codeRegistry : registries) {
             appendValue(csv, csvSeparator, codeRegistry.getCodeValue());
             appendValue(csv, csvSeparator, codeRegistry.getUri());
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, codeRegistry.getPrefLabel().get(language)));
-            descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, codeRegistry.getDescription().get(language)));
+            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeRegistryPrefLabel(codeRegistry, language)));
+            descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeRegistryDescription(codeRegistry, language)));
             appendValue(csv, csvSeparator, codeRegistry.getCreated() != null ? formatDateWithSeconds(codeRegistry.getCreated()) : "");
             appendValue(csv, csvSeparator, codeRegistry.getModified() != null ? formatDateWithSeconds(codeRegistry.getModified()) : "", true);
             csv.append("\n");
@@ -64,10 +64,10 @@ public class CodeRegistryExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(codeRegistry.getCodeValue()));
             row.createCell(k++).setCellValue(codeRegistry.getUri());
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(codeRegistry.getPrefLabel().get(language));
+                row.createCell(k++).setCellValue(getCodeRegistryPrefLabel(codeRegistry, language));
             }
             for (final String language : descriptionLanguages) {
-                row.createCell(k++).setCellValue(codeRegistry.getDescription().get(language));
+                row.createCell(k++).setCellValue(getCodeRegistryDescription(codeRegistry, language));
             }
             row.createCell(k++).setCellValue(codeRegistry.getCreated() != null ? formatDateWithSeconds(codeRegistry.getCreated()) : "");
             row.createCell(k).setCellValue(codeRegistry.getModified() != null ? formatDateWithSeconds(codeRegistry.getModified()) : "");

@@ -32,8 +32,8 @@ public class ExternalReferenceExporter extends BaseExporter {
             appendValue(csv, csvSeparator, externalReference.getHref());
             appendValue(csv, csvSeparator, externalReference.getId().toString());
             appendValue(csv, csvSeparator, externalReference.getPropertyType().getLocalName());
-            titleLanguages.forEach(language -> appendValue(csv, csvSeparator, externalReference.getTitle().get(language)));
-            descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, externalReference.getDescription().get(language)));
+            titleLanguages.forEach(language -> appendValue(csv, csvSeparator, getExternalReferenceTitle(externalReference, language)));
+            descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, getExternalReferenceDescription(externalReference, language)));
             appendValue(csv, csvSeparator, externalReference.getCreated() != null ? formatDateWithSeconds(externalReference.getCreated()) : "");
             appendValue(csv, csvSeparator, externalReference.getModified() != null ? formatDateWithSeconds(externalReference.getModified()) : "", true);
             csv.append("\n");
@@ -75,10 +75,10 @@ public class ExternalReferenceExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(externalReference.getHref()));
             row.createCell(k++).setCellValue(checkEmptyValue(externalReference.getPropertyType().getLocalName()));
             for (final String language : titleLanguages) {
-                row.createCell(k++).setCellValue(externalReference.getTitle().get(language));
+                row.createCell(k++).setCellValue(getExternalReferenceTitle(externalReference, language));
             }
             for (final String language : descriptionLanguages) {
-                row.createCell(k++).setCellValue(externalReference.getDescription().get(language));
+                row.createCell(k++).setCellValue(getExternalReferenceDescription(externalReference, language));
             }
             row.createCell(k++).setCellValue(externalReference.getCreated() != null ? formatDateWithSeconds(externalReference.getCreated()) : "");
             row.createCell(k).setCellValue(externalReference.getModified() != null ? formatDateWithSeconds(externalReference.getModified()) : "");

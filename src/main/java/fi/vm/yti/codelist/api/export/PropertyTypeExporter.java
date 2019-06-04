@@ -34,8 +34,8 @@ public class PropertyTypeExporter extends BaseExporter {
             appendValue(csv, csvSeparator, propertyType.getId().toString());
             appendValue(csv, csvSeparator, propertyType.getUri());
             appendValue(csv, csvSeparator, propertyType.getContext());
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, propertyType.getPrefLabel().get(language)));
-            definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, propertyType.getDefinition().get(language)));
+            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getPropertyTypePrefLabel(propertyType, language)));
+            definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, getPropertyTypeDefinition(propertyType, language)));
             appendValue(csv, csvSeparator, propertyType.getCreated() != null ? formatDateWithSeconds(propertyType.getCreated()) : "");
             appendValue(csv, csvSeparator, propertyType.getModified() != null ? formatDateWithSeconds(propertyType.getModified()) : "", true);
             csv.append("\n");
@@ -72,10 +72,10 @@ public class PropertyTypeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getUri()));
             row.createCell(k++).setCellValue(checkEmptyValue(propertyType.getContext()));
             for (final String language : prefLabelLanguages) {
-                row.createCell(k++).setCellValue(propertyType.getPrefLabel().get(language));
+                row.createCell(k++).setCellValue(getPropertyTypePrefLabel(propertyType, language));
             }
             for (final String language : definitionLanguages) {
-                row.createCell(k++).setCellValue(propertyType.getDefinition().get(language));
+                row.createCell(k++).setCellValue(getPropertyTypeDefinition(propertyType, language));
             }
             row.createCell(k++).setCellValue(propertyType.getCreated() != null ? formatDateWithSeconds(propertyType.getCreated()) : "");
             row.createCell(k).setCellValue(propertyType.getModified() != null ? formatDateWithSeconds(propertyType.getModified()) : "");

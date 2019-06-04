@@ -14,8 +14,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
 import fi.vm.yti.codelist.common.dto.CodeDTO;
+import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
+import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
+import fi.vm.yti.codelist.common.dto.MemberDTO;
+import fi.vm.yti.codelist.common.dto.PropertyTypeDTO;
+import fi.vm.yti.codelist.common.dto.ValueTypeDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
@@ -124,5 +129,85 @@ abstract class BaseExporter {
             languages.addAll(prefLabel.keySet());
         }
         return languages;
+    }
+
+    String getCodeRegistryPrefLabel(final CodeRegistryDTO codeRegistry,
+                                    final String language) {
+        return codeRegistry.getPrefLabel() != null ? codeRegistry.getPrefLabel().get(language) : "";
+    }
+
+    String getCodeRegistryDescription(final CodeRegistryDTO codeRegistry,
+                                      final String language) {
+        return codeRegistry.getDescription() != null ? codeRegistry.getDescription().get(language) : "";
+    }
+
+    String getCodeSchemePrefLabel(final CodeSchemeDTO codeScheme,
+                                  final String language) {
+        return codeScheme.getPrefLabel() != null ? codeScheme.getPrefLabel().get(language) : "";
+    }
+
+    String getCodeSchemeDefinition(final CodeSchemeDTO codeScheme,
+                                   final String language) {
+        return codeScheme.getDefinition() != null ? codeScheme.getDefinition().get(language) : "";
+    }
+
+    String getCodeSchemeDescription(final CodeSchemeDTO codeScheme,
+                                    final String language) {
+        return codeScheme.getDescription() != null ? codeScheme.getDescription().get(language) : "";
+    }
+
+    String getCodeSchemeChangeNote(final CodeSchemeDTO codeScheme,
+                                   final String language) {
+        return codeScheme.getChangeNote() != null ? codeScheme.getChangeNote().get(language) : "";
+    }
+
+    String getCodePrefLabel(final CodeDTO code,
+                            final String language) {
+        return code.getPrefLabel() != null ? code.getPrefLabel().get(language) : "";
+    }
+
+    String getCodeDefinition(final CodeDTO code,
+                             final String language) {
+        return code.getDefinition() != null ? code.getDefinition().get(language) : "";
+    }
+
+    String getCodeDescription(final CodeDTO code,
+                              final String language) {
+        return code.getDescription() != null ? code.getDescription().get(language) : "";
+    }
+
+    String getMemberPrefLabel(final MemberDTO member,
+                              final String language) {
+        return member.getPrefLabel() != null ? member.getPrefLabel().get(language) : "";
+    }
+
+    String getExtensionPrefLabel(final ExtensionDTO extension,
+                                 final String language) {
+        return extension.getPrefLabel() != null ? extension.getPrefLabel().get(language) : "";
+    }
+
+    String getPropertyTypePrefLabel(final PropertyTypeDTO propertyType,
+                                    final String language) {
+        return propertyType.getPrefLabel() != null ? propertyType.getPrefLabel().get(language) : "";
+    }
+
+    String getPropertyTypeDefinition(final PropertyTypeDTO propertyType,
+                                     final String language) {
+        return propertyType.getDefinition() != null ? propertyType.getDefinition().get(language) : "";
+    }
+
+    String getValueTypePrefLabel(final ValueTypeDTO valueType,
+                                 final String language) {
+        return valueType.getPrefLabel() != null ? valueType.getPrefLabel().get(language) : "";
+    }
+
+    String getExternalReferenceTitle(final ExternalReferenceDTO externalReference,
+                                     final String language) {
+        return externalReference.getTitle() != null ? externalReference.getTitle().get(language) : "";
+    }
+
+    String getExternalReferenceDescription(final ExternalReferenceDTO externalReference,
+                                           final String language) {
+        return externalReference.getDescription() != null ? externalReference.getDescription().get(language) : "";
     }
 }
