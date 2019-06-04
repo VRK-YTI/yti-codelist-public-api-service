@@ -1219,7 +1219,7 @@ public class DomainImpl implements Domain {
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_CODE);
             final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
             final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
-            builder.must(matchQuery("codeScheme.uri.keyword", codeSchemeUri.toLowerCase()));
+            builder.must(matchQuery("codeScheme.uri", codeSchemeUri.toLowerCase()).analyzer(TEXT_ANALYZER));
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }
