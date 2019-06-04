@@ -77,7 +77,9 @@ public class ValueTypeExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final ValueTypeDTO valueType : valueTypes) {
             final Map<String, String> prefLabel = valueType.getPrefLabel();
-            languages.addAll(prefLabel.keySet());
+            if (prefLabel != null && !prefLabel.isEmpty()) {
+                languages.addAll(prefLabel.keySet());
+            }
         }
         return languages;
     }

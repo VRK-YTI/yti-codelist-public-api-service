@@ -87,7 +87,9 @@ public class PropertyTypeExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final PropertyTypeDTO propertyType : propertyTypes) {
             final Map<String, String> prefLabel = propertyType.getPrefLabel();
-            languages.addAll(prefLabel.keySet());
+            if (prefLabel != null && !prefLabel.isEmpty()) {
+                languages.addAll(prefLabel.keySet());
+            }
         }
         return languages;
     }
@@ -96,7 +98,9 @@ public class PropertyTypeExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final PropertyTypeDTO propertyType : propertyTypes) {
             final Map<String, String> definition = propertyType.getDefinition();
-            languages.addAll(definition.keySet());
+            if (definition != null && !definition.isEmpty()) {
+                languages.addAll(definition.keySet());
+            }
         }
         return languages;
     }

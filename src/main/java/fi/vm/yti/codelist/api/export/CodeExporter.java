@@ -137,7 +137,9 @@ public class CodeExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeDTO code : codes) {
             final Map<String, String> definition = code.getDefinition();
-            languages.addAll(definition.keySet());
+            if (definition != null && !definition.isEmpty()) {
+                languages.addAll(definition.keySet());
+            }
         }
         return languages;
     }
@@ -146,7 +148,9 @@ public class CodeExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeDTO code : codes) {
             final Map<String, String> description = code.getDescription();
-            languages.addAll(description.keySet());
+            if (description != null && !description.isEmpty()) {
+                languages.addAll(description.keySet());
+            }
         }
         return languages;
     }

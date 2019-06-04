@@ -79,7 +79,9 @@ public class CodeRegistryExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeRegistryDTO registry : registries) {
             final Map<String, String> prefLabel = registry.getPrefLabel();
-            languages.addAll(prefLabel.keySet());
+            if (prefLabel != null && !prefLabel.isEmpty()) {
+                languages.addAll(prefLabel.keySet());
+            }
         }
         return languages;
     }
@@ -88,7 +90,9 @@ public class CodeRegistryExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeRegistryDTO registry : registries) {
             final Map<String, String> description = registry.getDescription();
-            languages.addAll(description.keySet());
+            if (description != null && !description.isEmpty()) {
+                languages.addAll(description.keySet());
+            }
         }
         return languages;
     }

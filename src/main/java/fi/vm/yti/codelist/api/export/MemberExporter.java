@@ -267,7 +267,9 @@ public class MemberExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final MemberDTO member : members) {
             final Map<String, String> prefLabel = member.getPrefLabel();
-            languages.addAll(prefLabel.keySet());
+            if (prefLabel != null && !prefLabel.isEmpty()) {
+                languages.addAll(prefLabel.keySet());
+            }
         }
         return languages;
     }

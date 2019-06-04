@@ -217,7 +217,9 @@ public class CodeSchemeExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Map<String, String> prefLabel = codeScheme.getPrefLabel();
-            languages.addAll(prefLabel.keySet());
+            if (prefLabel != null && !prefLabel.isEmpty()) {
+                languages.addAll(prefLabel.keySet());
+            }
         }
         return languages;
     }
@@ -226,7 +228,9 @@ public class CodeSchemeExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Map<String, String> definition = codeScheme.getDefinition();
-            languages.addAll(definition.keySet());
+            if (definition != null && !definition.isEmpty()) {
+                languages.addAll(definition.keySet());
+            }
         }
         return languages;
     }
@@ -235,7 +239,9 @@ public class CodeSchemeExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Map<String, String> description = codeScheme.getDescription();
-            languages.addAll(description.keySet());
+            if (description != null && !description.isEmpty()) {
+                languages.addAll(description.keySet());
+            }
         }
         return languages;
     }
@@ -244,7 +250,9 @@ public class CodeSchemeExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             final Map<String, String> changeNote = codeScheme.getChangeNote();
-            languages.addAll(changeNote.keySet());
+            if (changeNote != null && !changeNote.isEmpty()) {
+                languages.addAll(changeNote.keySet());
+            }
         }
         return languages;
     }

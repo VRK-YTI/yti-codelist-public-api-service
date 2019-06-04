@@ -89,7 +89,9 @@ public class ExternalReferenceExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final ExternalReferenceDTO externalReference : externalReferences) {
             final Map<String, String> title = externalReference.getTitle();
-            languages.addAll(title.keySet());
+            if (title != null && !title.isEmpty()) {
+                languages.addAll(title.keySet());
+            }
         }
         return languages;
     }
@@ -98,7 +100,9 @@ public class ExternalReferenceExporter extends BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final ExternalReferenceDTO propertyType : externalReferences) {
             final Map<String, String> description = propertyType.getDescription();
-            languages.addAll(description.keySet());
+            if (description != null && !description.isEmpty()) {
+                languages.addAll(description.keySet());
+            }
         }
         return languages;
     }
