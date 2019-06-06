@@ -44,6 +44,7 @@ import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeRegistryDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
+import fi.vm.yti.codelist.common.dto.DeepSearchHitListDTO;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
@@ -70,10 +71,14 @@ public class DomainImpl implements Domain {
     private static final String BOOSTSTATUS = "boostStatus";
     private static final Set<String> sortLanguages = new HashSet<>(Arrays.asList(LANGUAGE_CODE_FI, LANGUAGE_CODE_EN, LANGUAGE_CODE_SV));
     private final RestHighLevelClient client;
+    private final DeepCodeQueryFactory deepCodeQueryFactory;
+    private final DeepExtensionQueryFactory deepExtensionQueryFactory;
 
     @Inject
     private DomainImpl(final RestHighLevelClient client) {
         this.client = client;
+        this.deepCodeQueryFactory = new DeepCodeQueryFactory(new ObjectMapper(), this);
+        this.deepExtensionQueryFactory = new DeepExtensionQueryFactory(new ObjectMapper(), this);
     }
 
     public CodeRegistryDTO getCodeRegistry(final String codeRegistryCodeValue) {
@@ -231,6 +236,25 @@ public class DomainImpl implements Domain {
         return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, language, null, false, false, null, null, null, null, null);
     }
 
+    private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingCodes2(final String searchTerm,
+                                                                                    final SearchResultWithMetaDataDTO result,
+                                                                                    final String language) {
+        final Set<String> codeSchemeUuids = new HashSet<>();
+        Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
+        if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
+            if (searchTerm != null) {
+                try {
+                    SearchRequest query = deepCodeQueryFactory.createQuery(searchTerm, language);
+                    SearchResponse response = client.search(query, RequestOptions.DEFAULT);
+                    deepSearchHits = deepCodeQueryFactory.parseResponse(response, result, searchTerm);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return deepSearchHits;
+    }
+
     private SearchResultWithMetaDataDTO getCodeSchemesMatchingCodes(final String searchTerm,
                                                                     final SearchResultWithMetaDataDTO result) {
         final Set<String> codeSchemeUuids = new HashSet<>();
@@ -269,6 +293,26 @@ public class DomainImpl implements Domain {
             return result;
         }
         return result;
+    }
+
+    private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingExtensions2(final String searchTerm,
+                                                                                         final SearchResultWithMetaDataDTO result,
+                                                                                         final String language) {
+        final Set<String> codeSchemeUuids = new HashSet<>();
+        Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
+        if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
+            if (searchTerm != null) {
+                try {
+                    SearchRequest query = deepExtensionQueryFactory.createQuery(searchTerm, language);
+                    SearchResponse response = client.search(query, RequestOptions.DEFAULT);
+                    deepSearchHits = deepExtensionQueryFactory.parseResponse(response, result, searchTerm);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+        }
+        return deepSearchHits;
     }
 
     private SearchResultWithMetaDataDTO getCodeSchemesMatchingExtensions(final String searchTerm,
@@ -370,16 +414,23 @@ public class DomainImpl implements Domain {
                                              final Meta meta) {
         validatePageSize(pageSize);
         final Set<String> codeSchemeUuids = new HashSet<>();
+        final Set<String> codeSchemeUuidsWithDeepHitsCodes = new HashSet<>();
+        final Set<String> codeSchemeUuidsWithDeepHitsExtensions = new HashSet<>();
         SearchResultWithMetaDataDTO searchResultWithMetaData = new SearchResultWithMetaDataDTO();
-
-        if (searchExtensions && searchTerm != null) {
-            searchResultWithMetaData = getCodeSchemesMatchingExtensions(searchTerm, extensionPropertyType, searchResultWithMetaData);
-            codeSchemeUuids.addAll(searchResultWithMetaData.getResults());
-        }
+        Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
+        Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits2 = null;
 
         if (searchCodes && searchTerm != null) {
-            searchResultWithMetaData = getCodeSchemesMatchingCodes(searchTerm, searchResultWithMetaData);
-            codeSchemeUuids.addAll(searchResultWithMetaData.getResults());
+            deepSearchHits = getCodeSchemesMatchingCodes2(searchTerm,
+                searchResultWithMetaData, language);
+            codeSchemeUuids.addAll(deepSearchHits.keySet());
+            codeSchemeUuidsWithDeepHitsCodes.addAll(deepSearchHits.keySet());
+        }
+
+        if (searchExtensions && searchTerm != null) {
+            deepSearchHits2 = getCodeSchemesMatchingExtensions2(searchTerm, searchResultWithMetaData, language);
+            codeSchemeUuids.addAll(deepSearchHits2.keySet());
+            codeSchemeUuidsWithDeepHitsExtensions.addAll(deepSearchHits2.keySet());
         }
 
         final Set<CodeSchemeDTO> codeSchemes = new LinkedHashSet<>();
@@ -489,6 +540,15 @@ public class DomainImpl implements Domain {
                 searchHits.sort(Comparator.comparing(searchHitDTO -> searchHitDTO.getPrefLabel().get(language) != null ? searchHitDTO.getPrefLabel().get(language) : searchHitDTO.getEntityCodeValue(), Comparator.nullsLast(Comparator.naturalOrder())));
             }
             cs.setSearchHits(searchHits);
+            if (searchResultWithMetaData.getTotalhitsCodesPerCodeSchemeMap() != null && !searchResultWithMetaData.getTotalhitsCodesPerCodeSchemeMap().isEmpty() && codeSchemeUuidsWithDeepHitsCodes.contains(cs.getId().toString())) {
+                cs.setTotalNrOfSearchHitsCodes(searchResultWithMetaData.getTotalhitsCodesPerCodeSchemeMap().get(cs.getId().toString()));
+            }
+
+            if (searchResultWithMetaData.getTotalhitsExtensionsPerCodeSchemeMap() != null && !searchResultWithMetaData.getTotalhitsExtensionsPerCodeSchemeMap().isEmpty() && codeSchemeUuidsWithDeepHitsExtensions.contains(cs.getId().toString())) {
+                cs.setTotalNrOfSearchHitsExtensions(searchResultWithMetaData.getTotalhitsExtensionsPerCodeSchemeMap().get(cs.getId().toString()));
+            }
+
+            cs.setDeepSearchHits(deepSearchHits); // TODO YTI-421 clean up later, this variable can be cleaned along with everything with it in the front.
         }
         return codeSchemes;
     }
