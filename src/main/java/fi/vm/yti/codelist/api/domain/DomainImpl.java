@@ -296,6 +296,7 @@ public class DomainImpl implements Domain {
     }
 
     private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingExtensions2(final String searchTerm,
+                                                                                         final String extensionPropertyType,
                                                                                          final SearchResultWithMetaDataDTO result,
                                                                                          final String language) {
         final Set<String> codeSchemeUuids = new HashSet<>();
@@ -303,7 +304,7 @@ public class DomainImpl implements Domain {
         if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
             if (searchTerm != null) {
                 try {
-                    SearchRequest query = deepExtensionQueryFactory.createQuery(searchTerm, language);
+                    SearchRequest query = deepExtensionQueryFactory.createQuery(searchTerm, language, extensionPropertyType);
                     SearchResponse response = client.search(query, RequestOptions.DEFAULT);
                     deepSearchHits = deepExtensionQueryFactory.parseResponse(response, result, searchTerm);
                 } catch (IOException e) {
@@ -428,7 +429,7 @@ public class DomainImpl implements Domain {
         }
 
         if (searchExtensions && searchTerm != null) {
-            deepSearchHits2 = getCodeSchemesMatchingExtensions2(searchTerm, searchResultWithMetaData, language);
+            deepSearchHits2 = getCodeSchemesMatchingExtensions2(searchTerm, extensionPropertyType,searchResultWithMetaData, language);
             codeSchemeUuids.addAll(deepSearchHits2.keySet());
             codeSchemeUuidsWithDeepHitsExtensions.addAll(deepSearchHits2.keySet());
         }

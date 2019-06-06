@@ -59,8 +59,9 @@ public class DeepExtensionQueryFactory {
         this.domain = domain;
     }
 
-    public SearchRequest createQuery(String query,
-                                     String prefLang) {
+    public SearchRequest createQuery(final String query,
+                                     final String prefLang,
+                                     final String extensionPropertyType) {
 
         String[] fieldNames = { "prefLabel.*", "codeValue" };
         MultiMatchQueryBuilder multiMatch = QueryBuilders.multiMatchQuery(query, fieldNames)
@@ -77,6 +78,10 @@ public class DeepExtensionQueryFactory {
                 ScoreMode.None));
         }
         boolQueryBuilder.minimumShouldMatch(1);
+
+        if (extensionPropertyType != null) {
+            boolQueryBuilder.must(matchQuery("propertyType.localName", extensionPropertyType));
+        }
 
         if (prefLang != null && prefLangPattern.matcher(prefLang).matches()) {
             multiMatch = multiMatch.field("prefLabel." + prefLang, 10);
