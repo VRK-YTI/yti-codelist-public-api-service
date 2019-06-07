@@ -126,7 +126,9 @@ abstract class BaseExporter {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeDTO code : codes) {
             final Map<String, String> prefLabel = code.getPrefLabel();
-            languages.addAll(prefLabel.keySet());
+            if (prefLabel != null) {
+                languages.addAll(prefLabel.keySet());
+            }
         }
         return languages;
     }
