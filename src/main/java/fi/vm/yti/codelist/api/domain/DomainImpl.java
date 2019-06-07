@@ -538,7 +538,7 @@ public class DomainImpl implements Domain {
         for (final CodeSchemeDTO cs : codeSchemes) {
             final ArrayList<SearchHitDTO> searchHits = searchResultWithMetaData.getSearchHitDTOMap().get(cs.getId().toString().toLowerCase());
             if (language != null && searchHits != null) {
-                searchHits.sort(Comparator.comparing(searchHitDTO -> searchHitDTO.getPrefLabel().get(language) != null ? searchHitDTO.getPrefLabel().get(language) : searchHitDTO.getEntityCodeValue(), Comparator.nullsLast(Comparator.naturalOrder())));
+                searchHits.sort(Comparator.comparing(searchHitDTO -> searchHitDTO.getPrefLabel() != null && searchHitDTO.getPrefLabel().get(language) != null ? searchHitDTO.getPrefLabel().get(language) : searchHitDTO.getEntityCodeValue(), Comparator.nullsLast(Comparator.naturalOrder())));
             }
             cs.setSearchHits(searchHits);
             if (searchResultWithMetaData.getTotalhitsCodesPerCodeSchemeMap() != null && !searchResultWithMetaData.getTotalhitsCodesPerCodeSchemeMap().isEmpty() && codeSchemeUuidsWithDeepHitsCodes.contains(cs.getId().toString())) {
