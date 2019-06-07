@@ -218,10 +218,12 @@ public class DeepCodeQueryFactory {
         if (highlightText != null && highlightText.length() > 0) {
             String highLights[] = highlightText.split("\\s+");
             for (String highLight : highLights) {
-                dto.getPrefLabel().forEach((lang, label) -> {
-                    String matchString = Pattern.quote(highLight);
-                    dto.getPrefLabel().put(lang, label.replaceAll("(?i)(?<text>\\b" + matchString + "|" + matchString + "\\b)", "<b>${text}</b>"));
-                });
+                if (dto.getPrefLabel() != null) {
+                    dto.getPrefLabel().forEach((lang, label) -> {
+                        String matchString = Pattern.quote(highLight);
+                        dto.getPrefLabel().put(lang, label.replaceAll("(?i)(?<text>\\b" + matchString + "|" + matchString + "\\b)", "<b>${text}</b>"));
+                    });
+                }
             }
         }
     }
