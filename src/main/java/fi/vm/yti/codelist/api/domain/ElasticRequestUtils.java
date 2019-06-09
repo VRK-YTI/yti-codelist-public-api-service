@@ -1,9 +1,5 @@
 package fi.vm.yti.codelist.api.domain;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.elasticsearch.client.Response;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +11,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
+
+import org.elasticsearch.client.Response;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public final class ElasticRequestUtils {
 
@@ -41,7 +42,7 @@ public final class ElasticRequestUtils {
     }
 
     public static Map<String, String> labelFromKeyValueNode(JsonNode labelNode) {
-        Map<String,String> ret = new HashMap<>();
+        Map<String, String> ret = new HashMap<>();
         if (labelNode != null) {
             Iterator<Map.Entry<String, JsonNode>> labelIter = labelNode.fields();
             while (labelIter.hasNext()) {
@@ -58,7 +59,7 @@ public final class ElasticRequestUtils {
     }
 
     public static Map<String, String> labelFromLangValueArray(JsonNode labelArray) {
-        Map<String,String> ret = new HashMap<>();
+        Map<String, String> ret = new HashMap<>();
         if (labelArray != null) {
             for (JsonNode label : labelArray) {
                 ret.put(label.get("lang").textValue(), label.get("value").textValue());
@@ -67,7 +68,8 @@ public final class ElasticRequestUtils {
         return !ret.isEmpty() ? ret : null;
     }
 
-    public static String getTextValueOrNull(JsonNode node, String fieldName) {
+    public static String getTextValueOrNull(JsonNode node,
+                                            String fieldName) {
         if (node != null) {
             JsonNode field = node.get(fieldName);
             if (field != null) {
