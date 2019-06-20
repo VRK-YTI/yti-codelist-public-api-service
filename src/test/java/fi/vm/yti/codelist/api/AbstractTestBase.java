@@ -19,7 +19,6 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.support.WriteRequest;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +42,6 @@ import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.model.Status;
 import static fi.vm.yti.codelist.api.util.FileUtils.loadFileFromClassPath;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
-import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 abstract public class AbstractTestBase {
 
@@ -53,10 +51,6 @@ abstract public class AbstractTestBase {
     private static final String TEST_BASE_URL = "http://localhost";
     private static final String SOURCE_TEST = "test";
     private static final Logger LOG = LoggerFactory.getLogger(AbstractTestBase.class);
-    private static final String MAX_RESULT_WINDOW = "max_result_window";
-    private static final int MAX_RESULT_WINDOW_SIZE = 50000;
-    private static final String MAX_INDEX_FIELDS = "mapping.total_fields.limit";
-    private static final int MAX_INDEX_FIELDS_SIZE = 5000;
 
     @Inject
     private RestHighLevelClient client;
@@ -124,38 +118,7 @@ abstract public class AbstractTestBase {
         if (!checkIfIndexExists((indexName))) {
             final CreateIndexRequest request = new CreateIndexRequest();
             request.index(indexName);
-            try {
-                final XContentBuilder contentBuilder = jsonBuilder()
-                    .startObject()
-                    .startObject("index")
-                    .field(MAX_RESULT_WINDOW, MAX_RESULT_WINDOW_SIZE)
-                    .field(MAX_INDEX_FIELDS, MAX_INDEX_FIELDS_SIZE)
-                    .endObject()
-                    .startObject("analysis")
-                    .startObject("analyzer")
-                    .startObject("text_analyzer")
-                    .field("type", "custom")
-                    .field("tokenizer", "keyword")
-                    .field("filter", new String[]{ "standard", "lowercase", "trim" })
-                    .endObject()
-                    .startObject("preflabel_analyzer")
-                    .field("type", "custom")
-                    .field("tokenizer", "ngram")
-                    .field("filter", new String[]{ "lowercase", "standard" })
-                    .endObject()
-                    .endObject()
-                    .startObject("normalizer")
-                    .startObject("keyword_normalizer")
-                    .field("type", "custom")
-                    .field("filter", new String[]{ "lowercase" })
-                    .endObject()
-                    .endObject()
-                    .endObject()
-                    .endObject();
-                request.source(contentBuilder);
-            } catch (final IOException e) {
-                LOG.error("Error parsing index request settings JSON!", e);
-            }
+            request.source(getGenericIndexSettings(), XContentType.JSON);
             switch (type) {
                 case ELASTIC_TYPE_CODESCHEME:
                     request.mapping(type, getCodeSchemeMapping(), XContentType.JSON);
@@ -182,6 +145,10 @@ abstract public class AbstractTestBase {
                 LOG.error("Error creating index JSON!", e);
             }
         }
+    }
+
+    private String getGenericIndexSettings() {
+        return loadMapping("/esmappings/generic_index_settings.json");
     }
 
     private String getCodeSchemeMapping() {
@@ -211,8 +178,8 @@ abstract public class AbstractTestBase {
             final Object obj = objectMapper.readTree(inputStream);
             return objectMapper.writeValueAsString(obj);
         } catch (final IOException e) {
-            LOG.error("Index mapping loading error for file: " + fileName);
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index mapping loading error for file: " + fileName));
+            LOG.error("Index configuration loading error for file: " + fileName);
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index configuration loading error for file: " + fileName));
         }
     }
 
