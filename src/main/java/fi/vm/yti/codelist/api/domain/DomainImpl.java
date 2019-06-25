@@ -239,7 +239,6 @@ public class DomainImpl implements Domain {
     private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingCodes(final String searchTerm,
                                                                                    final SearchResultWithMetaDataDTO result,
                                                                                    final String language) {
-        final Set<String> codeSchemeUuids = new HashSet<>();
         Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
         if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
             if (searchTerm != null) {
@@ -259,9 +258,8 @@ public class DomainImpl implements Domain {
                                                                                         final String extensionPropertyType,
                                                                                         final SearchResultWithMetaDataDTO result,
                                                                                         final String language) {
-        final Set<String> codeSchemeUuids = new HashSet<>();
         Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
-        if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
+        if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION)) {
             if (searchTerm != null) {
                 try {
                     SearchRequest query = deepExtensionQueryFactory.createQuery(searchTerm, language, extensionPropertyType);
