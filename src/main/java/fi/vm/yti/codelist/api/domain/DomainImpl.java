@@ -236,9 +236,9 @@ public class DomainImpl implements Domain {
         return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, language, null, false, false, null, null, null, null, null);
     }
 
-    private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingCodes2(final String searchTerm,
-                                                                                    final SearchResultWithMetaDataDTO result,
-                                                                                    final String language) {
+    private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingCodes(final String searchTerm,
+                                                                                   final SearchResultWithMetaDataDTO result,
+                                                                                   final String language) {
         final Set<String> codeSchemeUuids = new HashSet<>();
         Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
         if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
@@ -255,50 +255,10 @@ public class DomainImpl implements Domain {
         return deepSearchHits;
     }
 
-    private SearchResultWithMetaDataDTO getCodeSchemesMatchingCodes(final String searchTerm,
-                                                                    final SearchResultWithMetaDataDTO result) {
-        final Set<String> codeSchemeUuids = new HashSet<>();
-        if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
-            final ObjectMapper mapper = new ObjectMapper();
-            registerModulesToMapper(mapper);
-            final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_CODE);
-            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
-            searchBuilder.sort("codeValue.raw", SortOrder.ASC);
-            searchBuilder.size(MAX_DEEP_SEARCH_SIZE);
-            final BoolQueryBuilder builder = boolQuery();
-            if (searchTerm != null) {
-                builder.should(prefixQuery("codeValue", searchTerm.toLowerCase()));
-                builder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
-                builder.minimumShouldMatch(1);
-            }
-            searchBuilder.query(builder);
-            searchRequest.source(searchBuilder);
-            try {
-                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-                response.getHits().forEach(hit -> {
-                    try {
-                        CodeDTO codeDTO = mapper.readValue(hit.getSourceAsString(), CodeDTO.class);
-                        String uuidOfTheCodeScheme = codeDTO.getCodeScheme().getId().toString().toLowerCase();
-                        populateSearchHits(codeSchemeUuids, result, codeDTO.getPrefLabel(), codeDTO.getUri(), codeDTO.getCodeValue(), codeDTO.getCodeScheme().getCodeValue(), codeDTO.getCodeScheme().getCodeRegistry().getCodeValue(), uuidOfTheCodeScheme, SEARCH_HIT_TYPE_CODE);
-                    } catch (final IOException e) {
-                        LOG.error("getCodeSchemesMatchingCodes reading value from JSON string failed: " + hit.getSourceAsString(), e);
-                        throw new JsonParsingException(ERR_MSG_USER_406);
-                    }
-                });
-            } catch (final IOException e) {
-                LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
-            }
-            result.getResults().addAll(codeSchemeUuids);
-            return result;
-        }
-        return result;
-    }
-
-    private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingExtensions2(final String searchTerm,
-                                                                                         final String extensionPropertyType,
-                                                                                         final SearchResultWithMetaDataDTO result,
-                                                                                         final String language) {
+    private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingExtensions(final String searchTerm,
+                                                                                        final String extensionPropertyType,
+                                                                                        final SearchResultWithMetaDataDTO result,
+                                                                                        final String language) {
         final Set<String> codeSchemeUuids = new HashSet<>();
         Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
         if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
@@ -314,54 +274,6 @@ public class DomainImpl implements Domain {
 
         }
         return deepSearchHits;
-    }
-
-    private SearchResultWithMetaDataDTO getCodeSchemesMatchingExtensions(final String searchTerm,
-                                                                         final String extensionPropertyType,
-                                                                         final SearchResultWithMetaDataDTO result) {
-        final Set<String> codeSchemeUuids = new HashSet<>();
-        if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION)) {
-            final ObjectMapper mapper = new ObjectMapper();
-            registerModulesToMapper(mapper);
-            final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_EXTENSION);
-            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
-            searchBuilder.size(MAX_DEEP_SEARCH_SIZE);
-            final BoolQueryBuilder builder = boolQuery();
-            if (searchTerm != null) {
-                final BoolQueryBuilder boolQueryBuilder = boolQuery();
-                if (!searchTerm.isEmpty()) {
-                    boolQueryBuilder.should(prefixQuery("codeValue", searchTerm.toLowerCase()));
-                    boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
-                }
-                boolQueryBuilder.minimumShouldMatch(1);
-                builder.must(boolQueryBuilder);
-            }
-            if (extensionPropertyType != null) {
-                builder.must(matchQuery("propertyType.localName", extensionPropertyType));
-            }
-            searchBuilder.query(builder);
-            searchRequest.source(searchBuilder);
-            try {
-                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-                response.getHits().forEach(hit -> {
-                    try {
-                        ExtensionDTO extensionDTO = mapper.readValue(hit.getSourceAsString(), ExtensionDTO.class);
-                        String uuidOfTheCodeScheme = extensionDTO.getParentCodeScheme().getId().toString().toLowerCase();
-                        codeSchemeUuids.add(uuidOfTheCodeScheme);
-                        populateSearchHits(codeSchemeUuids, result, extensionDTO.getPrefLabel(), extensionDTO.getUri(), extensionDTO.getCodeValue(), extensionDTO.getParentCodeScheme().getCodeValue(), extensionDTO.getParentCodeScheme().getCodeRegistry().getCodeValue(), uuidOfTheCodeScheme, SEARCH_HIT_TYPE_EXTENSION);
-                    } catch (final IOException e) {
-                        LOG.error("getCodeSchemesMatchingExtensions reading value from JSON string failed: " + hit.getSourceAsString(), e);
-                        throw new JsonParsingException(ERR_MSG_USER_406);
-                    }
-                });
-            } catch (final IOException e) {
-                LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
-            }
-            result.getResults().addAll(codeSchemeUuids);
-            return result;
-        }
-        return result;
     }
 
     private void populateSearchHits(final Set<String> codeSchemeUuids,
@@ -418,20 +330,18 @@ public class DomainImpl implements Domain {
         final Set<String> codeSchemeUuidsWithDeepHitsCodes = new HashSet<>();
         final Set<String> codeSchemeUuidsWithDeepHitsExtensions = new HashSet<>();
         SearchResultWithMetaDataDTO searchResultWithMetaData = new SearchResultWithMetaDataDTO();
-        Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
-        Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits2 = null;
 
         if (searchCodes && searchTerm != null) {
-            deepSearchHits = getCodeSchemesMatchingCodes2(searchTerm,
+            Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = getCodeSchemesMatchingCodes(searchTerm,
                 searchResultWithMetaData, language);
             codeSchemeUuids.addAll(deepSearchHits.keySet());
             codeSchemeUuidsWithDeepHitsCodes.addAll(deepSearchHits.keySet());
         }
 
         if (searchExtensions && searchTerm != null) {
-            deepSearchHits2 = getCodeSchemesMatchingExtensions2(searchTerm, extensionPropertyType,searchResultWithMetaData, language);
-            codeSchemeUuids.addAll(deepSearchHits2.keySet());
-            codeSchemeUuidsWithDeepHitsExtensions.addAll(deepSearchHits2.keySet());
+            Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = getCodeSchemesMatchingExtensions(searchTerm, extensionPropertyType,searchResultWithMetaData, language);
+            codeSchemeUuids.addAll(deepSearchHits.keySet());
+            codeSchemeUuidsWithDeepHitsExtensions.addAll(deepSearchHits.keySet());
         }
 
         final Set<CodeSchemeDTO> codeSchemes = new LinkedHashSet<>();
@@ -548,8 +458,6 @@ public class DomainImpl implements Domain {
             if (searchResultWithMetaData.getTotalhitsExtensionsPerCodeSchemeMap() != null && !searchResultWithMetaData.getTotalhitsExtensionsPerCodeSchemeMap().isEmpty() && codeSchemeUuidsWithDeepHitsExtensions.contains(cs.getId().toString())) {
                 cs.setTotalNrOfSearchHitsExtensions(searchResultWithMetaData.getTotalhitsExtensionsPerCodeSchemeMap().get(cs.getId().toString()));
             }
-
-            cs.setDeepSearchHits(deepSearchHits); // TODO YTI-421 clean up later, this variable can be cleaned along with everything with it in the front.
         }
         return codeSchemes;
     }
