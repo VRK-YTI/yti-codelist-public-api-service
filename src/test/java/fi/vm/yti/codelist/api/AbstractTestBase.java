@@ -303,8 +303,7 @@ abstract public class AbstractTestBase {
         return TEST_BASE_URL + ":" + serverPort + API_CONTEXT_PATH_RESTAPI + API_BASE_PATH + apiPath + "/";
     }
 
-    protected String createApiUrl(final int serverPort,
-                                  final String apiPath) {
-        return TEST_BASE_URL + ":" + serverPort + API_CONTEXT_PATH_RESTAPI + API_BASE_PATH + API_PATH_VERSION_V1 + apiPath + "/";
+    protected String createApiUrl(final int serverPort) {
+        return TEST_BASE_URL + ":" + serverPort + API_CONTEXT_PATH_RESTAPI + API_BASE_PATH + API_PATH_VERSION_V1 + API_PATH_CODEREGISTRIES + "/";
     }
 }

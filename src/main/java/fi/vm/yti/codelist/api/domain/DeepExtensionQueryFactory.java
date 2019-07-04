@@ -15,7 +15,6 @@ import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MultiMatchQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
@@ -50,7 +49,7 @@ class DeepExtensionQueryFactory {
     private static final FetchSourceContext sourceIncludes = new FetchSourceContext(true, new String[]{ "id", "codeValue", "prefLabel", "parentCodeScheme.id" }, new String[]{});
     private static final Script topHitScript = new Script(ScriptType.INLINE, Script.DEFAULT_SCRIPT_LANG, "_score", Collections.emptyMap());
     private final Domain domain;
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     DeepExtensionQueryFactory(final ObjectMapper objectMapper,
                               final Domain domain) {

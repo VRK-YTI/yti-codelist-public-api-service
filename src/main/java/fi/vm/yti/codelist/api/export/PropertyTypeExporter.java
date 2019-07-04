@@ -18,26 +18,25 @@ public class PropertyTypeExporter extends BaseExporter {
     public String createCsv(final Set<PropertyTypeDTO> propertyTypes) {
         final Set<String> prefLabelLanguages = resolvePropertyTypePrefLabelLanguages(propertyTypes);
         final Set<String> definitionLanguages = resolvePropertyTypeDefinitionLanguages(propertyTypes);
-        final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_LOCALNAME);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_URI);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_CONTEXT);
-        prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
-        definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
-        appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
+        appendValue(csv, CONTENT_HEADER_LOCALNAME);
+        appendValue(csv, CONTENT_HEADER_ID);
+        appendValue(csv, CONTENT_HEADER_URI);
+        appendValue(csv, CONTENT_HEADER_CONTEXT);
+        prefLabelLanguages.forEach(language -> appendValue(csv, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
+        definitionLanguages.forEach(language -> appendValue(csv, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
+        appendValue(csv, CONTENT_HEADER_CREATED);
+        appendValue(csv, CONTENT_HEADER_MODIFIED, true);
         csv.append("\n");
         for (final PropertyTypeDTO propertyType : propertyTypes) {
-            appendValue(csv, csvSeparator, propertyType.getLocalName());
-            appendValue(csv, csvSeparator, propertyType.getId().toString());
-            appendValue(csv, csvSeparator, propertyType.getUri());
-            appendValue(csv, csvSeparator, propertyType.getContext());
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getPropertyTypePrefLabel(propertyType, language)));
-            definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, getPropertyTypeDefinition(propertyType, language)));
-            appendValue(csv, csvSeparator, propertyType.getCreated() != null ? formatDateWithSeconds(propertyType.getCreated()) : "");
-            appendValue(csv, csvSeparator, propertyType.getModified() != null ? formatDateWithSeconds(propertyType.getModified()) : "", true);
+            appendValue(csv, propertyType.getLocalName());
+            appendValue(csv, propertyType.getId().toString());
+            appendValue(csv, propertyType.getUri());
+            appendValue(csv, propertyType.getContext());
+            prefLabelLanguages.forEach(language -> appendValue(csv, getPropertyTypePrefLabel(propertyType, language)));
+            definitionLanguages.forEach(language -> appendValue(csv, getPropertyTypeDefinition(propertyType, language)));
+            appendValue(csv, propertyType.getCreated() != null ? formatDateWithSeconds(propertyType.getCreated()) : "");
+            appendValue(csv, propertyType.getModified() != null ? formatDateWithSeconds(propertyType.getModified()) : "", true);
             csv.append("\n");
         }
         return csv.toString();

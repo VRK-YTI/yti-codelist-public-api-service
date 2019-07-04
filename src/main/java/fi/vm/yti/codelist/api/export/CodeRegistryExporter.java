@@ -18,22 +18,21 @@ public class CodeRegistryExporter extends BaseExporter {
     public String createCsv(final Set<CodeRegistryDTO> registries) {
         final Set<String> prefLabelLanguages = resolveCodeRegistryPrefLabelLanguages(registries);
         final Set<String> descriptionLanguages = resolveCodeRegistryDescriptionLanguages(registries);
-        final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_URI);
-        prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
-        descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase()));
-        appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED, true);
+        appendValue(csv, CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, CONTENT_HEADER_URI);
+        prefLabelLanguages.forEach(language -> appendValue(csv, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
+        descriptionLanguages.forEach(language -> appendValue(csv, CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase()));
+        appendValue(csv, CONTENT_HEADER_CREATED);
+        appendValue(csv, CONTENT_HEADER_MODIFIED, true);
         csv.append("\n");
         for (final CodeRegistryDTO codeRegistry : registries) {
-            appendValue(csv, csvSeparator, codeRegistry.getCodeValue());
-            appendValue(csv, csvSeparator, codeRegistry.getUri());
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeRegistryPrefLabel(codeRegistry, language)));
-            descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeRegistryDescription(codeRegistry, language)));
-            appendValue(csv, csvSeparator, codeRegistry.getCreated() != null ? formatDateWithSeconds(codeRegistry.getCreated()) : "");
-            appendValue(csv, csvSeparator, codeRegistry.getModified() != null ? formatDateWithSeconds(codeRegistry.getModified()) : "", true);
+            appendValue(csv, codeRegistry.getCodeValue());
+            appendValue(csv, codeRegistry.getUri());
+            prefLabelLanguages.forEach(language -> appendValue(csv, getCodeRegistryPrefLabel(codeRegistry, language)));
+            descriptionLanguages.forEach(language -> appendValue(csv, getCodeRegistryDescription(codeRegistry, language)));
+            appendValue(csv, codeRegistry.getCreated() != null ? formatDateWithSeconds(codeRegistry.getCreated()) : "");
+            appendValue(csv, codeRegistry.getModified() != null ? formatDateWithSeconds(codeRegistry.getModified()) : "", true);
             csv.append("\n");
         }
         return csv.toString();

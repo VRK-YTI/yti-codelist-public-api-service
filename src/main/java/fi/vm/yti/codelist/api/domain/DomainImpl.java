@@ -237,12 +237,11 @@ public class DomainImpl implements Domain {
     }
 
     private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingCodes(final String searchTerm,
-                                                                                   final SearchResultWithMetaDataDTO result,
-                                                                                   final String language) {
+                                                                                   final SearchResultWithMetaDataDTO result) {
         Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
         if (checkIfIndexExists(ELASTIC_INDEX_CODE) && searchTerm != null) {
             try {
-                final SearchRequest query = deepCodeQueryFactory.createQuery(searchTerm, language);
+                final SearchRequest query = deepCodeQueryFactory.createQuery(searchTerm);
                 final SearchResponse response = client.search(query, RequestOptions.DEFAULT);
                 deepSearchHits = deepCodeQueryFactory.parseResponse(response, result, searchTerm);
             } catch (final IOException e) {
@@ -293,8 +292,7 @@ public class DomainImpl implements Domain {
         SearchResultWithMetaDataDTO searchResultWithMetaData = new SearchResultWithMetaDataDTO();
 
         if (searchCodes && searchTerm != null) {
-            Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = getCodeSchemesMatchingCodes(searchTerm,
-                searchResultWithMetaData, language);
+            final Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = getCodeSchemesMatchingCodes(searchTerm, searchResultWithMetaData);
             codeSchemeUuids.addAll(deepSearchHits.keySet());
             codeSchemeUuidsWithDeepHitsCodes.addAll(deepSearchHits.keySet());
         }
@@ -810,40 +808,6 @@ public class DomainImpl implements Domain {
             }
         }
         return extensions;
-    }
-
-    public ExtensionDTO getExtension(final UUID codeSchemeUuid,
-                                     final String extensionCodeValue) {
-        if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION)) {
-            final ObjectMapper mapper = new ObjectMapper();
-            registerModulesToMapper(mapper);
-            final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_EXTENSION);
-            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
-            searchBuilder.sort("codeValue.raw", SortOrder.ASC);
-            final BoolQueryBuilder builder = boolQuery().should(matchQuery("id", extensionCodeValue.toLowerCase())).should(matchQuery("codeValue", extensionCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER)).minimumShouldMatch(1);
-            builder.must(matchQuery("parentCodeScheme.id", codeSchemeUuid.toString().toLowerCase()));
-            searchBuilder.query(builder);
-            searchRequest.source(searchBuilder);
-            try {
-                final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-                if (response.getHits().getTotalHits() > 0) {
-                    LOG.debug(String.format("Found %d Extensions", response.getHits().getTotalHits()));
-                    final SearchHit hit = response.getHits().getAt(0);
-                    try {
-                        if (hit != null) {
-                            return mapper.readValue(hit.getSourceAsString(), ExtensionDTO.class);
-                        }
-                    } catch (final IOException e) {
-                        LOG.error("getExtension reading value from JSON string failed: " + hit.getSourceAsString(), e);
-                        throw new JsonParsingException(ERR_MSG_USER_406);
-                    }
-                }
-            } catch (final IOException e) {
-                LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
-            }
-        }
-        return null;
     }
 
     public ExtensionDTO getExtension(final String codeRegistryCodeValue,

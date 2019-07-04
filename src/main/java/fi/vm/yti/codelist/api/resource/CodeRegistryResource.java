@@ -290,7 +290,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 final Set<CodeDTO> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, language, statusList, meta.getAfter(), meta);
                 final ObjectMapper mapper = new ObjectMapper();
                 final ArrayNode arrayNode = mapper.createArrayNode();
-                codes.stream().forEach(code -> arrayNode.add(code.getCodeValue()));
+                codes.forEach(code -> arrayNode.add(code.getCodeValue()));
                 return Response.ok(arrayNode).build();
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand), pretty));
@@ -655,15 +655,15 @@ public class CodeRegistryResource extends AbstractBaseResource {
     }
 
     private void filterCodes(final Set<CodeDTO> codes) {
-        codes.stream().forEach(code -> code.setCodeScheme(null));
+        codes.forEach(code -> code.setCodeScheme(null));
     }
 
     private void filterExtensions(final Set<ExtensionDTO> extensions) {
-        extensions.stream().forEach(extension -> extension.setParentCodeScheme(null));
+        extensions.forEach(extension -> extension.setParentCodeScheme(null));
     }
 
     private void filterMembers(final Set<MemberDTO> members) {
-        members.stream().forEach(member -> {
+        members.forEach(member -> {
             member.getCode().setCodeScheme(null);
             member.setExtension(null);
         });

@@ -17,24 +17,23 @@ public class ValueTypeExporter extends BaseExporter {
 
     public String createCsv(final Set<ValueTypeDTO> valueTypes) {
         final Set<String> prefLabelLanguages = resolveValueTypePrefLabelLanguages(valueTypes);
-        final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_LOCALNAME);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ID);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_TYPEURI);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_URI);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_REGEXP);
-        prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
-        appendValue(csv, csvSeparator, CONTENT_HEADER_REQUIRED, true);
+        appendValue(csv, CONTENT_HEADER_LOCALNAME);
+        appendValue(csv, CONTENT_HEADER_ID);
+        appendValue(csv, CONTENT_HEADER_TYPEURI);
+        appendValue(csv, CONTENT_HEADER_URI);
+        appendValue(csv, CONTENT_HEADER_REGEXP);
+        prefLabelLanguages.forEach(language -> appendValue(csv, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
+        appendValue(csv, CONTENT_HEADER_REQUIRED, true);
         csv.append("\n");
         for (final ValueTypeDTO valueType : valueTypes) {
-            appendValue(csv, csvSeparator, valueType.getLocalName());
-            appendValue(csv, csvSeparator, valueType.getId().toString());
-            appendValue(csv, csvSeparator, valueType.getTypeUri());
-            appendValue(csv, csvSeparator, valueType.getUri());
-            appendValue(csv, csvSeparator, valueType.getRegexp(), true);
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getValueTypePrefLabel(valueType, language)));
-            appendValue(csv, csvSeparator, Boolean.toString(valueType.getRequired()), true);
+            appendValue(csv, valueType.getLocalName());
+            appendValue(csv, valueType.getId().toString());
+            appendValue(csv, valueType.getTypeUri());
+            appendValue(csv, valueType.getUri());
+            appendValue(csv, valueType.getRegexp(), true);
+            prefLabelLanguages.forEach(language -> appendValue(csv, getValueTypePrefLabel(valueType, language)));
+            appendValue(csv, Boolean.toString(valueType.getRequired()), true);
             csv.append("\n");
         }
         return csv.toString();

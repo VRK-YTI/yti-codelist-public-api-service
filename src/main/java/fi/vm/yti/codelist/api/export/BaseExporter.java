@@ -37,13 +37,11 @@ abstract class BaseExporter {
     }
 
     void appendValue(final StringBuilder builder,
-                     final String separator,
                      final String value) {
-        appendValue(builder, separator, value, false);
+        appendValue(builder, value, false);
     }
 
     void appendValue(final StringBuilder builder,
-                     final String separator,
                      final String value,
                      final boolean isLast) {
         if (value != null && (value.contains(",") || value.contains("\n"))) {
@@ -56,7 +54,7 @@ abstract class BaseExporter {
         if (isLast) {
             builder.append("\n");
         } else {
-            builder.append(separator);
+            builder.append(",");
         }
     }
 
@@ -80,7 +78,7 @@ abstract class BaseExporter {
         return truncateSheetName(EXCEL_SHEET_LINKS + "_" + codeScheme.getCodeValue());
     }
 
-    String truncateSheetName(final String sheetName) {
+    private String truncateSheetName(final String sheetName) {
         if (sheetName.length() <= MAX_SHEETNAME_SIZE) {
             return sheetName;
         } else {
@@ -121,7 +119,7 @@ abstract class BaseExporter {
         return csvExternalReferences.toString();
     }
 
-    protected Set<String> resolveCodePrefLabelLanguages(final Set<CodeDTO> codes) {
+    Set<String> resolveCodePrefLabelLanguages(final Set<CodeDTO> codes) {
         final Set<String> languages = new LinkedHashSet<>();
         for (final CodeDTO code : codes) {
             final Map<String, String> prefLabel = code.getPrefLabel();

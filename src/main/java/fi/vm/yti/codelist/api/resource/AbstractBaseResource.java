@@ -47,8 +47,8 @@ abstract class AbstractBaseResource {
     private static final String HEADER_CONTENT_DISPOSITION = "content-disposition";
     private static final String DOWNLOAD_FILENAME_CROSS_REFERENCE_LIST = "crossreferencelist";
 
-    SimpleFilterProvider createSimpleFilterProvider(final String baseFilter) {
-        return createSimpleFilterProvider(baseFilter, null);
+    SimpleFilterProvider createSimpleFilterProvider() {
+        return createSimpleFilterProvider(FILTER_NAME_RESOURCE, null);
     }
 
     SimpleFilterProvider createSimpleFilterProvider(final String baseFilter,

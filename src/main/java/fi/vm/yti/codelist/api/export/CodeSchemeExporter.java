@@ -50,51 +50,50 @@ public class CodeSchemeExporter extends BaseExporter {
         final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
         final Set<String> descriptionLanguages = resolveCodeSchemeDescriptionLanguages(codeSchemes);
         final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
-        final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
-        appendValue(csv, csvSeparator, CONTENT_HEADER_CODEVALUE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_URI);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ORGANIZATION);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_INFODOMAIN);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_LANGUAGECODE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_VERSION);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_STATUS);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_SOURCE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_LEGALBASE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_GOVERNANCEPOLICY);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_CONCEPTURI);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_DEFAULTCODE);
-        prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
-        definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
-        descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase()));
-        changeNoteLanguages.forEach(language -> appendValue(csv, csvSeparator, CONTENT_HEADER_CHANGENOTE_PREFIX + language.toUpperCase()));
-        appendValue(csv, csvSeparator, CONTENT_HEADER_STARTDATE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_ENDDATE);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_CREATED);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_MODIFIED);
-        appendValue(csv, csvSeparator, CONTENT_HEADER_HREF, true);
+        appendValue(csv, CONTENT_HEADER_CODEVALUE);
+        appendValue(csv, CONTENT_HEADER_URI);
+        appendValue(csv, CONTENT_HEADER_ORGANIZATION);
+        appendValue(csv, CONTENT_HEADER_INFODOMAIN);
+        appendValue(csv, CONTENT_HEADER_LANGUAGECODE);
+        appendValue(csv, CONTENT_HEADER_VERSION);
+        appendValue(csv, CONTENT_HEADER_STATUS);
+        appendValue(csv, CONTENT_HEADER_SOURCE);
+        appendValue(csv, CONTENT_HEADER_LEGALBASE);
+        appendValue(csv, CONTENT_HEADER_GOVERNANCEPOLICY);
+        appendValue(csv, CONTENT_HEADER_CONCEPTURI);
+        appendValue(csv, CONTENT_HEADER_DEFAULTCODE);
+        prefLabelLanguages.forEach(language -> appendValue(csv, CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase()));
+        definitionLanguages.forEach(language -> appendValue(csv, CONTENT_HEADER_DEFINITION_PREFIX + language.toUpperCase()));
+        descriptionLanguages.forEach(language -> appendValue(csv, CONTENT_HEADER_DESCRIPTION_PREFIX + language.toUpperCase()));
+        changeNoteLanguages.forEach(language -> appendValue(csv, CONTENT_HEADER_CHANGENOTE_PREFIX + language.toUpperCase()));
+        appendValue(csv, CONTENT_HEADER_STARTDATE);
+        appendValue(csv, CONTENT_HEADER_ENDDATE);
+        appendValue(csv, CONTENT_HEADER_CREATED);
+        appendValue(csv, CONTENT_HEADER_MODIFIED);
+        appendValue(csv, CONTENT_HEADER_HREF, true);
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
-            appendValue(csv, csvSeparator, codeScheme.getCodeValue());
-            appendValue(csv, csvSeparator, codeScheme.getUri());
-            appendValue(csv, csvSeparator, formatOrganizationsToString(codeScheme.getOrganizations()));
-            appendValue(csv, csvSeparator, formatCodesToString(codeScheme.getInfoDomains()));
-            appendValue(csv, csvSeparator, formatCodesToString(codeScheme.getLanguageCodes()));
-            appendValue(csv, csvSeparator, codeScheme.getVersion());
-            appendValue(csv, csvSeparator, codeScheme.getStatus());
-            appendValue(csv, csvSeparator, codeScheme.getSource());
-            appendValue(csv, csvSeparator, codeScheme.getLegalBase());
-            appendValue(csv, csvSeparator, codeScheme.getGovernancePolicy());
-            appendValue(csv, csvSeparator, codeScheme.getConceptUriInVocabularies());
-            appendValue(csv, csvSeparator, codeScheme.getDefaultCode() != null ? codeScheme.getDefaultCode().getCodeValue() : "");
-            prefLabelLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeSchemePrefLabel(codeScheme, language)));
-            definitionLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeSchemeDefinition(codeScheme, language)));
-            descriptionLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeSchemeDescription(codeScheme, language)));
-            changeNoteLanguages.forEach(language -> appendValue(csv, csvSeparator, getCodeSchemeChangeNote(codeScheme, language)));
-            appendValue(csv, csvSeparator, codeScheme.getStartDate() != null ? formatDateWithISO8601(codeScheme.getStartDate()) : "");
-            appendValue(csv, csvSeparator, codeScheme.getEndDate() != null ? formatDateWithISO8601(codeScheme.getEndDate()) : "");
-            appendValue(csv, csvSeparator, codeScheme.getCreated() != null ? formatDateWithSeconds(codeScheme.getCreated()) : "");
-            appendValue(csv, csvSeparator, codeScheme.getModified() != null ? formatDateWithSeconds(codeScheme.getModified()) : "");
-            appendValue(csv, csvSeparator, formatExternalReferencesToString(codeScheme.getExternalReferences()), true);
+            appendValue(csv, codeScheme.getCodeValue());
+            appendValue(csv, codeScheme.getUri());
+            appendValue(csv, formatOrganizationsToString(codeScheme.getOrganizations()));
+            appendValue(csv, formatCodesToString(codeScheme.getInfoDomains()));
+            appendValue(csv, formatCodesToString(codeScheme.getLanguageCodes()));
+            appendValue(csv, codeScheme.getVersion());
+            appendValue(csv, codeScheme.getStatus());
+            appendValue(csv, codeScheme.getSource());
+            appendValue(csv, codeScheme.getLegalBase());
+            appendValue(csv, codeScheme.getGovernancePolicy());
+            appendValue(csv, codeScheme.getConceptUriInVocabularies());
+            appendValue(csv, codeScheme.getDefaultCode() != null ? codeScheme.getDefaultCode().getCodeValue() : "");
+            prefLabelLanguages.forEach(language -> appendValue(csv, getCodeSchemePrefLabel(codeScheme, language)));
+            definitionLanguages.forEach(language -> appendValue(csv, getCodeSchemeDefinition(codeScheme, language)));
+            descriptionLanguages.forEach(language -> appendValue(csv, getCodeSchemeDescription(codeScheme, language)));
+            changeNoteLanguages.forEach(language -> appendValue(csv, getCodeSchemeChangeNote(codeScheme, language)));
+            appendValue(csv, codeScheme.getStartDate() != null ? formatDateWithISO8601(codeScheme.getStartDate()) : "");
+            appendValue(csv, codeScheme.getEndDate() != null ? formatDateWithISO8601(codeScheme.getEndDate()) : "");
+            appendValue(csv, codeScheme.getCreated() != null ? formatDateWithSeconds(codeScheme.getCreated()) : "");
+            appendValue(csv, codeScheme.getModified() != null ? formatDateWithSeconds(codeScheme.getModified()) : "");
+            appendValue(csv, formatExternalReferencesToString(codeScheme.getExternalReferences()), true);
         }
         return csv.toString();
     }
@@ -104,7 +103,7 @@ public class CodeSchemeExporter extends BaseExporter {
         final Workbook workbook = createWorkBook(format);
         final Set<CodeSchemeDTO> codeSchemes = new HashSet<>();
         codeSchemes.add(codeScheme);
-        addCodeSchemeSheet(workbook, EXCEL_SHEET_CODESCHEMES, codeSchemes);
+        addCodeSchemeSheet(workbook, codeSchemes);
         final String externalReferenceSheetName = createLinksSheetName(codeScheme);
         final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(codeScheme);
         externalReferenceExporter.addExternalReferencesSheet(workbook, externalReferenceSheetName, externalReferences);
@@ -128,18 +127,17 @@ public class CodeSchemeExporter extends BaseExporter {
     public Workbook createExcel(final Set<CodeSchemeDTO> codeSchemes,
                                 final String format) {
         final Workbook workbook = createWorkBook(format);
-        addCodeSchemeSheet(workbook, EXCEL_SHEET_CODESCHEMES, codeSchemes);
+        addCodeSchemeSheet(workbook, codeSchemes);
         return workbook;
     }
 
     private void addCodeSchemeSheet(final Workbook workbook,
-                                    final String sheetName,
                                     final Set<CodeSchemeDTO> codeSchemes) {
         final Set<String> prefLabelLanguages = resolveCodeSchemePrefLabelLanguages(codeSchemes);
         final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
         final Set<String> descriptionLanguages = resolveCodeSchemeDescriptionLanguages(codeSchemes);
         final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
-        final Sheet sheet = workbook.createSheet(sheetName);
+        final Sheet sheet = workbook.createSheet(EXCEL_SHEET_CODESCHEMES);
         final Row rowhead = sheet.createRow((short) 0);
         int j = 0;
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODEVALUE);
