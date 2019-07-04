@@ -27,9 +27,6 @@ public class SpringAppConfig {
     @Value("${yti_codelist_public_api_service_elastic_port}")
     protected Integer elasticsearchPort;
 
-    @Value("${yti_codelist_public_api_service_elastic_cluster}")
-    protected String clusterName;
-
     @Value(value = "${application.contextPath}")
     private String contextPath;
 
