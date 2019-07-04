@@ -6,8 +6,6 @@ import javax.ws.rs.core.MediaType;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import fi.vm.yti.codelist.api.exception.exceptionmapping.YtiCodeListExceptionMapper;

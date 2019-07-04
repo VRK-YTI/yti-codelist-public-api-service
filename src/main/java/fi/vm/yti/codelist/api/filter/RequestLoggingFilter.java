@@ -86,7 +86,7 @@ public class RequestLoggingFilter implements ContainerRequestFilter, ContainerRe
         final String log = "Request: /" +
             requestContext.getMethod() + " " + requestContext.getUriInfo().getPath() + ", " +
             "Status: " + responseContext.getStatus() + ", " +
-            "User-Agent: " + MDC.get("userAgent") +  ", " +
+            "User-Agent: " + MDC.get("userAgent") + ", " +
             "Host: " + MDC.get("host") + ", " +
             "Time: " + executionTime + " ms";
         LOG.info(log);

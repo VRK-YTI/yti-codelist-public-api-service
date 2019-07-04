@@ -43,7 +43,7 @@ import fi.vm.yti.codelist.common.dto.SearchResultWithMetaDataDTO;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.SEARCH_HIT_TYPE_EXTENSION;
 import static org.elasticsearch.index.query.QueryBuilders.*;
 
-public class DeepExtensionQueryFactory {
+class DeepExtensionQueryFactory {
 
     private static final Logger log = LoggerFactory.getLogger(DeepExtensionQueryFactory.class);
 
@@ -53,20 +53,14 @@ public class DeepExtensionQueryFactory {
     private final Domain domain;
     private ObjectMapper objectMapper;
 
-    public DeepExtensionQueryFactory(final ObjectMapper objectMapper,
-                                     final Domain domain) {
+    DeepExtensionQueryFactory(final ObjectMapper objectMapper,
+                              final Domain domain) {
         this.objectMapper = objectMapper;
         this.domain = domain;
     }
 
-    public SearchRequest createQuery(final String query,
-                                     final String prefLang,
-                                     final String extensionPropertyType) {
-
-        String[] fieldNames = { "prefLabel.*", "codeValue" };
-        MultiMatchQueryBuilder multiMatch = QueryBuilders.multiMatchQuery(query, fieldNames)
-            .type(MultiMatchQueryBuilder.Type.BEST_FIELDS)
-            .minimumShouldMatch("90%");
+    SearchRequest createQuery(final String query,
+                              final String extensionPropertyType) {
 
         final BoolQueryBuilder boolQueryBuilder = boolQuery();
         if (query != null && !query.isEmpty()) {
@@ -83,11 +77,7 @@ public class DeepExtensionQueryFactory {
             boolQueryBuilder.must(matchQuery("propertyType.localName", extensionPropertyType));
         }
 
-        if (prefLang != null && prefLangPattern.matcher(prefLang).matches()) {
-            multiMatch = multiMatch.field("prefLabel." + prefLang, 10);
-        }
-
-        SearchRequest sr = new SearchRequest("extension")
+        return new SearchRequest("extension")
             .source(new SearchSourceBuilder()
                 .query(boolQueryBuilder)
                 .size(0)
@@ -101,7 +91,6 @@ public class DeepExtensionQueryFactory {
                         .fetchSource(sourceIncludes)
                     ).subAggregation(AggregationBuilders.max("best_extension_hit")
                         .script(topHitScript))));
-        return sr;
     }
 
     public Map<String, List<DeepSearchHitListDTO<?>>> parseResponse(SearchResponse response,
@@ -149,7 +138,6 @@ public class DeepExtensionQueryFactory {
                             fat.getCodeValue(),
                             fat.getCodeRegistry().getCodeValue(),
                             uuidOfTheCodeScheme,
-                            SEARCH_HIT_TYPE_EXTENSION,
                             total);
                     }
                 }
@@ -169,8 +157,8 @@ public class DeepExtensionQueryFactory {
     private void highlightLabels(String highlightText,
                                  ExtensionDTO dto) {
         if (highlightText != null && highlightText.length() > 0) {
-            String highLights[] = highlightText.split("\\s+");
-            for (String highLight : highLights) {
+            final String[] highLights = highlightText.split("\\s+");
+            for (final String highLight : highLights) {
                 if (dto.getPrefLabel() != null) {
                     dto.getPrefLabel().forEach((lang, label) -> {
                         String matchString = Pattern.quote(highLight);
@@ -184,8 +172,8 @@ public class DeepExtensionQueryFactory {
     private void highlightCodeValue(String highlightText,
                                     ExtensionDTO dto) {
         if (highlightText != null && highlightText.length() > 0) {
-            String highLights[] = highlightText.split("\\s+");
-            for (String highLight : highLights) {
+            final String[] highLights = highlightText.split("\\s+");
+            for (final String highLight : highLights) {
                 String matchString = Pattern.quote(highLight);
                 dto.setCodeValue(dto.getCodeValue().replaceAll("(?i)(?<text>\\b" + matchString + "|" + matchString + "\\b)", "<b>${text}</b>"));
             }
@@ -195,16 +183,14 @@ public class DeepExtensionQueryFactory {
     private void populateSearchHits(final Set<String> codeSchemeUuids,
                                     final SearchResultWithMetaDataDTO result,
                                     final Map<String, String> prefLabel,
-                                    // final String uri,
                                     final String entityCodeValue,
                                     final String codeSchemeCodeValue,
                                     final String codeRegistryCodeValue,
                                     final String uuidOfTheCodeScheme,
-                                    final String typeOfHit,
                                     final long total) {
         codeSchemeUuids.add(uuidOfTheCodeScheme);
         SearchHitDTO searchHit = new SearchHitDTO();
-        searchHit.setType(typeOfHit);
+        searchHit.setType(SEARCH_HIT_TYPE_EXTENSION);
         searchHit.setPrefLabel(prefLabel);
         searchHit.setEntityCodeValue(entityCodeValue);
         searchHit.setCodeSchemeCodeValue(codeSchemeCodeValue);
@@ -214,16 +200,14 @@ public class DeepExtensionQueryFactory {
         if (searchHits.containsKey(uuidOfTheCodeScheme)) {
             ArrayList<SearchHitDTO> searchHitList = searchHits.get(uuidOfTheCodeScheme);
             searchHitList.add(searchHit);
-            searchHits.put(uuidOfTheCodeScheme,
-                searchHitList);
+            searchHits.put(uuidOfTheCodeScheme, searchHitList);
         } else {
             ArrayList<SearchHitDTO> searchHitList = new ArrayList<>();
             searchHitList.add(searchHit);
-            searchHits.put(uuidOfTheCodeScheme,
-                searchHitList);
+            searchHits.put(uuidOfTheCodeScheme, searchHitList);
         }
         result.getSearchHitDTOMap().put(uuidOfTheCodeScheme,
             searchHits.get(uuidOfTheCodeScheme));
-        result.getTotalhitsExtensionsPerCodeSchemeMap().put(uuidOfTheCodeScheme, new Long(total));
+        result.getTotalhitsExtensionsPerCodeSchemeMap().put(uuidOfTheCodeScheme, total);
     }
 }

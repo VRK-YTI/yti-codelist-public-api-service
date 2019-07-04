@@ -26,7 +26,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_CODE;
 @Component
 @Path("/v1/codes")
 @Api(value = "codes")
-@Produces({MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv"})
+@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
 public class CodeResource extends AbstractBaseResource {
 
     private final Domain domain;

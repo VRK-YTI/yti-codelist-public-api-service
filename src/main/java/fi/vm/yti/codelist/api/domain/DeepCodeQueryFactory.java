@@ -53,14 +53,13 @@ public class DeepCodeQueryFactory {
 
     private static final Logger log = LoggerFactory.getLogger(DeepCodeQueryFactory.class);
 
-    private static final Pattern prefLangPattern = Pattern.compile("[a-zA-Z-]+");
     private static final FetchSourceContext sourceIncludes = new FetchSourceContext(true, new String[]{ "id", "uri", "status", "codeValue", "prefLabel", "codeScheme.id" }, new String[]{});
     private static final Script topHitScript = new Script(ScriptType.INLINE, Script.DEFAULT_SCRIPT_LANG, "_score", Collections.emptyMap());
     private final Domain domain;
     private ObjectMapper objectMapper;
 
-    public DeepCodeQueryFactory(final ObjectMapper objectMapper,
-                                final Domain domain) {
+    DeepCodeQueryFactory(final ObjectMapper objectMapper,
+                         final Domain domain) {
         this.objectMapper = objectMapper;
         this.domain = domain;
     }
@@ -99,15 +98,6 @@ public class DeepCodeQueryFactory {
     public SearchRequest createQuery(String query,
                                      String prefLang) {
 
-
-        // QueryStringQueryBuilder queryStringQuery = this.buildPrefixSuffixQuery(query).field("prefLabel.*"); // TODO YTI-421 clean up this stuff or make it work
-        // QueryStringQueryBuilder queryStringQuery = this.buildPrefixSuffixQuery(query.toLowerCase()).field("prefLabel.*");
-
-        String[] fieldNames = { "prefLabel.*", "codeValue" };
-        MultiMatchQueryBuilder multiMatch = QueryBuilders.multiMatchQuery(query, fieldNames)
-            .type(MultiMatchQueryBuilder.Type.BEST_FIELDS)
-            .minimumShouldMatch("90%");
-
         final BoolQueryBuilder boolQueryBuilder = boolQuery();
         if (query != null && !query.isEmpty()) {
             boolQueryBuilder.should(prefixQuery("codeValue",
@@ -116,19 +106,10 @@ public class DeepCodeQueryFactory {
                 multiMatchQuery(query.toLowerCase() + "*",
                     "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX),
                 ScoreMode.None));
-
-            /*boolQueryBuilder.should(prefixQuery("codeValue", // TODO YTI-421 clean up this stuff or make it work
-                query.toLowerCase()));
-            boolQueryBuilder.should(queryStringQuery);*/
-
         }
         boolQueryBuilder.minimumShouldMatch(1);
 
-        if (prefLang != null && prefLangPattern.matcher(prefLang).matches()) {
-            multiMatch = multiMatch.field("prefLabel." + prefLang, 10);
-        }
-
-        SearchRequest sr = new SearchRequest("code")
+        return new SearchRequest("code")
             .source(new SearchSourceBuilder()
                 .query(boolQueryBuilder)
                 .size(0)
@@ -142,13 +123,12 @@ public class DeepCodeQueryFactory {
                         .fetchSource(sourceIncludes)
                     ).subAggregation(AggregationBuilders.max("best_code_hit")
                         .script(topHitScript))));
-        return sr;
     }
 
-    public Map<String, List<DeepSearchHitListDTO<?>>> parseResponse(SearchResponse response,
-                                                                    SearchResultWithMetaDataDTO result,
-                                                                    String searchTerm) {
-        Map<String, List<DeepSearchHitListDTO<?>>> ret = new HashMap<>();
+    Map<String, List<DeepSearchHitListDTO<?>>> parseResponse(SearchResponse response,
+                                                             SearchResultWithMetaDataDTO result,
+                                                             String searchTerm) {
+        final Map<String, List<DeepSearchHitListDTO<?>>> ret = new HashMap<>();
         try {
             Terms groupBy = response.getAggregations().get("group_by_codescheme");
             for (Terms.Bucket bucket : groupBy.getBuckets()) {
@@ -157,18 +137,17 @@ public class DeepCodeQueryFactory {
 
                 long total = hits.getTotalHits();
                 if (total > 0) {
-                    String codeSchemeUuid = bucket.getKeyAsString();
-                    List<CodeDTO> topHits = new ArrayList<>();
-                    DeepSearchCodeHitListDTO hitList = new DeepSearchCodeHitListDTO(total, topHits);
+                    final String codeSchemeUuid = bucket.getKeyAsString();
+                    final List<CodeDTO> topHits = new ArrayList<>();
+                    final DeepSearchCodeHitListDTO hitList = new DeepSearchCodeHitListDTO(total, topHits);
 
                     for (SearchHit hit : hits.getHits()) {
-                        JsonNode code = objectMapper.readTree(hit.getSourceAsString());
-                        String codeId = ElasticRequestUtils.getTextValueOrNull(code, "id");
-                        String codeUri = ElasticRequestUtils.getTextValueOrNull(code, "uri");
-                        String codeStatus = ElasticRequestUtils.getTextValueOrNull(code, "status");
-                        Map<String, String> prefLabelMap = ElasticRequestUtils.labelFromKeyValueNode(code.get("prefLabel"));
-                        String codeCodeValue = ElasticRequestUtils.getTextValueOrNull(code, "codeValue");
-                        String codeCodeSchemeUuid = ElasticRequestUtils.getTextValueOrNull(code, "codeScheme.id");
+                        final JsonNode code = objectMapper.readTree(hit.getSourceAsString());
+                        final String codeId = ElasticRequestUtils.getTextValueOrNull(code, "id");
+                        final String codeUri = ElasticRequestUtils.getTextValueOrNull(code, "uri");
+                        final String codeStatus = ElasticRequestUtils.getTextValueOrNull(code, "status");
+                        final Map<String, String> prefLabelMap = ElasticRequestUtils.labelFromKeyValueNode(code.get("prefLabel"));
+                        final String codeCodeValue = ElasticRequestUtils.getTextValueOrNull(code, "codeValue");
 
                         CodeDTO dto = new CodeDTO();
                         dto.setId(UUID.fromString(codeId));
@@ -177,8 +156,8 @@ public class DeepCodeQueryFactory {
                         dto.setPrefLabel(prefLabelMap);
                         dto.setCodeValue(codeCodeValue);
                         addHighlightTagsToDto(searchTerm, dto);
-                        CodeSchemeDTO fat = domain.getCodeScheme(codeSchemeUuid);
-                        CodeSchemeDTO lean = new CodeSchemeDTO();
+                        final CodeSchemeDTO fat = domain.getCodeScheme(codeSchemeUuid);
+                        final CodeSchemeDTO lean = new CodeSchemeDTO();
                         lean.setId(fat.getId());
                         lean.setCodeRegistry(fat.getCodeRegistry());
                         lean.setCodeValue(fat.getCodeValue());
@@ -186,7 +165,7 @@ public class DeepCodeQueryFactory {
                         topHits.add(dto);
                         ret.put(codeSchemeUuid, Collections.singletonList(hitList));
 
-                        String uuidOfTheCodeScheme = fat.getId().toString().toLowerCase();
+                        final String uuidOfTheCodeScheme = fat.getId().toString().toLowerCase();
                         final Set<String> codeSchemeUuids = new HashSet<>();
                         populateSearchHits(codeSchemeUuids,
                             result,
@@ -196,7 +175,6 @@ public class DeepCodeQueryFactory {
                             fat.getCodeValue(),
                             fat.getCodeRegistry().getCodeValue(),
                             uuidOfTheCodeScheme,
-                            SEARCH_HIT_TYPE_CODE,
                             total);
                     }
                 }
@@ -207,20 +185,20 @@ public class DeepCodeQueryFactory {
         return ret;
     }
 
-    private void addHighlightTagsToDto(String searchTerm,
-                                       CodeDTO dto) {
+    private void addHighlightTagsToDto(final String searchTerm,
+                                       final CodeDTO dto) {
         highlightLabels(searchTerm, dto);
         highlightCodeValue(searchTerm, dto);
     }
 
-    private void highlightLabels(String highlightText,
-                                 CodeDTO dto) {
+    private void highlightLabels(final String highlightText,
+                                 final CodeDTO dto) {
         if (highlightText != null && highlightText.length() > 0) {
-            String highLights[] = highlightText.split("\\s+");
-            for (String highLight : highLights) {
+            final String highLights[] = highlightText.split("\\s+");
+            for (final String highLight : highLights) {
                 if (dto.getPrefLabel() != null) {
                     dto.getPrefLabel().forEach((lang, label) -> {
-                        String matchString = Pattern.quote(highLight);
+                        final String matchString = Pattern.quote(highLight);
                         dto.getPrefLabel().put(lang, label.replaceAll("(?i)(?<text>\\b" + matchString + "|" + matchString + "\\b)", "<b>${text}</b>"));
                     });
                 }
@@ -228,12 +206,12 @@ public class DeepCodeQueryFactory {
         }
     }
 
-    private void highlightCodeValue(String highlightText,
-                                    CodeDTO dto) {
+    private void highlightCodeValue(final String highlightText,
+                                    final CodeDTO dto) {
         if (highlightText != null && highlightText.length() > 0) {
-            String highLights[] = highlightText.split("\\s+");
-            for (String highLight : highLights) {
-                String matchString = Pattern.quote(highLight);
+            final String highLights[] = highlightText.split("\\s+");
+            for (final String highLight : highLights) {
+                final String matchString = Pattern.quote(highLight);
                 dto.setCodeValue(dto.getCodeValue().replaceAll("(?i)(?<text>\\b" + matchString + "|" + matchString + "\\b)", "<b>${text}</b>"));
             }
         }
@@ -247,31 +225,29 @@ public class DeepCodeQueryFactory {
                                     final String codeSchemeCodeValue,
                                     final String codeRegistryCodeValue,
                                     final String uuidOfTheCodeScheme,
-                                    final String typeOfHit,
                                     final long total) {
         codeSchemeUuids.add(uuidOfTheCodeScheme);
-        SearchHitDTO searchHit = new SearchHitDTO();
-        searchHit.setType(typeOfHit);
+        final SearchHitDTO searchHit = new SearchHitDTO();
+        searchHit.setType(SEARCH_HIT_TYPE_CODE);
         searchHit.setPrefLabel(prefLabel);
         searchHit.setUri(uri);
         searchHit.setEntityCodeValue(entityCodeValue);
         searchHit.setCodeSchemeCodeValue(codeSchemeCodeValue);
         searchHit.setCodeRegistryCodeValue(codeRegistryCodeValue);
 
-        Map<String, ArrayList<SearchHitDTO>> searchHits = result.getSearchHitDTOMap();
+        final Map<String, ArrayList<SearchHitDTO>> searchHits = result.getSearchHitDTOMap();
         if (searchHits.containsKey(uuidOfTheCodeScheme)) {
-            ArrayList<SearchHitDTO> searchHitList = searchHits.get(uuidOfTheCodeScheme);
+            final ArrayList<SearchHitDTO> searchHitList = searchHits.get(uuidOfTheCodeScheme);
             searchHitList.add(searchHit);
             searchHits.put(uuidOfTheCodeScheme,
                 searchHitList);
         } else {
-            ArrayList<SearchHitDTO> searchHitList = new ArrayList<>();
+            final ArrayList<SearchHitDTO> searchHitList = new ArrayList<>();
             searchHitList.add(searchHit);
             searchHits.put(uuidOfTheCodeScheme,
                 searchHitList);
         }
-        result.getSearchHitDTOMap().put(uuidOfTheCodeScheme,
-            searchHits.get(uuidOfTheCodeScheme));
-        result.getTotalhitsCodesPerCodeSchemeMap().put(uuidOfTheCodeScheme, new Long(total));
+        result.getSearchHitDTOMap().put(uuidOfTheCodeScheme, searchHits.get(uuidOfTheCodeScheme));
+        result.getTotalhitsCodesPerCodeSchemeMap().put(uuidOfTheCodeScheme, total);
     }
 }

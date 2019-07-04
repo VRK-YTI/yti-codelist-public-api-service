@@ -262,7 +262,7 @@ public class DomainImpl implements Domain {
         if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION)) {
             if (searchTerm != null) {
                 try {
-                    SearchRequest query = deepExtensionQueryFactory.createQuery(searchTerm, language, extensionPropertyType);
+                    SearchRequest query = deepExtensionQueryFactory.createQuery(searchTerm, extensionPropertyType);
                     SearchResponse response = client.search(query, RequestOptions.DEFAULT);
                     deepSearchHits = deepExtensionQueryFactory.parseResponse(response, result, searchTerm);
                 } catch (IOException e) {
@@ -272,37 +272,6 @@ public class DomainImpl implements Domain {
 
         }
         return deepSearchHits;
-    }
-
-    private void populateSearchHits(final Set<String> codeSchemeUuids,
-                                    final SearchResultWithMetaDataDTO result,
-                                    final Map<String, String> prefLabel,
-                                    final String uri,
-                                    final String entityCodeValue,
-                                    final String codeSchemeCodeValue,
-                                    final String codeRegistryCodeValue,
-                                    final String uuidOfTheCodeScheme,
-                                    final String typeOfHit) {
-        codeSchemeUuids.add(uuidOfTheCodeScheme);
-        SearchHitDTO searchHit = new SearchHitDTO();
-        searchHit.setType(typeOfHit);
-        searchHit.setPrefLabel(prefLabel);
-        searchHit.setUri(uri);
-        searchHit.setEntityCodeValue(entityCodeValue);
-        searchHit.setCodeSchemeCodeValue(codeSchemeCodeValue);
-        searchHit.setCodeRegistryCodeValue(codeRegistryCodeValue);
-
-        Map<String, ArrayList<SearchHitDTO>> searchHits = result.getSearchHitDTOMap();
-        if (searchHits.containsKey(uuidOfTheCodeScheme)) {
-            ArrayList<SearchHitDTO> searchHitList = searchHits.get(uuidOfTheCodeScheme);
-            searchHitList.add(searchHit);
-            searchHits.put(uuidOfTheCodeScheme, searchHitList);
-        } else {
-            ArrayList<SearchHitDTO> searchHitList = new ArrayList<>();
-            searchHitList.add(searchHit);
-            searchHits.put(uuidOfTheCodeScheme, searchHitList);
-        }
-        result.getSearchHitDTOMap().put(uuidOfTheCodeScheme, searchHits.get(uuidOfTheCodeScheme));
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
@@ -337,7 +306,7 @@ public class DomainImpl implements Domain {
         }
 
         if (searchExtensions && searchTerm != null) {
-            Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = getCodeSchemesMatchingExtensions(searchTerm, extensionPropertyType,searchResultWithMetaData, language);
+            Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = getCodeSchemesMatchingExtensions(searchTerm, extensionPropertyType, searchResultWithMetaData, language);
             codeSchemeUuids.addAll(deepSearchHits.keySet());
             codeSchemeUuidsWithDeepHitsExtensions.addAll(deepSearchHits.keySet());
         }

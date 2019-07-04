@@ -76,7 +76,7 @@ public class MemberExporter extends BaseExporter {
 
     public String createSimplifiedCsvForCrossReferenceList(final ExtensionDTO extension,
                                                            final Set<MemberDTO> members) {
-        Set<CodeDTO> codesInMembers = members.stream().map(m -> m.getCode()).collect(Collectors.toSet());
+        final Set<CodeDTO> codesInMembers = members.stream().map(MemberDTO::getCode).collect(Collectors.toSet());
         final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codesInMembers);
         final String csvSeparator = ",";
         final StringBuilder csv = new StringBuilder();
@@ -117,7 +117,7 @@ public class MemberExporter extends BaseExporter {
         return csv.toString();
     }
 
-    public void addMembersSheet(final ExtensionDTO extension,
+    void addMembersSheet(final ExtensionDTO extension,
                                 final Workbook workbook,
                                 final String sheetName,
                                 final Set<MemberDTO> members) {
@@ -125,45 +125,37 @@ public class MemberExporter extends BaseExporter {
         final Set<CodeDTO> codesInMembers = members.stream().map(MemberDTO::getCode).collect(Collectors.toSet());
         final Set<String> codePrefLabelLanguages = resolveCodePrefLabelLanguages(codesInMembers);
         final Sheet sheet = workbook.createSheet(sheetName);
-        final Row rowhead = sheet.createRow((short) 0);
+        final Row rowHead = sheet.createRow((short) 0);
         int j = 0;
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBER_ID);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI);
+        rowHead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBER_ID);
+        rowHead.createCell(j++).setCellValue(CONTENT_HEADER_URI);
         final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
+        appendValueTypeHeaders(valueTypes, rowHead, j);
         if (valueTypes != null && !valueTypes.isEmpty()) {
             for (final ValueTypeDTO valueType : valueTypes) {
-                rowhead.createCell(j++).setCellValue(valueType.getLocalName().toUpperCase());
+                rowHead.createCell(j++).setCellValue(valueType.getLocalName().toUpperCase());
             }
         }
         for (final String language : prefLabelLanguages) {
-            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
+            rowHead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODE);
+        rowHead.createCell(j++).setCellValue(CONTENT_HEADER_CODE);
         for (final String language : codePrefLabelLanguages) {
-            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODE_PREFLABEL_PREFIX + language.toUpperCase());
+            rowHead.createCell(j++).setCellValue(CONTENT_HEADER_CODE_PREFLABEL_PREFIX + language.toUpperCase());
         }
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_RELATION);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
-        rowhead.createCell(j).setCellValue(CONTENT_HEADER_ORDER);
+        rowHead.createCell(j++).setCellValue(CONTENT_HEADER_RELATION);
+        rowHead.createCell(j++).setCellValue(CONTENT_HEADER_STARTDATE);
+        rowHead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
+        rowHead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
+        rowHead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
+        rowHead.createCell(j).setCellValue(CONTENT_HEADER_ORDER);
         int i = 1;
         for (final MemberDTO member : members) {
             final Row row = sheet.createRow(i++);
             int k = 0;
             row.createCell(k++).setCellValue(member.getSequenceId() != null ? member.getSequenceId().toString() : "");
             row.createCell(k++).setCellValue(member.getUri());
-            if (valueTypes != null && !valueTypes.isEmpty()) {
-                for (final ValueTypeDTO valueType : valueTypes) {
-                    final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
-                    if (memberValue != null) {
-                        row.createCell(k++).setCellValue(checkEmptyValue(memberValue.getValue()));
-                    } else {
-                        row.createCell(k++).setCellValue("");
-                    }
-                }
-            }
+            appendValueTypes(valueTypes, member, row, k);
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(getMemberPrefLabel(member, language));
             }
@@ -181,34 +173,27 @@ public class MemberExporter extends BaseExporter {
         }
     }
 
-    public void addMembersSheetWithCrossRerefences(final ExtensionDTO extension,
+    void addMembersSheetWithCrossRerefences(final ExtensionDTO extension,
                                                    final Workbook workbook,
                                                    final String sheetName,
                                                    final Set<MemberDTO> members) {
-        Set<CodeDTO> codesInMembers = members.stream().map(m -> m.getCode()).collect(Collectors.toSet());
+        Set<CodeDTO> codesInMembers = members.stream().map(MemberDTO::getCode).collect(Collectors.toSet());
         final Set<String> prefLabelLanguages = resolveCodePrefLabelLanguages(codesInMembers);
         final Sheet sheet = workbook.createSheet(sheetName);
-
-        final Row rowhead = sheet.createRow((short) 0);
+        final Row rowHead = sheet.createRow((short) 0);
         int j = 0;
-
         final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
-        if (valueTypes != null && !valueTypes.isEmpty()) {
-            for (final ValueTypeDTO valueType : valueTypes) {
-                rowhead.createCell(j++).setCellValue(valueType.getLocalName().toUpperCase());
-            }
-        }
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI1 + "_" + CONTENT_HEADER_CODEVALUE);
+        appendValueTypeHeaders(valueTypes, rowHead, j);
+        rowHead.createCell(j++).setCellValue(CONTENT_HEADER_URI1 + "_" + CONTENT_HEADER_CODEVALUE);
         for (final String language : prefLabelLanguages) {
-            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI1 + "_" + CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
+            rowHead.createCell(j++).setCellValue(CONTENT_HEADER_URI1 + "_" + CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI1);
-        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI2 + "_" + CONTENT_HEADER_CODEVALUE);
+        rowHead.createCell(j++).setCellValue(CONTENT_HEADER_URI1);
+        rowHead.createCell(j++).setCellValue(CONTENT_HEADER_URI2 + "_" + CONTENT_HEADER_CODEVALUE);
         for (final String language : prefLabelLanguages) {
-            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_URI2 + "_" + CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
+            rowHead.createCell(j++).setCellValue(CONTENT_HEADER_URI2 + "_" + CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
-        rowhead.createCell(j).setCellValue(CONTENT_HEADER_URI2);
-
+        rowHead.createCell(j).setCellValue(CONTENT_HEADER_URI2);
         int i = 1;
         for (final MemberDTO member : members) {
             if (member.getRelatedMember() == null) {
@@ -216,17 +201,7 @@ public class MemberExporter extends BaseExporter {
             }
             final Row row = sheet.createRow(i++);
             int k = 0;
-
-            if (valueTypes != null && !valueTypes.isEmpty()) {
-                for (final ValueTypeDTO valueType : valueTypes) {
-                    final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
-                    if (memberValue != null) {
-                        row.createCell(k++).setCellValue(checkEmptyValue(memberValue.getValue()));
-                    } else {
-                        row.createCell(k++).setCellValue("");
-                    }
-                }
-            }
+            appendValueTypes(valueTypes, member, row, k);
             row.createCell(k++).setCellValue(member.getCode().getCodeValue());
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(getCodePrefLabel(member.getCode(), language));
@@ -237,7 +212,33 @@ public class MemberExporter extends BaseExporter {
                 for (final String language : prefLabelLanguages) {
                     row.createCell(k++).setCellValue(getCodePrefLabel(member.getRelatedMember().getCode(), language));
                 }
-                row.createCell(k++).setCellValue(member.getRelatedMember().getCode().getUri());
+                row.createCell(k).setCellValue(member.getRelatedMember().getCode().getUri());
+            }
+        }
+    }
+
+    private void appendValueTypeHeaders(final Set<ValueTypeDTO> valueTypes,
+                                        final Row rowHead,
+                                        int j) {
+        if (valueTypes != null && !valueTypes.isEmpty()) {
+            for (final ValueTypeDTO valueType : valueTypes) {
+                rowHead.createCell(j++).setCellValue(valueType.getLocalName().toUpperCase());
+            }
+        }
+    }
+
+    private void appendValueTypes(final Set<ValueTypeDTO> valueTypes,
+                                  final MemberDTO member,
+                                  final Row row,
+                                  int k) {
+        if (valueTypes != null && !valueTypes.isEmpty()) {
+            for (final ValueTypeDTO valueType : valueTypes) {
+                final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
+                if (memberValue != null) {
+                    row.createCell(k++).setCellValue(checkEmptyValue(memberValue.getValue()));
+                } else {
+                    row.createCell(k++).setCellValue("");
+                }
             }
         }
     }

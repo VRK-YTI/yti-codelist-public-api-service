@@ -23,25 +23,7 @@ public final class ElasticRequestUtils {
         // prevent construction
     }
 
-    public static @NotNull JsonNode responseContentAsJson(@NotNull ObjectMapper objectMapper,
-                                                          @NotNull Response response) {
-        try {
-            return objectMapper.readTree(response.getEntity().getContent());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static @NotNull String responseContentAsString(@NotNull Response response) {
-        try (InputStream is = response.getEntity().getContent()) {
-            return new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8)).lines()
-                .collect(Collectors.joining("\n"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static Map<String, String> labelFromKeyValueNode(JsonNode labelNode) {
+    static Map<String, String> labelFromKeyValueNode(JsonNode labelNode) {
         Map<String, String> ret = new HashMap<>();
         if (labelNode != null) {
             Iterator<Map.Entry<String, JsonNode>> labelIter = labelNode.fields();
@@ -58,18 +40,8 @@ public final class ElasticRequestUtils {
         return !ret.isEmpty() ? ret : null;
     }
 
-    public static Map<String, String> labelFromLangValueArray(JsonNode labelArray) {
-        Map<String, String> ret = new HashMap<>();
-        if (labelArray != null) {
-            for (JsonNode label : labelArray) {
-                ret.put(label.get("lang").textValue(), label.get("value").textValue());
-            }
-        }
-        return !ret.isEmpty() ? ret : null;
-    }
-
-    public static String getTextValueOrNull(JsonNode node,
-                                            String fieldName) {
+    static String getTextValueOrNull(JsonNode node,
+                                     String fieldName) {
         if (node != null) {
             JsonNode field = node.get(fieldName);
             if (field != null) {

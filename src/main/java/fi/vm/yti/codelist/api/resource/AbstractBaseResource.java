@@ -121,7 +121,8 @@ abstract class AbstractBaseResource {
         return streamCsvOutput(csv, DOWNLOAD_FILENAME_CODES);
     }
 
-    Response streamCsvCodeSchemeOutput(final String csv, final String filename) {
+    Response streamCsvCodeSchemeOutput(final String csv,
+                                       final String filename) {
         return streamCsvOutput(csv, filename);
     }
 
