@@ -38,6 +38,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fi.vm.yti.codelist.api.dto.ResourceDTO;
 import fi.vm.yti.codelist.api.exception.JsonParsingException;
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
@@ -66,7 +67,6 @@ public class DomainImpl implements Domain {
 
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
     private static final int MAX_SIZE = 50000;
-    private static final int MAX_DEEP_SEARCH_SIZE = 3100; // FOR SOME REASON 31 RETURNS 30 RESULTS, 10 RETURNS 9 ETC.
     private static final String TEXT_ANALYZER = "text_analyzer";
     private static final String BOOSTSTATUS = "boostStatus";
     private static final Set<String> sortLanguages = new HashSet<>(Arrays.asList(LANGUAGE_CODE_FI, LANGUAGE_CODE_EN, LANGUAGE_CODE_SV));
@@ -240,15 +240,13 @@ public class DomainImpl implements Domain {
                                                                                    final SearchResultWithMetaDataDTO result,
                                                                                    final String language) {
         Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
-        if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
-            if (searchTerm != null) {
-                try {
-                    SearchRequest query = deepCodeQueryFactory.createQuery(searchTerm, language);
-                    SearchResponse response = client.search(query, RequestOptions.DEFAULT);
-                    deepSearchHits = deepCodeQueryFactory.parseResponse(response, result, searchTerm);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+        if (checkIfIndexExists(ELASTIC_INDEX_CODE) && searchTerm != null) {
+            try {
+                final SearchRequest query = deepCodeQueryFactory.createQuery(searchTerm, language);
+                final SearchResponse response = client.search(query, RequestOptions.DEFAULT);
+                deepSearchHits = deepCodeQueryFactory.parseResponse(response, result, searchTerm);
+            } catch (final IOException e) {
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
         }
         return deepSearchHits;
@@ -256,20 +254,16 @@ public class DomainImpl implements Domain {
 
     private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingExtensions(final String searchTerm,
                                                                                         final String extensionPropertyType,
-                                                                                        final SearchResultWithMetaDataDTO result,
-                                                                                        final String language) {
+                                                                                        final SearchResultWithMetaDataDTO result) {
         Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
-        if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION)) {
-            if (searchTerm != null) {
-                try {
-                    SearchRequest query = deepExtensionQueryFactory.createQuery(searchTerm, extensionPropertyType);
-                    SearchResponse response = client.search(query, RequestOptions.DEFAULT);
-                    deepSearchHits = deepExtensionQueryFactory.parseResponse(response, result, searchTerm);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+        if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION) && searchTerm != null) {
+            try {
+                final SearchRequest query = deepExtensionQueryFactory.createQuery(searchTerm, extensionPropertyType);
+                final SearchResponse response = client.search(query, RequestOptions.DEFAULT);
+                deepSearchHits = deepExtensionQueryFactory.parseResponse(response, result, searchTerm);
+            } catch (final IOException e) {
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
             }
-
         }
         return deepSearchHits;
     }
@@ -306,7 +300,7 @@ public class DomainImpl implements Domain {
         }
 
         if (searchExtensions && searchTerm != null) {
-            Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = getCodeSchemesMatchingExtensions(searchTerm, extensionPropertyType, searchResultWithMetaData, language);
+            Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = getCodeSchemesMatchingExtensions(searchTerm, extensionPropertyType, searchResultWithMetaData);
             codeSchemeUuids.addAll(deepSearchHits.keySet());
             codeSchemeUuidsWithDeepHitsExtensions.addAll(deepSearchHits.keySet());
         }
@@ -1029,11 +1023,12 @@ public class DomainImpl implements Domain {
         return members;
     }
 
+    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     public MemberDTO getMember(final String memberId,
                                final String extensionCodeValue) {
         boolean memberIdIsUUID = true;
         try {
-            UUID theUuid = UUID.fromString(memberId);
+            final UUID theUuid = UUID.fromString(memberId);
         } catch (Exception e) {
             memberIdIsUUID = false;
         }

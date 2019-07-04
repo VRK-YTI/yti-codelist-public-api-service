@@ -26,7 +26,6 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Component
 abstract class BaseExporter {
 
-    private static final String DATEFORMAT = "yyyy-MM-dd";
     private static final String DATEFORMAT_WITH_SECONDS = "yyyy-MM-dd HH:mm:ss";
     private static final int MAX_SHEETNAME_SIZE = 31;
 

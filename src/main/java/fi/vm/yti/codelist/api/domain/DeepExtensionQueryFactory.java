@@ -47,7 +47,6 @@ class DeepExtensionQueryFactory {
 
     private static final Logger log = LoggerFactory.getLogger(DeepExtensionQueryFactory.class);
 
-    private static final Pattern prefLangPattern = Pattern.compile("[a-zA-Z-]+");
     private static final FetchSourceContext sourceIncludes = new FetchSourceContext(true, new String[]{ "id", "codeValue", "prefLabel", "parentCodeScheme.id" }, new String[]{});
     private static final Script topHitScript = new Script(ScriptType.INLINE, Script.DEFAULT_SCRIPT_LANG, "_score", Collections.emptyMap());
     private final Domain domain;
@@ -114,7 +113,6 @@ class DeepExtensionQueryFactory {
                         String codeId = ElasticRequestUtils.getTextValueOrNull(code, "id");
                         Map<String, String> prefLabelMap = ElasticRequestUtils.labelFromKeyValueNode(code.get("prefLabel"));
                         String codeCodeValue = ElasticRequestUtils.getTextValueOrNull(code, "codeValue");
-                        String codeCodeSchemeUuid = ElasticRequestUtils.getTextValueOrNull(code, "parentCodeScheme.id");
                         ExtensionDTO dto = new ExtensionDTO();
                         dto.setId(UUID.fromString(codeId));
                         dto.setPrefLabel(prefLabelMap);
