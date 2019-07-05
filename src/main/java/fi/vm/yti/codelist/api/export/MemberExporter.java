@@ -51,16 +51,7 @@ public class MemberExporter extends BaseExporter {
         for (final MemberDTO member : members) {
             appendValue(csv, member.getSequenceId() != null ? member.getSequenceId().toString() : "");
             appendValue(csv, member.getUri());
-            if (valueTypes != null && !valueTypes.isEmpty()) {
-                valueTypes.forEach(valueType -> {
-                    final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
-                    if (memberValue != null) {
-                        appendValue(csv, member.getMemberValueWithLocalName(valueType.getLocalName()).getValue());
-                    } else {
-                        appendValue(csv, "");
-                    }
-                });
-            }
+            appendValueTypesToCsv(valueTypes, csv, member);
             prefLabelLanguages.forEach(language -> appendValue(csv, getMemberPrefLabel(member, language)));
             final CodeDTO memberCode = member.getCode();
             if (extension == null) {
@@ -97,20 +88,10 @@ public class MemberExporter extends BaseExporter {
             if (member.getRelatedMember() == null) {
                 continue;
             }
-            if (valueTypes != null && !valueTypes.isEmpty()) {
-                valueTypes.forEach(valueType -> {
-                    final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
-                    if (memberValue != null) {
-                        appendValue(csv, member.getMemberValueWithLocalName(valueType.getLocalName()).getValue());
-                    } else {
-                        appendValue(csv, "");
-                    }
-                });
-            }
+            appendValueTypesToCsv(valueTypes, csv, member);
             appendValue(csv, member.getCode() != null ? member.getCode().getCodeValue() : "");
             prefLabelLanguages.forEach(language -> appendValue(csv, getCodePrefLabel(member.getCode(), language)));
             appendValue(csv, member.getCode() != null ? member.getCode().getUri() : "");
-
             if (member.getRelatedMember() != null) {
                 appendValue(csv, member.getRelatedMember().getCode() != null ? member.getRelatedMember().getCode().getCodeValue() : "");
                 prefLabelLanguages.forEach(language -> appendValue(csv, getCodePrefLabel(member.getRelatedMember().getCode(), language)));
@@ -133,12 +114,7 @@ public class MemberExporter extends BaseExporter {
         rowHead.createCell(j++).setCellValue(CONTENT_HEADER_MEMBER_ID);
         rowHead.createCell(j++).setCellValue(CONTENT_HEADER_URI);
         final Set<ValueTypeDTO> valueTypes = extension != null ? extension.getPropertyType().getValueTypes() : null;
-        appendValueTypeHeaders(valueTypes, rowHead, j);
-        if (valueTypes != null && !valueTypes.isEmpty()) {
-            for (final ValueTypeDTO valueType : valueTypes) {
-                rowHead.createCell(j++).setCellValue(valueType.getLocalName().toUpperCase());
-            }
-        }
+        j = appendValueTypeHeaders(valueTypes, rowHead, j);
         for (final String language : prefLabelLanguages) {
             rowHead.createCell(j++).setCellValue(CONTENT_HEADER_PREFLABEL_PREFIX + language.toUpperCase());
         }
@@ -158,7 +134,7 @@ public class MemberExporter extends BaseExporter {
             int k = 0;
             row.createCell(k++).setCellValue(member.getSequenceId() != null ? member.getSequenceId().toString() : "");
             row.createCell(k++).setCellValue(member.getUri());
-            appendValueTypes(valueTypes, member, row, k);
+            k = appendValueTypes(valueTypes, member, row, k);
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(getMemberPrefLabel(member, language));
             }
@@ -206,7 +182,7 @@ public class MemberExporter extends BaseExporter {
             }
             final Row row = sheet.createRow(i++);
             int k = 0;
-            appendValueTypes(valueTypes, member, row, k);
+            k = appendValueTypes(valueTypes, member, row, k);
             row.createCell(k++).setCellValue(member.getCode().getCodeValue());
             for (final String language : prefLabelLanguages) {
                 row.createCell(k++).setCellValue(getCodePrefLabel(member.getCode(), language));
@@ -222,20 +198,21 @@ public class MemberExporter extends BaseExporter {
         }
     }
 
-    private void appendValueTypeHeaders(final Set<ValueTypeDTO> valueTypes,
-                                        final Row rowHead,
-                                        int j) {
+    private int appendValueTypeHeaders(final Set<ValueTypeDTO> valueTypes,
+                                       final Row rowHead,
+                                       int j) {
         if (valueTypes != null && !valueTypes.isEmpty()) {
             for (final ValueTypeDTO valueType : valueTypes) {
                 rowHead.createCell(j++).setCellValue(valueType.getLocalName().toUpperCase());
             }
         }
+        return j;
     }
 
-    private void appendValueTypes(final Set<ValueTypeDTO> valueTypes,
-                                  final MemberDTO member,
-                                  final Row row,
-                                  int k) {
+    private int appendValueTypes(final Set<ValueTypeDTO> valueTypes,
+                                 final MemberDTO member,
+                                 final Row row,
+                                 int k) {
         if (valueTypes != null && !valueTypes.isEmpty()) {
             for (final ValueTypeDTO valueType : valueTypes) {
                 final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
@@ -245,6 +222,22 @@ public class MemberExporter extends BaseExporter {
                     row.createCell(k++).setCellValue("");
                 }
             }
+        }
+        return k;
+    }
+
+    private void appendValueTypesToCsv(final Set<ValueTypeDTO> valueTypes,
+                                       final StringBuilder csv,
+                                       final MemberDTO member) {
+        if (valueTypes != null && !valueTypes.isEmpty()) {
+            valueTypes.forEach(valueType -> {
+                final MemberValueDTO memberValue = member.getMemberValueWithLocalName(valueType.getLocalName());
+                if (memberValue != null) {
+                    appendValue(csv, member.getMemberValueWithLocalName(valueType.getLocalName()).getValue());
+                } else {
+                    appendValue(csv, "");
+                }
+            });
         }
     }
 
