@@ -22,10 +22,8 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
-import org.elasticsearch.search.sort.NestedSortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.slf4j.Logger;
@@ -68,17 +66,20 @@ public class DomainImpl implements Domain {
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
     private static final int MAX_SIZE = 50000;
     private static final String TEXT_ANALYZER = "text_analyzer";
+    private static final String PREFLABEL_ANALYZER = "preflabel_analyzer";
     private static final String BOOSTSTATUS = "boostStatus";
     private static final Set<String> sortLanguages = new HashSet<>(Arrays.asList(LANGUAGE_CODE_FI, LANGUAGE_CODE_EN, LANGUAGE_CODE_SV));
     private final RestHighLevelClient client;
     private final DeepCodeQueryFactory deepCodeQueryFactory;
     private final DeepExtensionQueryFactory deepExtensionQueryFactory;
+    private final LuceneQueryFactory luceneQueryFactory;
 
     @Inject
     private DomainImpl(final RestHighLevelClient client) {
         this.client = client;
-        this.deepCodeQueryFactory = new DeepCodeQueryFactory(new ObjectMapper(), this);
-        this.deepExtensionQueryFactory = new DeepExtensionQueryFactory(new ObjectMapper(), this);
+        this.luceneQueryFactory = new LuceneQueryFactory();
+        this.deepCodeQueryFactory = new DeepCodeQueryFactory(new ObjectMapper(), this, luceneQueryFactory);
+        this.deepExtensionQueryFactory = new DeepExtensionQueryFactory(new ObjectMapper(), this, luceneQueryFactory);
     }
 
     public CodeRegistryDTO getCodeRegistry(final String codeRegistryCodeValue) {
@@ -236,37 +237,6 @@ public class DomainImpl implements Domain {
         return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, language, null, false, false, null, null, null, null, null);
     }
 
-    private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingCodes(final String searchTerm,
-                                                                                   final SearchResultWithMetaDataDTO result) {
-        Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
-        if (checkIfIndexExists(ELASTIC_INDEX_CODE) && searchTerm != null) {
-            try {
-                final SearchRequest query = deepCodeQueryFactory.createQuery(searchTerm);
-                final SearchResponse response = client.search(query, RequestOptions.DEFAULT);
-                deepSearchHits = deepCodeQueryFactory.parseResponse(response, result, searchTerm);
-            } catch (final IOException e) {
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
-            }
-        }
-        return deepSearchHits;
-    }
-
-    private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingExtensions(final String searchTerm,
-                                                                                        final String extensionPropertyType,
-                                                                                        final SearchResultWithMetaDataDTO result) {
-        Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
-        if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION) && searchTerm != null) {
-            try {
-                final SearchRequest query = deepExtensionQueryFactory.createQuery(searchTerm, extensionPropertyType);
-                final SearchResponse response = client.search(query, RequestOptions.DEFAULT);
-                deepSearchHits = deepExtensionQueryFactory.parseResponse(response, result, searchTerm);
-            } catch (final IOException e) {
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
-            }
-        }
-        return deepSearchHits;
-    }
-
     public Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
                                              final Integer from,
                                              final String sortMode,
@@ -312,8 +282,8 @@ public class DomainImpl implements Domain {
             final BoolQueryBuilder builder = boolQuery();
             if (searchTerm != null && !searchTerm.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
-                boolQueryBuilder.should(prefixQuery("codeValue", searchTerm.toLowerCase()));
-                boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(searchTerm.toLowerCase(), "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+                boolQueryBuilder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTerm).field("prefLabel.*"));
+                boolQueryBuilder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTerm).field("codeValue"));
                 if (!codeSchemeUuids.isEmpty()) {
                     boolQueryBuilder.should(termsQuery("id", codeSchemeUuids));
                 }
@@ -321,10 +291,10 @@ public class DomainImpl implements Domain {
                 builder.must(boolQueryBuilder);
             }
             if (codeSchemeCodeValue != null && !codeSchemeCodeValue.isEmpty()) {
-                builder.must(prefixQuery("codeValue", codeSchemeCodeValue.toLowerCase()));
+                builder.must(luceneQueryFactory.buildPrefixSuffixQuery(codeSchemeCodeValue).field("codeValue"));
             }
             if (codeSchemePrefLabel != null && !codeSchemePrefLabel.isEmpty()) {
-                builder.must(nestedQuery("prefLabel", multiMatchQuery(codeSchemePrefLabel.toLowerCase(), "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+                builder.must(luceneQueryFactory.buildPrefixSuffixQuery(codeSchemePrefLabel).field("prefLabel.*"));
             }
             if (after != null) {
                 final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
@@ -338,7 +308,7 @@ public class DomainImpl implements Domain {
                 builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             }
             if (codeRegistryPrefLabel != null && !codeRegistryPrefLabel.isEmpty()) {
-                builder.must(nestedQuery("codeRegistry.prefLabel", multiMatchQuery(codeRegistryPrefLabel.toLowerCase(), "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+                builder.must(luceneQueryFactory.buildPrefixSuffixQuery(codeRegistryPrefLabel).field("codeRegistry.prefLabel.*").analyzer(PREFLABEL_ANALYZER));
             }
             if (infoDomains != null && !infoDomains.isEmpty()) {
                 builder.must(nestedQuery("infoDomains", termsQuery("infoDomains.codeValue.keyword", infoDomains), ScoreMode.None));
@@ -350,17 +320,7 @@ public class DomainImpl implements Domain {
                 searchBuilder.sort(SortBuilders.scoreSort());
                 boostStatus(builder);
             }
-            if (language != null && !language.isEmpty()) {
-                searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
-                sortLanguages.forEach(sortLanguage -> {
-                    if (!language.equalsIgnoreCase(sortLanguage)) {
-                        searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
-                    }
-                });
-                searchBuilder.sort("codeValue.raw", SortOrder.ASC);
-            } else {
-                searchBuilder.sort("codeValue.raw", SortOrder.ASC);
-            }
+            addLanguagePrefLabelSort(language, "codeValue.raw", "codeValue.raw", searchBuilder);
             if (statuses != null && !statuses.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 if (statuses.contains(Status.INCOMPLETE.toString())) {
@@ -419,6 +379,37 @@ public class DomainImpl implements Domain {
             }
         }
         return codeSchemes;
+    }
+
+    private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingCodes(final String searchTerm,
+                                                                                   final SearchResultWithMetaDataDTO result) {
+        Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
+        if (checkIfIndexExists(ELASTIC_INDEX_CODE) && searchTerm != null) {
+            try {
+                final SearchRequest query = deepCodeQueryFactory.createQuery(searchTerm);
+                final SearchResponse response = client.search(query, RequestOptions.DEFAULT);
+                deepSearchHits = deepCodeQueryFactory.parseResponse(response, result, searchTerm);
+            } catch (final IOException e) {
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
+        }
+        return deepSearchHits;
+    }
+
+    private Map<String, List<DeepSearchHitListDTO<?>>> getCodeSchemesMatchingExtensions(final String searchTerm,
+                                                                                        final String extensionPropertyType,
+                                                                                        final SearchResultWithMetaDataDTO result) {
+        Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = null;
+        if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION) && searchTerm != null) {
+            try {
+                final SearchRequest query = deepExtensionQueryFactory.createQuery(searchTerm, extensionPropertyType);
+                final SearchResponse response = client.search(query, RequestOptions.DEFAULT);
+                deepSearchHits = deepExtensionQueryFactory.parseResponse(response, result, searchTerm);
+            } catch (final IOException e) {
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            }
+        }
+        return deepSearchHits;
     }
 
     private List<String> getRegularStatuses() {
@@ -507,22 +498,11 @@ public class DomainImpl implements Domain {
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }
-            if (language != null && !language.isEmpty()) {
-                searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
-                sortLanguages.forEach(sortLanguage -> {
-                    if (!language.equalsIgnoreCase(sortLanguage)) {
-                        searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
-                    }
-                });
-                searchBuilder.sort("codeValue.raw", SortOrder.ASC);
-            } else {
-                searchBuilder.sort("order", SortOrder.ASC);
-            }
+            addLanguagePrefLabelSort(language, "codeValue.raw", "order", searchBuilder);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
-
                 setResultCounts(meta, response);
                 response.getHits().forEach(hit -> {
                     try {
@@ -593,17 +573,7 @@ public class DomainImpl implements Domain {
             if (type != null) {
                 builder.must(prefixQuery("type", type.toLowerCase()));
             }
-            if (language != null && !language.isEmpty()) {
-                searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
-                sortLanguages.forEach(sortLanguage -> {
-                    if (!language.equalsIgnoreCase(sortLanguage)) {
-                        searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
-                    }
-                });
-                searchBuilder.sort("localName.keyword", SortOrder.ASC);
-            } else {
-                searchBuilder.sort("localName.keyword", SortOrder.ASC);
-            }
+            addLanguagePrefLabelSort(language, "localName.keyword", "localName.keyword", searchBuilder);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
             try {
@@ -1049,17 +1019,7 @@ public class DomainImpl implements Domain {
                 final String afterString = dateFormat.format(after);
                 builder.must(rangeQuery("modified").gt(afterString));
             }
-            if (language != null && !language.isEmpty()) {
-                searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
-                sortLanguages.forEach(sortLanguage -> {
-                    if (!language.equalsIgnoreCase(sortLanguage)) {
-                        searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
-                    }
-                });
-                searchBuilder.sort("codeValue.raw", SortOrder.ASC);
-            } else {
-                searchBuilder.sort("codeValue.raw", SortOrder.ASC);
-            }
+            addLanguagePrefLabelSort(language, "codeValue.raw", "codeValue.raw", searchBuilder);
             if (statuses != null && !statuses.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 if (statuses.contains(Status.INCOMPLETE.toString())) {
@@ -1118,17 +1078,7 @@ public class DomainImpl implements Domain {
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }
-            if (language != null && !language.isEmpty()) {
-                searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
-                sortLanguages.forEach(sortLanguage -> {
-                    if (!language.equalsIgnoreCase(sortLanguage)) {
-                        searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).setNestedSort(new NestedSortBuilder("prefLabel")).unmappedType("keyword"));
-                    }
-                });
-                searchBuilder.sort("codeValue.raw", SortOrder.ASC);
-            } else {
-                searchBuilder.sort("order", SortOrder.ASC);
-            }
+            addLanguagePrefLabelSort(language, "codeValue.raw", "order", searchBuilder);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
             try {
@@ -1160,7 +1110,7 @@ public class DomainImpl implements Domain {
             builder.must(prefixQuery("codeValue", codeValue.toLowerCase()));
         }
         if (prefLabel != null) {
-            builder.must(nestedQuery("prefLabel", multiMatchQuery(prefLabel.toLowerCase(), "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            builder.must(luceneQueryFactory.buildPrefixSuffixQuery(prefLabel).field("prefLabel.*").analyzer(PREFLABEL_ANALYZER));
         }
         if (after != null) {
             final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
@@ -1189,6 +1139,23 @@ public class DomainImpl implements Domain {
         builder.should(constantScoreQuery(termQuery("status.keyword", "RETIRED")).boost(500f));
         builder.should(constantScoreQuery(termQuery("status.keyword", "INVALID")).boost(400f));
         builder.should(constantScoreQuery(termQuery("status.keyword", "INCOMPLETE")).boost(300f));
+    }
+
+    private void addLanguagePrefLabelSort(final String language,
+                                          final String backupSortField,
+                                          final String sortFieldWithoutLanguage,
+                                          final SearchSourceBuilder searchBuilder) {
+        if (language != null && !language.isEmpty()) {
+            searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + language + ".keyword").order(SortOrder.ASC).unmappedType("keyword"));
+            sortLanguages.forEach(sortLanguage -> {
+                if (!language.equalsIgnoreCase(sortLanguage)) {
+                    searchBuilder.sort(SortBuilders.fieldSort("prefLabel." + sortLanguage + ".keyword").order(SortOrder.ASC).unmappedType("keyword"));
+                }
+            });
+            searchBuilder.sort(backupSortField, SortOrder.ASC);
+        } else {
+            searchBuilder.sort(sortFieldWithoutLanguage, SortOrder.ASC);
+        }
     }
 
     private void validatePageSize(final Integer pageSize) {

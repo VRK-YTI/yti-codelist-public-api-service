@@ -10,11 +10,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
-import org.apache.lucene.search.join.ScoreMode;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MultiMatchQueryBuilder;
 import org.elasticsearch.script.Script;
 import org.elasticsearch.script.ScriptType;
 import org.elasticsearch.search.SearchHit;
@@ -39,31 +37,35 @@ import fi.vm.yti.codelist.common.dto.DeepSearchHitListDTO;
 import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.SearchHitDTO;
 import fi.vm.yti.codelist.common.dto.SearchResultWithMetaDataDTO;
+import static fi.vm.yti.codelist.common.constants.ApiConstants.ELASTIC_INDEX_EXTENSION;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.SEARCH_HIT_TYPE_EXTENSION;
-import static org.elasticsearch.index.query.QueryBuilders.*;
+import static org.elasticsearch.index.query.QueryBuilders.boolQuery;
+import static org.elasticsearch.index.query.QueryBuilders.matchQuery;
 
 class DeepExtensionQueryFactory {
 
-    private static final Logger log = LoggerFactory.getLogger(DeepExtensionQueryFactory.class);
+    private static final Logger LOG = LoggerFactory.getLogger(DeepExtensionQueryFactory.class);
 
     private static final FetchSourceContext sourceIncludes = new FetchSourceContext(true, new String[]{ "id", "codeValue", "prefLabel", "parentCodeScheme.id" }, new String[]{});
     private static final Script topHitScript = new Script(ScriptType.INLINE, Script.DEFAULT_SCRIPT_LANG, "_score", Collections.emptyMap());
     private final Domain domain;
     private final ObjectMapper objectMapper;
+    private final LuceneQueryFactory luceneQueryFactory;
 
     DeepExtensionQueryFactory(final ObjectMapper objectMapper,
-                              final Domain domain) {
+                              final Domain domain,
+                              final LuceneQueryFactory luceneQueryFactory) {
         this.objectMapper = objectMapper;
         this.domain = domain;
+        this.luceneQueryFactory = luceneQueryFactory;
     }
 
     SearchRequest createQuery(final String query,
                               final String extensionPropertyType) {
-
         final BoolQueryBuilder boolQueryBuilder = boolQuery();
         if (query != null && !query.isEmpty()) {
-            boolQueryBuilder.should(prefixQuery("codeValue", query.toLowerCase()));
-            boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(query.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
+            boolQueryBuilder.should(luceneQueryFactory.buildPrefixSuffixQuery(query).field("prefLabel.*"));
+            boolQueryBuilder.should(luceneQueryFactory.buildPrefixSuffixQuery(query).field("codeValue"));
         }
         boolQueryBuilder.minimumShouldMatch(1);
 
@@ -71,7 +73,7 @@ class DeepExtensionQueryFactory {
             boolQueryBuilder.must(matchQuery("propertyType.localName", extensionPropertyType));
         }
 
-        return new SearchRequest("extension")
+        return new SearchRequest(ELASTIC_INDEX_EXTENSION)
             .source(new SearchSourceBuilder()
                 .query(boolQueryBuilder)
                 .size(0)
@@ -136,26 +138,26 @@ class DeepExtensionQueryFactory {
                 }
             }
         } catch (Exception e) {
-            log.error("Cannot parse deep concept query response", e);
+            LOG.error("Cannot parse deep concept query response", e);
         }
         return ret;
     }
 
     private void addHighlightTagsToDto(final String searchTerm,
-                                       final ExtensionDTO dto) {
-        highlightLabels(searchTerm, dto);
-        highlightCodeValue(searchTerm, dto);
+                                       final ExtensionDTO extensionDto) {
+        highlightLabels(searchTerm, extensionDto);
+        highlightCodeValue(searchTerm, extensionDto);
     }
 
     private void highlightLabels(final String highlightText,
-                                 final ExtensionDTO dto) {
+                                 final ExtensionDTO extensionDto) {
         if (highlightText != null && highlightText.length() > 0) {
             final String[] highLights = highlightText.split("\\s+");
             for (final String highLight : highLights) {
-                if (dto.getPrefLabel() != null) {
-                    dto.getPrefLabel().forEach((lang, label) -> {
+                if (extensionDto.getPrefLabel() != null) {
+                    extensionDto.getPrefLabel().forEach((lang, label) -> {
                         final String matchString = Pattern.quote(highLight);
-                        dto.getPrefLabel().put(lang, label.replaceAll("(?i)(?<text>\\b" + matchString + "|" + matchString + "\\b)", "<b>${text}</b>"));
+                        extensionDto.getPrefLabel().put(lang, label.replaceAll("(?i)(?<text>\\b" + matchString + "|" + matchString + "\\b)", "<b>${text}</b>"));
                     });
                 }
             }
@@ -163,12 +165,12 @@ class DeepExtensionQueryFactory {
     }
 
     private void highlightCodeValue(final String highlightText,
-                                    final ExtensionDTO dto) {
+                                    final ExtensionDTO extensionDto) {
         if (highlightText != null && highlightText.length() > 0) {
             final String[] highLights = highlightText.split("\\s+");
             for (final String highLight : highLights) {
                 final String matchString = Pattern.quote(highLight);
-                dto.setCodeValue(dto.getCodeValue().replaceAll("(?i)(?<text>\\b" + matchString + "|" + matchString + "\\b)", "<b>${text}</b>"));
+                extensionDto.setCodeValue(extensionDto.getCodeValue().replaceAll("(?i)(?<text>\\b" + matchString + "|" + matchString + "\\b)", "<b>${text}</b>"));
             }
         }
     }
