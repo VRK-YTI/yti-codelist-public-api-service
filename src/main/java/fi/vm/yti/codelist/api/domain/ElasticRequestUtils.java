@@ -12,13 +12,13 @@ final class ElasticRequestUtils {
         // prevent construction
     }
 
-    static Map<String, String> labelFromKeyValueNode(JsonNode labelNode) {
-        Map<String, String> ret = new HashMap<>();
+    static Map<String, String> labelFromKeyValueNode(final JsonNode labelNode) {
+        final Map<String, String> ret = new HashMap<>();
         if (labelNode != null) {
-            Iterator<Map.Entry<String, JsonNode>> labelIter = labelNode.fields();
+            final Iterator<Map.Entry<String, JsonNode>> labelIter = labelNode.fields();
             while (labelIter.hasNext()) {
-                Map.Entry<String, JsonNode> entry = labelIter.next();
-                JsonNode value = entry.getValue();
+                final Map.Entry<String, JsonNode> entry = labelIter.next();
+                final JsonNode value = entry.getValue();
                 if (value.isTextual()) {
                     ret.put(entry.getKey(), value.textValue());
                 } else if (value.isArray() && value.has(0)) {
@@ -29,10 +29,10 @@ final class ElasticRequestUtils {
         return !ret.isEmpty() ? ret : null;
     }
 
-    static String getTextValueOrNull(JsonNode node,
-                                     String fieldName) {
+    static String getTextValueOrNull(final JsonNode node,
+                                     final String fieldName) {
         if (node != null) {
-            JsonNode field = node.get(fieldName);
+            final JsonNode field = node.get(fieldName);
             if (field != null) {
                 return field.textValue();
             }
