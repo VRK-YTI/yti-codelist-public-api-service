@@ -90,7 +90,7 @@ class DeepExtensionQueryFactory {
     Map<String, List<DeepSearchHitListDTO<?>>> parseResponse(final SearchResponse response,
                                                              final SearchResultWithMetaDataDTO result,
                                                              final String searchTerm) {
-        Map<String, List<DeepSearchHitListDTO<?>>> ret = new HashMap<>();
+        final Map<String, List<DeepSearchHitListDTO<?>>> ret = new HashMap<>();
         try {
             Terms groupBy = response.getAggregations().get("group_by_codescheme");
             for (Terms.Bucket bucket : groupBy.getBuckets()) {
