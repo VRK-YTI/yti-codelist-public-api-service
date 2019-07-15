@@ -62,12 +62,8 @@ class DeepExtensionQueryFactory {
 
         final BoolQueryBuilder boolQueryBuilder = boolQuery();
         if (query != null && !query.isEmpty()) {
-            boolQueryBuilder.should(prefixQuery("codeValue",
-                query.toLowerCase()));
-            boolQueryBuilder.should(nestedQuery("prefLabel",
-                multiMatchQuery(query.toLowerCase() + "*",
-                    "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX),
-                ScoreMode.None));
+            boolQueryBuilder.should(prefixQuery("codeValue", query.toLowerCase()));
+            boolQueryBuilder.should(nestedQuery("prefLabel", multiMatchQuery(query.toLowerCase() + "*", "prefLabel.*").type(MultiMatchQueryBuilder.Type.PHRASE_PREFIX), ScoreMode.None));
         }
         boolQueryBuilder.minimumShouldMatch(1);
 
@@ -91,28 +87,28 @@ class DeepExtensionQueryFactory {
                         .script(topHitScript))));
     }
 
-    public Map<String, List<DeepSearchHitListDTO<?>>> parseResponse(SearchResponse response,
-                                                                    SearchResultWithMetaDataDTO result,
-                                                                    String searchTerm) {
+    public Map<String, List<DeepSearchHitListDTO<?>>> parseResponse(final SearchResponse response,
+                                                                    final SearchResultWithMetaDataDTO result,
+                                                                    final String searchTerm) {
         Map<String, List<DeepSearchHitListDTO<?>>> ret = new HashMap<>();
         try {
             Terms groupBy = response.getAggregations().get("group_by_codescheme");
             for (Terms.Bucket bucket : groupBy.getBuckets()) {
-                TopHits hitsAggr = bucket.getAggregations().get("top_extension_hits");
-                SearchHits hits = hitsAggr.getHits();
+                final TopHits hitsAggr = bucket.getAggregations().get("top_extension_hits");
+                final SearchHits hits = hitsAggr.getHits();
 
                 long total = hits.getTotalHits();
                 if (total > 0) {
-                    String codeSchemeUuid = bucket.getKeyAsString();
-                    List<ExtensionDTO> topHits = new ArrayList<>();
-                    DeepSearchExtensionHitListDTO hitList = new DeepSearchExtensionHitListDTO(total, topHits);
+                    final String codeSchemeUuid = bucket.getKeyAsString();
+                    final List<ExtensionDTO> topHits = new ArrayList<>();
+                    final DeepSearchExtensionHitListDTO hitList = new DeepSearchExtensionHitListDTO(total, topHits);
 
                     for (SearchHit hit : hits.getHits()) {
-                        JsonNode code = objectMapper.readTree(hit.getSourceAsString());
-                        String codeId = ElasticRequestUtils.getTextValueOrNull(code, "id");
-                        Map<String, String> prefLabelMap = ElasticRequestUtils.labelFromKeyValueNode(code.get("prefLabel"));
-                        String codeCodeValue = ElasticRequestUtils.getTextValueOrNull(code, "codeValue");
-                        ExtensionDTO dto = new ExtensionDTO();
+                        final JsonNode code = objectMapper.readTree(hit.getSourceAsString());
+                        final String codeId = ElasticRequestUtils.getTextValueOrNull(code, "id");
+                        final Map<String, String> prefLabelMap = ElasticRequestUtils.labelFromKeyValueNode(code.get("prefLabel"));
+                        final String codeCodeValue = ElasticRequestUtils.getTextValueOrNull(code, "codeValue");
+                        final ExtensionDTO dto = new ExtensionDTO();
                         dto.setId(UUID.fromString(codeId));
                         dto.setPrefLabel(prefLabelMap);
                         dto.setCodeValue(codeCodeValue);
@@ -126,7 +122,7 @@ class DeepExtensionQueryFactory {
                         topHits.add(dto);
                         ret.put(codeSchemeUuid, Collections.singletonList(hitList));
 
-                        String uuidOfTheCodeScheme = fat.getId().toString().toLowerCase();
+                        final String uuidOfTheCodeScheme = fat.getId().toString().toLowerCase();
                         final Set<String> codeSchemeUuids = new HashSet<>();
                         populateSearchHits(codeSchemeUuids,
                             result,
@@ -145,20 +141,20 @@ class DeepExtensionQueryFactory {
         return ret;
     }
 
-    private void addHighlightTagsToDto(String searchTerm,
-                                       ExtensionDTO dto) {
+    private void addHighlightTagsToDto(final String searchTerm,
+                                       final ExtensionDTO dto) {
         highlightLabels(searchTerm, dto);
         highlightCodeValue(searchTerm, dto);
     }
 
-    private void highlightLabels(String highlightText,
-                                 ExtensionDTO dto) {
+    private void highlightLabels(final String highlightText,
+                                 final ExtensionDTO dto) {
         if (highlightText != null && highlightText.length() > 0) {
             final String[] highLights = highlightText.split("\\s+");
             for (final String highLight : highLights) {
                 if (dto.getPrefLabel() != null) {
                     dto.getPrefLabel().forEach((lang, label) -> {
-                        String matchString = Pattern.quote(highLight);
+                        final String matchString = Pattern.quote(highLight);
                         dto.getPrefLabel().put(lang, label.replaceAll("(?i)(?<text>\\b" + matchString + "|" + matchString + "\\b)", "<b>${text}</b>"));
                     });
                 }
@@ -166,12 +162,12 @@ class DeepExtensionQueryFactory {
         }
     }
 
-    private void highlightCodeValue(String highlightText,
-                                    ExtensionDTO dto) {
+    private void highlightCodeValue(final String highlightText,
+                                    final ExtensionDTO dto) {
         if (highlightText != null && highlightText.length() > 0) {
             final String[] highLights = highlightText.split("\\s+");
             for (final String highLight : highLights) {
-                String matchString = Pattern.quote(highLight);
+                final String matchString = Pattern.quote(highLight);
                 dto.setCodeValue(dto.getCodeValue().replaceAll("(?i)(?<text>\\b" + matchString + "|" + matchString + "\\b)", "<b>${text}</b>"));
             }
         }
@@ -186,14 +182,14 @@ class DeepExtensionQueryFactory {
                                     final String uuidOfTheCodeScheme,
                                     final long total) {
         codeSchemeUuids.add(uuidOfTheCodeScheme);
-        SearchHitDTO searchHit = new SearchHitDTO();
+        final SearchHitDTO searchHit = new SearchHitDTO();
         searchHit.setType(SEARCH_HIT_TYPE_EXTENSION);
         searchHit.setPrefLabel(prefLabel);
         searchHit.setEntityCodeValue(entityCodeValue);
         searchHit.setCodeSchemeCodeValue(codeSchemeCodeValue);
         searchHit.setCodeRegistryCodeValue(codeRegistryCodeValue);
 
-        Map<String, ArrayList<SearchHitDTO>> searchHits = result.getSearchHitDTOMap();
+        final Map<String, ArrayList<SearchHitDTO>> searchHits = result.getSearchHitDTOMap();
         if (searchHits.containsKey(uuidOfTheCodeScheme)) {
             ArrayList<SearchHitDTO> searchHitList = searchHits.get(uuidOfTheCodeScheme);
             searchHitList.add(searchHit);
@@ -203,8 +199,7 @@ class DeepExtensionQueryFactory {
             searchHitList.add(searchHit);
             searchHits.put(uuidOfTheCodeScheme, searchHitList);
         }
-        result.getSearchHitDTOMap().put(uuidOfTheCodeScheme,
-            searchHits.get(uuidOfTheCodeScheme));
+        result.getSearchHitDTOMap().put(uuidOfTheCodeScheme, searchHits.get(uuidOfTheCodeScheme));
         result.getTotalhitsExtensionsPerCodeSchemeMap().put(uuidOfTheCodeScheme, total);
     }
 }

@@ -86,16 +86,15 @@ class DeepCodeQueryFactory {
                         .script(topHitScript))));
     }
 
-    Map<String, List<DeepSearchHitListDTO<?>>> parseResponse(SearchResponse response,
-                                                             SearchResultWithMetaDataDTO result,
-                                                             String searchTerm) {
+    Map<String, List<DeepSearchHitListDTO<?>>> parseResponse(final SearchResponse response,
+                                                             final SearchResultWithMetaDataDTO result,
+                                                             final String searchTerm) {
         final Map<String, List<DeepSearchHitListDTO<?>>> ret = new HashMap<>();
         try {
-            Terms groupBy = response.getAggregations().get("group_by_codescheme");
+            final Terms groupBy = response.getAggregations().get("group_by_codescheme");
             for (Terms.Bucket bucket : groupBy.getBuckets()) {
-                TopHits hitsAggr = bucket.getAggregations().get("top_code_hits");
-                SearchHits hits = hitsAggr.getHits();
-
+                final TopHits hitsAggr = bucket.getAggregations().get("top_code_hits");
+                final SearchHits hits = hitsAggr.getHits();
                 long total = hits.getTotalHits();
                 if (total > 0) {
                     final String codeSchemeUuid = bucket.getKeyAsString();
@@ -110,7 +109,7 @@ class DeepCodeQueryFactory {
                         final Map<String, String> prefLabelMap = ElasticRequestUtils.labelFromKeyValueNode(code.get("prefLabel"));
                         final String codeCodeValue = ElasticRequestUtils.getTextValueOrNull(code, "codeValue");
 
-                        CodeDTO dto = new CodeDTO();
+                        final CodeDTO dto = new CodeDTO();
                         dto.setId(UUID.fromString(codeId));
                         dto.setUri(codeUri);
                         dto.setStatus(codeStatus);
@@ -200,13 +199,11 @@ class DeepCodeQueryFactory {
         if (searchHits.containsKey(uuidOfTheCodeScheme)) {
             final ArrayList<SearchHitDTO> searchHitList = searchHits.get(uuidOfTheCodeScheme);
             searchHitList.add(searchHit);
-            searchHits.put(uuidOfTheCodeScheme,
-                searchHitList);
+            searchHits.put(uuidOfTheCodeScheme, searchHitList);
         } else {
             final ArrayList<SearchHitDTO> searchHitList = new ArrayList<>();
             searchHitList.add(searchHit);
-            searchHits.put(uuidOfTheCodeScheme,
-                searchHitList);
+            searchHits.put(uuidOfTheCodeScheme, searchHitList);
         }
         result.getSearchHitDTOMap().put(uuidOfTheCodeScheme, searchHits.get(uuidOfTheCodeScheme));
         result.getTotalhitsCodesPerCodeSchemeMap().put(uuidOfTheCodeScheme, total);
