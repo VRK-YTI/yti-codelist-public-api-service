@@ -92,8 +92,8 @@ class DeepExtensionQueryFactory {
                                                              final String searchTerm) {
         final Map<String, List<DeepSearchHitListDTO<?>>> ret = new HashMap<>();
         try {
-            Terms groupBy = response.getAggregations().get("group_by_codescheme");
-            for (Terms.Bucket bucket : groupBy.getBuckets()) {
+            final Terms groupBy = response.getAggregations().get("group_by_codescheme");
+            for (final Terms.Bucket bucket : groupBy.getBuckets()) {
                 final TopHits hitsAggr = bucket.getAggregations().get("top_extension_hits");
                 final SearchHits hits = hitsAggr.getHits();
 
@@ -103,7 +103,7 @@ class DeepExtensionQueryFactory {
                     final List<ExtensionDTO> topHits = new ArrayList<>();
                     final DeepSearchExtensionHitListDTO hitList = new DeepSearchExtensionHitListDTO(total, topHits);
 
-                    for (SearchHit hit : hits.getHits()) {
+                    for (final SearchHit hit : hits.getHits()) {
                         final JsonNode code = objectMapper.readTree(hit.getSourceAsString());
                         final String codeId = ElasticRequestUtils.getTextValueOrNull(code, "id");
                         final Map<String, String> prefLabelMap = ElasticRequestUtils.labelFromKeyValueNode(code.get("prefLabel"));

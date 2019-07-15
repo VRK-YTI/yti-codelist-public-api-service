@@ -92,7 +92,7 @@ class DeepCodeQueryFactory {
         final Map<String, List<DeepSearchHitListDTO<?>>> ret = new HashMap<>();
         try {
             final Terms groupBy = response.getAggregations().get("group_by_codescheme");
-            for (Terms.Bucket bucket : groupBy.getBuckets()) {
+            for (final Terms.Bucket bucket : groupBy.getBuckets()) {
                 final TopHits hitsAggr = bucket.getAggregations().get("top_code_hits");
                 final SearchHits hits = hitsAggr.getHits();
                 long total = hits.getTotalHits();
@@ -101,7 +101,7 @@ class DeepCodeQueryFactory {
                     final List<CodeDTO> topHits = new ArrayList<>();
                     final DeepSearchCodeHitListDTO hitList = new DeepSearchCodeHitListDTO(total, topHits);
 
-                    for (SearchHit hit : hits.getHits()) {
+                    for (final SearchHit hit : hits.getHits()) {
                         final JsonNode code = objectMapper.readTree(hit.getSourceAsString());
                         final String codeId = ElasticRequestUtils.getTextValueOrNull(code, "id");
                         final String codeUri = ElasticRequestUtils.getTextValueOrNull(code, "uri");
