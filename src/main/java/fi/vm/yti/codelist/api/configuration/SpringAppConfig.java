@@ -1,7 +1,5 @@
 package fi.vm.yti.codelist.api.configuration;
 
-import java.nio.charset.Charset;
-
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
@@ -14,10 +12,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.client.ClientHttpRequestFactory;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.http.converter.StringHttpMessageConverter;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 @Configuration
@@ -65,21 +59,5 @@ public class SpringAppConfig {
                     .setSocketTimeout(ES_CONNECTION_TIMEOUT))
             .setMaxRetryTimeoutMillis(ES_RETRY_TIMEOUT);
         return new RestHighLevelClient(builder);
-    }
-
-    @Bean
-    ClientHttpRequestFactory httpRequestFactory() {
-        final SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
-        requestFactory.setConnectTimeout(CONNECTION_TIMEOUT);
-        requestFactory.setReadTimeout(CONNECTION_TIMEOUT);
-        return requestFactory;
-    }
-
-    @Bean
-    RestTemplate restTemplate() {
-        final RestTemplate restTemplate = new RestTemplate(httpRequestFactory());
-        restTemplate.getMessageConverters()
-            .add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
-        return restTemplate;
     }
 }
