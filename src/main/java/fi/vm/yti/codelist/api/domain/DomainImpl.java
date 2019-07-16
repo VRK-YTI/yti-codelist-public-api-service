@@ -911,6 +911,7 @@ public class DomainImpl implements Domain {
         return members;
     }
 
+    @SuppressWarnings("unused")
     @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
     public MemberDTO getMember(final String memberId,
                                final String extensionCodeValue) {
