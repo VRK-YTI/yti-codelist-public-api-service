@@ -136,7 +136,7 @@ class DeepCodeQueryFactory {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             LOG.error("Cannot parse deep concept query response", e);
         }
         return ret;

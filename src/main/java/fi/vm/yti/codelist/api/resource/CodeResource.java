@@ -45,9 +45,9 @@ public class CodeResource extends AbstractBaseResource {
                             @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                             @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand), pretty));
-        final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeId);
-        if (codeScheme != null) {
-            return Response.ok(codeScheme).build();
+        final CodeDTO code = domain.getCode(codeId);
+        if (code != null) {
+            return Response.ok(code).build();
         } else {
             throw new NotFoundException();
         }
