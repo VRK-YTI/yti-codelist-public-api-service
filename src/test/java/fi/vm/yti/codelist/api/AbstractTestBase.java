@@ -193,10 +193,9 @@ abstract public class AbstractTestBase {
         return mapper;
     }
 
-    private <T> boolean indexData(final Set<T> set,
-                                  final String elasticIndex,
-                                  final String elasticType) {
-        boolean success = true;
+    private <T> void indexData(final Set<T> set,
+                               final String elasticIndex,
+                               final String elasticType) {
         if (!set.isEmpty()) {
             final ObjectMapper mapper = new ObjectMapper();
             mapper.registerModule(new JavaTimeModule());
@@ -217,16 +216,13 @@ abstract public class AbstractTestBase {
                 final BulkResponse response = client.bulk(bulkRequest, RequestOptions.DEFAULT);
                 if (response.hasFailures()) {
                     LOG.error("Bulk indexing response failed: " + response.buildFailureMessage());
-                    success = false;
                 }
             } catch (final IOException e) {
                 LOG.error("Bulk index request failed!", e);
             }
         } else {
             LOG.error("Trying to index empty dataset..");
-            success = false;
         }
-        return success;
     }
 
     @SuppressFBWarnings("RR_NOT_CHECKED")
