@@ -25,9 +25,9 @@
         <logger name="org.apache" level="WARN"/>
         <logger name="org.springframework" level="ERROR"/>
         <logger name="fi.vm" level="DEBUG"/>
-        <logger name="org.hibernate" level="INFO"/>
+        <logger name="org.hibernate" level="WARN"/>
 
-        <root level="debug">
+        <root level="WARN">
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
