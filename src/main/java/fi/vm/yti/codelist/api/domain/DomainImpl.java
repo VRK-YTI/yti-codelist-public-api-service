@@ -68,6 +68,7 @@ public class DomainImpl implements Domain {
     private static final String TEXT_ANALYZER = "text_analyzer";
     private static final String PREFLABEL_ANALYZER = "preflabel_analyzer";
     private static final String BOOSTSTATUS = "boostStatus";
+    private static final String ELASTIC_QUERY_ERROR = "ElasticSearch index query error!";
     private static final Set<String> sortLanguages = new HashSet<>(Arrays.asList(LANGUAGE_CODE_FI, LANGUAGE_CODE_EN, LANGUAGE_CODE_SV));
     private final RestHighLevelClient client;
     private final DeepCodeQueryFactory deepCodeQueryFactory;
@@ -107,7 +108,7 @@ public class DomainImpl implements Domain {
                 }
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         return null;
@@ -151,7 +152,7 @@ public class DomainImpl implements Domain {
                 });
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         return codeRegistries;
@@ -201,7 +202,7 @@ public class DomainImpl implements Domain {
             }
         } catch (final IOException e) {
             LOG.error("SearchRequest failed!", e);
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
         }
         return null;
     }
@@ -340,7 +341,7 @@ public class DomainImpl implements Domain {
                 });
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         for (final CodeSchemeDTO cs : codeSchemes) {
@@ -369,7 +370,7 @@ public class DomainImpl implements Domain {
                 final SearchResponse response = client.search(query, RequestOptions.DEFAULT);
                 deepSearchHits = deepCodeQueryFactory.parseResponse(response, result, searchTerm);
             } catch (final IOException e) {
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         } else {
             deepSearchHits = null;
@@ -387,7 +388,7 @@ public class DomainImpl implements Domain {
                 final SearchResponse response = client.search(query, RequestOptions.DEFAULT);
                 deepSearchHits = deepExtensionQueryFactory.parseResponse(response, result, searchTerm);
             } catch (final IOException e) {
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         } else {
             deepSearchHits = null;
@@ -452,7 +453,7 @@ public class DomainImpl implements Domain {
             }
         } catch (final IOException e) {
             LOG.error("SearchRequest failed!", e);
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
         }
         return null;
     }
@@ -510,7 +511,7 @@ public class DomainImpl implements Domain {
                 });
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
             return codes;
         }
@@ -537,7 +538,7 @@ public class DomainImpl implements Domain {
                 }
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         return null;
@@ -581,7 +582,7 @@ public class DomainImpl implements Domain {
                 });
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         return propertyTypes;
@@ -607,7 +608,7 @@ public class DomainImpl implements Domain {
                 }
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         return null;
@@ -644,7 +645,7 @@ public class DomainImpl implements Domain {
                 });
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         return valueTypes;
@@ -670,7 +671,7 @@ public class DomainImpl implements Domain {
                 }
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         return null;
@@ -715,7 +716,7 @@ public class DomainImpl implements Domain {
                 });
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         return externalReferences;
@@ -754,7 +755,7 @@ public class DomainImpl implements Domain {
                 });
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         return extensions;
@@ -804,7 +805,7 @@ public class DomainImpl implements Domain {
             }
         } catch (final IOException e) {
             LOG.error("SearchRequest failed!", e);
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
         }
         return null;
     }
@@ -841,7 +842,7 @@ public class DomainImpl implements Domain {
                 });
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         return members;
@@ -906,7 +907,7 @@ public class DomainImpl implements Domain {
             });
         } catch (final IOException e) {
             LOG.error("SearchRequest failed!", e);
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
         }
         return members;
     }
@@ -948,7 +949,7 @@ public class DomainImpl implements Domain {
                 }
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         return null;
@@ -998,7 +999,8 @@ public class DomainImpl implements Domain {
                 setResultCounts(meta, response);
                 response.getHits().forEach(hit -> {
                     try {
-                        containers.add(mapper.readValue(hit.getSourceAsString(), ResourceDTO.class));
+                        final CodeSchemeDTO codeSchemeDto = mapper.readValue(hit.getSourceAsString(), CodeSchemeDTO.class);
+                        containers.add(new ResourceDTO(codeSchemeDto));
                     } catch (final IOException e) {
                         LOG.error("getContainers reading value from JSON string failed: " + hit.getSourceAsString(), e);
                         throw new JsonParsingException(ERR_MSG_USER_406);
@@ -1006,7 +1008,7 @@ public class DomainImpl implements Domain {
                 });
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
         return containers;
@@ -1038,7 +1040,8 @@ public class DomainImpl implements Domain {
                 setResultCounts(meta, response);
                 response.getHits().forEach(hit -> {
                     try {
-                        resources.add(mapper.readValue(hit.getSourceAsString(), ResourceDTO.class));
+                        final CodeDTO codeSchemeDto = mapper.readValue(hit.getSourceAsString(), CodeDTO.class);
+                        resources.add(new ResourceDTO(codeSchemeDto));
                     } catch (final IOException e) {
                         LOG.error("getResources reading value from JSON string failed: " + hit.getSourceAsString(), e);
                         throw new JsonParsingException(ERR_MSG_USER_406);
@@ -1047,7 +1050,7 @@ public class DomainImpl implements Domain {
                 return resources;
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
 
         }
@@ -1084,13 +1087,13 @@ public class DomainImpl implements Domain {
     }
 
     private void boostStatus(final BoolQueryBuilder builder) {
-        builder.should(constantScoreQuery(termQuery("status.keyword", "VALID")).boost(1000f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "DRAFT")).boost(800f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "SUGGESTED")).boost(700f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "SUPERSEDED")).boost(600f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "RETIRED")).boost(500f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "INVALID")).boost(400f));
-        builder.should(constantScoreQuery(termQuery("status.keyword", "INCOMPLETE")).boost(300f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", Status.VALID.toString())).boost(1000f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", Status.DRAFT.toString())).boost(800f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", Status.SUGGESTED.toString())).boost(700f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", Status.SUPERSEDED.toString())).boost(600f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", Status.RETIRED.toString())).boost(500f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", Status.INVALID.toString())).boost(400f));
+        builder.should(constantScoreQuery(termQuery("status.keyword", Status.INCOMPLETE.toString())).boost(300f));
     }
 
     private void addLanguagePrefLabelSort(final String language,
@@ -1130,7 +1133,7 @@ public class DomainImpl implements Domain {
             return client.indices().exists(request, RequestOptions.DEFAULT);
         } catch (final IOException e) {
             LOG.error("Index checking request failed for index: " + indexName, e);
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+            throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
         }
     }
 
@@ -1187,7 +1190,7 @@ public class DomainImpl implements Domain {
             }
             default: {
                 LOG.error("Trying to create search request with non-supported index: " + indexName);
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), "ElasticSearch index query error!"));
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
         }
     }

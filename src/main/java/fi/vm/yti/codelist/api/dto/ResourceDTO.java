@@ -13,13 +13,15 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonView;
 
+import fi.vm.yti.codelist.common.dto.CodeDTO;
+import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.Views;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 @JsonFilter("resource")
 @XmlRootElement
-@XmlType(propOrder = { "uri", "prefLabel", "description", "status", "modified" })
+@XmlType(propOrder = { "uri", "prefLabel", "localName", "description", "status", "modified" })
 @ApiModel(value = "Resource", description = "Resource DTO that represents data for one single container or resource for integration use.")
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ResourceDTO implements Serializable {
@@ -28,12 +30,30 @@ public class ResourceDTO implements Serializable {
 
     private Map<String, String> prefLabel;
     private Map<String, String> description;
+    private String localName;
     private String uri;
     private String status;
     private Date modified;
 
     public ResourceDTO() {
-        prefLabel = new HashMap<>();
+    }
+
+    public ResourceDTO(final CodeSchemeDTO codeSchemeDto) {
+        this.prefLabel = codeSchemeDto.getPrefLabel();
+        this.description = codeSchemeDto.getDescription();
+        this.localName = codeSchemeDto.getCodeValue();
+        this.uri = codeSchemeDto.getUri();
+        this.status = codeSchemeDto.getStatus();
+        this.modified = codeSchemeDto.getModified();
+    }
+
+    public ResourceDTO(final CodeDTO codeDto) {
+        this.prefLabel = codeDto.getPrefLabel();
+        this.description = codeDto.getDescription();
+        this.localName = codeDto.getCodeValue();
+        this.uri = codeDto.getUri();
+        this.status = codeDto.getStatus();
+        this.modified = codeDto.getModified();
     }
 
     @JsonView(Views.Normal.class)
@@ -63,6 +83,14 @@ public class ResourceDTO implements Serializable {
         this.description = description;
     }
 
+    @JsonView(Views.Normal.class)
+    public String getLocalName() {
+        return localName;
+    }
+
+    public void setLocalName(final String localName) {
+        this.localName = localName;
+    }
     public String getStatus() {
         return status;
     }
