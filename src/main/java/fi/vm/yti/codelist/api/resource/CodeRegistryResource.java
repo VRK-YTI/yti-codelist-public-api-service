@@ -273,7 +273,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                    @ApiParam(value = "Language code for sorting results.") @QueryParam("language") final String language,
                                                    @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                                                    @ApiParam(value = "Returns code codeValues in JSON array format") @QueryParam("array") final String array,
-                                                   @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
+                                                   @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty,
+                                                   @ApiParam(value = "True if the JSON array should be downloaded as file") @QueryParam("downloadArray") final boolean downloadArray) {
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
         final List<String> statusList = parseStatus(status);
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
@@ -291,7 +292,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 final ObjectMapper mapper = new ObjectMapper();
                 final ArrayNode arrayNode = mapper.createArrayNode();
                 codes.forEach(code -> arrayNode.add(code.getCodeValue()));
-                return Response.ok(arrayNode).build();
+                Response response = Response.ok(arrayNode).build();
+                if (downloadArray) {
+                    response.getHeaders().putSingle(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + "codelist_" + codeScheme.getCodeValue() + "_codes.json");
+                }
+                return response;
             } else {
                 ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand), pretty));
                 final Set<CodeDTO> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, language, statusList, meta.getAfter(), meta);
