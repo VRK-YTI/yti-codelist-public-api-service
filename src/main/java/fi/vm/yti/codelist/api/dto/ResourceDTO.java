@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlType;
 import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonView;
 
 import fi.vm.yti.codelist.common.dto.CodeDTO;
@@ -24,6 +25,7 @@ import io.swagger.annotations.ApiModelProperty;
 @XmlType(propOrder = { "uri", "prefLabel", "localName", "description", "status", "modified" })
 @ApiModel(value = "Resource", description = "Resource DTO that represents data for one single container or resource for integration use.")
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ResourceDTO implements Serializable {
 
     private static final long serialVersionUID = 1L;
