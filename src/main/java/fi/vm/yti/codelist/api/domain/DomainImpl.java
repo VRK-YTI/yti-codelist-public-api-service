@@ -66,7 +66,6 @@ public class DomainImpl implements Domain {
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
     private static final int MAX_SIZE = 50000;
     private static final String TEXT_ANALYZER = "text_analyzer";
-    private static final String PREFLABEL_ANALYZER = "preflabel_analyzer";
     private static final String BOOSTSTATUS = "boostStatus";
     private static final String ELASTIC_QUERY_ERROR = "ElasticSearch index query error!";
     private static final Set<String> sortLanguages = new HashSet<>(Arrays.asList(LANGUAGE_CODE_FI, LANGUAGE_CODE_EN, LANGUAGE_CODE_SV));
@@ -288,7 +287,7 @@ public class DomainImpl implements Domain {
                 builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             }
             if (codeRegistryPrefLabel != null && !codeRegistryPrefLabel.isEmpty()) {
-                builder.must(luceneQueryFactory.buildPrefixSuffixQuery(codeRegistryPrefLabel).field("codeRegistry.prefLabel.*").analyzer(PREFLABEL_ANALYZER));
+                builder.must(luceneQueryFactory.buildPrefixSuffixQuery(codeRegistryPrefLabel).field("codeRegistry.prefLabel.*"));
             }
             if (infoDomains != null && !infoDomains.isEmpty()) {
                 builder.must(nestedQuery("infoDomains", termsQuery("infoDomains.codeValue.keyword", infoDomains), ScoreMode.None));
@@ -1065,7 +1064,7 @@ public class DomainImpl implements Domain {
             builder.must(prefixQuery("codeValue", codeValue.toLowerCase()));
         }
         if (prefLabel != null) {
-            builder.must(luceneQueryFactory.buildPrefixSuffixQuery(prefLabel).field("prefLabel.*").analyzer(PREFLABEL_ANALYZER));
+            builder.must(luceneQueryFactory.buildPrefixSuffixQuery(prefLabel).field("prefLabel.*"));
         }
         if (after != null) {
             final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
