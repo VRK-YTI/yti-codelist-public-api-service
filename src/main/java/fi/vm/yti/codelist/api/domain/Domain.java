@@ -39,6 +39,7 @@ public interface Domain {
     Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue,
                                                              final List<String> organizationIds,
                                                              final List<String> userOrganizationIds,
+                                                             final boolean includeIncomplete,
                                                              final String language);
 
     Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
@@ -46,6 +47,7 @@ public interface Domain {
                                       final String sortMode,
                                       final List<String> organizationIds,
                                       final List<String> userOrganizationIds,
+                                      final boolean includeIncomplete,
                                       final String codeRegistryCodeValue,
                                       final String codeRegistryPrefLabel,
                                       final String codeSchemeCodeValue,

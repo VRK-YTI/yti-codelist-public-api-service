@@ -209,12 +209,13 @@ public class DomainImpl implements Domain {
     public Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue,
                                                                     final List<String> organizations,
                                                                     final List<String> userOrganizationIds,
+                                                                    final boolean includeIncomplete,
                                                                     final String language) {
-        return getCodeSchemes(MAX_SIZE, 0, null, organizations, userOrganizationIds, codeRegistryCodeValue, null, null, null, language, null, false, false, null, null, null, null, null);
+        return getCodeSchemes(MAX_SIZE, 0, null, organizations, userOrganizationIds, includeIncomplete, codeRegistryCodeValue, null, null, null, language, null, false, false, null, null, null, null, null);
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes(final String language) {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, null, null, null, null, null, language, null, false, false, null, null, null, null, null);
+        return getCodeSchemes(MAX_SIZE, 0, null, null, null, false,null, null, null, null, language, null, false, false, null, null, null, null, null);
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
@@ -222,6 +223,7 @@ public class DomainImpl implements Domain {
                                              final String sortMode,
                                              final List<String> organizationIds,
                                              final List<String> userOrganizationIds,
+                                             final boolean includeIncomplete,
                                              final String codeRegistryCodeValue,
                                              final String codeRegistryPrefLabel,
                                              final String codeSchemeCodeValue,
@@ -303,11 +305,17 @@ public class DomainImpl implements Domain {
             if (statuses != null && !statuses.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 if (statuses.contains(Status.INCOMPLETE.toString())) {
-                    final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
-                    unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
-                    unfinishedQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", userOrganizationIds), ScoreMode.None));
-                    boolQueryBuilder.should(unfinishedQueryBuilder);
-                    statuses.remove(Status.INCOMPLETE.toString());
+                    if (includeIncomplete) {
+                        final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
+                        unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
+                        boolQueryBuilder.should(unfinishedQueryBuilder);
+                    } else {
+                        final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
+                        unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
+                        unfinishedQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", userOrganizationIds), ScoreMode.None));
+                        boolQueryBuilder.should(unfinishedQueryBuilder);
+                        statuses.remove(Status.INCOMPLETE.toString());
+                    }
                 }
                 boolQueryBuilder.should(termsQuery("status.keyword", statuses));
                 builder.must(termsQuery("status.keyword", statuses));
@@ -316,7 +324,11 @@ public class DomainImpl implements Domain {
             } else {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 boolQueryBuilder.should(termsQuery("status.keyword", getRegularStatuses()));
-                if (userOrganizationIds != null && !userOrganizationIds.isEmpty()) {
+                if (includeIncomplete) {
+                    final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
+                    unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
+                    boolQueryBuilder.should(unfinishedQueryBuilder);
+                } else if (!includeIncomplete && userOrganizationIds != null && !userOrganizationIds.isEmpty()) {
                     final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
                     unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
                     unfinishedQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", userOrganizationIds), ScoreMode.None));

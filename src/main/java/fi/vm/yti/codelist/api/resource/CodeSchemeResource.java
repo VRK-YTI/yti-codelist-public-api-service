@@ -70,23 +70,24 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @ApiParam(value = "Sort mode for response values.") @QueryParam("sortMode") @DefaultValue("default") final String sortMode,
                                    @ApiParam(value = "Organizations filtering parameter, results will be codeschemes belonging to these organizations") @QueryParam("organizations") final String organizationsCsv,
                                    @ApiParam(value = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv,
+                                   @ApiParam(value = "Include INCOMPLETE statused code schemes.") @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
                                    @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final List<String> infoDomainsList = parseInfoDomains(infoDomain);
         final List<String> organizations = organizationsCsv == null ? null : asList(organizationsCsv.toLowerCase().split(","));
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
         final List<String> statusList = parseStatus(status);
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizations, userOrganizations, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, searchExtensions, statusList, infoDomainsList, extensionPropertyType, Meta.parseAfterFromString(after), null);
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizations, userOrganizations, includeIncomplete, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, searchExtensions, statusList, infoDomainsList, extensionPropertyType, Meta.parseAfterFromString(after), null);
             final String csv = codeSchemeExporter.createCsv(codeSchemes);
             return streamCsvCodeSchemesOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizations, userOrganizations, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, searchExtensions, statusList, infoDomainsList, extensionPropertyType, Meta.parseAfterFromString(after), null);
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizations, userOrganizations, includeIncomplete, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, searchExtensions, statusList, infoDomainsList, extensionPropertyType, Meta.parseAfterFromString(after), null);
             final Workbook workbook = codeSchemeExporter.createExcel(codeSchemes, format);
             return streamExcelCodeSchemesOutput(workbook);
         } else {
             final Meta meta = new Meta(200, pageSize, from, after);
             ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand), pretty));
-            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizations, userOrganizations, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, searchExtensions, statusList, infoDomainsList, extensionPropertyType, meta.getAfter(), meta);
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizations, userOrganizations, includeIncomplete, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, searchExtensions, statusList, infoDomainsList, extensionPropertyType, meta.getAfter(), meta);
             meta.setResultCount(codeSchemes.size());
             final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(codeSchemes);
