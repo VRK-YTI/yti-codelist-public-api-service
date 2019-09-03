@@ -159,5 +159,6 @@ public interface Domain {
                                   final String language,
                                   final List<String> statuses,
                                   final Date after,
-                                  final Meta meta);
+                                  final Meta meta,
+                                  final String searchTerm);
 }

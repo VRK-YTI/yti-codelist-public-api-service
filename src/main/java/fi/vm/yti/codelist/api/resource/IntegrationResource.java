@@ -85,6 +85,7 @@ public class IntegrationResource extends AbstractBaseResource {
                                  @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
                                  @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                  @ApiParam(value = "Container URI.", required = true) @QueryParam("uri") final String codeSchemeUri,
+                                 @ApiParam(value = "Search term used to filter results based on partial prefLabel match.") @QueryParam("searchTerm")  final String searchTerm,
                                  @ApiParam(value = "Include pagination related meta element and wrap response items in bulk array.") @QueryParam("includeMeta") @DefaultValue("false") final boolean includeMeta,
                                  @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final URI resolveUri = parseUriFromString(codeSchemeUri);
@@ -92,7 +93,7 @@ public class IntegrationResource extends AbstractBaseResource {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(), pretty));
         final List<String> statusList = parseStatus(status);
         final Meta meta = new Meta(200, pageSize, from, after);
-        final Set<ResourceDTO> resources = domain.getResources(pageSize, from, codeSchemeUri, language, statusList, meta.getAfter(), meta);
+        final Set<ResourceDTO> resources = domain.getResources(pageSize, from, codeSchemeUri, language, statusList, meta.getAfter(), meta, searchTerm);
         if (includeMeta) {
             meta.setResultCount(resources.size());
             if (pageSize != null && from + pageSize < meta.getTotalResults()) {

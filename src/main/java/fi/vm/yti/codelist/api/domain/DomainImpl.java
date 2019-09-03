@@ -1019,14 +1019,15 @@ public class DomainImpl implements Domain {
                                          final String language,
                                          final List<String> statuses,
                                          final Date after,
-                                         final Meta meta) {
+                                         final Meta meta,
+                                         final String searchTerm) {
         validatePageSize(pageSize);
         final Set<ResourceDTO> resources = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_CODE);
             final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
-            final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
+            final BoolQueryBuilder builder = constructSearchQuery(null, searchTerm, after);
             builder.must(matchQuery("codeScheme.uri", codeSchemeUri.toLowerCase()).analyzer(TEXT_ANALYZER));
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
@@ -1063,7 +1064,7 @@ public class DomainImpl implements Domain {
         if (codeValue != null) {
             builder.must(prefixQuery("codeValue", codeValue.toLowerCase()));
         }
-        if (prefLabel != null) {
+        if (prefLabel != null && !prefLabel.isEmpty()) {
             builder.must(luceneQueryFactory.buildPrefixSuffixQuery(prefLabel).field("prefLabel.*"));
         }
         if (after != null) {
