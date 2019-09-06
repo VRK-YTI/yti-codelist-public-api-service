@@ -96,6 +96,16 @@ abstract class AbstractBaseResource {
         return new ArrayList<>(statusSet);
     }
 
+    Set<String> parseUri(final String uriCsl) {
+        final Set<String> uriSet = new HashSet<>();
+        if (uriCsl != null) {
+            for (final String uri : uriCsl.split(",")) {
+                uriSet.add(uri);
+            }
+        }
+        return uriSet;
+    }
+
     List<String> parseInfoDomains(final String infoDomainCsl) {
         final Set<String> infoDomainsSet = new HashSet<>();
         if (infoDomainCsl != null) {

@@ -1032,7 +1032,8 @@ public class DomainImpl implements Domain {
                                          final List<String> statuses,
                                          final Date after,
                                          final Meta meta,
-                                         final String searchTerm) {
+                                         final String searchTerm,
+                                         final Set<String> excludedResourceUris) {
         validatePageSize(pageSize);
         final Set<ResourceDTO> resources = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
@@ -1043,6 +1044,9 @@ public class DomainImpl implements Domain {
             builder.must(matchQuery("codeScheme.uri", codeSchemeUri.toLowerCase()).analyzer(TEXT_ANALYZER));
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
+            }
+            if (excludedResourceUris.size() > 0) {
+                builder.mustNot(termsQuery("uri.keyword", excludedResourceUris));
             }
             addLanguagePrefLabelSort(language, "codeValue.raw", "order", searchBuilder);
             searchBuilder.query(builder);

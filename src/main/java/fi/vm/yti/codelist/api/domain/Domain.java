@@ -162,5 +162,6 @@ public interface Domain {
                                   final List<String> statuses,
                                   final Date after,
                                   final Meta meta,
-                                  final String searchTerm);
+                                  final String searchTerm,
+                                  final Set<String> excludedResourceUris);
 }
