@@ -1045,7 +1045,7 @@ public class DomainImpl implements Domain {
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }
-            if (excludedResourceUris.size() > 0) {
+            if (excludedResourceUris != null && excludedResourceUris.size() > 0) {
                 builder.mustNot(termsQuery("uri.keyword", excludedResourceUris));
             }
             addLanguagePrefLabelSort(language, "codeValue.raw", "order", searchBuilder);
