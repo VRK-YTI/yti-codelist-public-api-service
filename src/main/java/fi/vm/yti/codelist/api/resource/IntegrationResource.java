@@ -56,24 +56,19 @@ public class IntegrationResource extends AbstractBaseResource {
                                   @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                   @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
                                   @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                  @ApiParam(value = "Include pagination related meta element and wrap response items in bulk array.") @QueryParam("includeMeta") @DefaultValue("false") final boolean includeMeta,
                                   @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(), pretty));
         final Meta meta = new Meta(200, pageSize, from, after);
         final List<String> statusList = parseStatus(status);
         final Set<ResourceDTO> containers = domain.getContainers(pageSize, from, language, statusList, meta.getAfter(), meta);
-        if (includeMeta) {
-            meta.setResultCount(containers.size());
-            if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_CONTAINERS, after, pageSize, from + pageSize) + "&includeMeta=true");
-            }
-            final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setResults(containers);
-            wrapper.setMeta(meta);
-            return Response.ok(wrapper).build();
-        } else {
-            return Response.ok(containers).build();
+        meta.setResultCount(containers.size());
+        if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+            meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_CONTAINERS, after, pageSize, from + pageSize));
         }
+        final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
+        wrapper.setResults(containers);
+        wrapper.setMeta(meta);
+        return Response.ok(wrapper).build();
     }
 
     @GET
@@ -88,7 +83,6 @@ public class IntegrationResource extends AbstractBaseResource {
                                  @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
                                  @ApiParam(value = "Container URI.", required = true) @QueryParam("container") final String codeSchemeUri,
                                  @ApiParam(value = "Search term used to filter results based on partial prefLabel match.") @QueryParam("searchTerm") final String searchTerm,
-                                 @ApiParam(value = "Include pagination related meta element and wrap response items in bulk array.") @QueryParam("includeMeta") @DefaultValue("false") final boolean includeMeta,
                                  @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final URI resolveUri = parseUriFromString(codeSchemeUri);
         ensureSuomiFiUriHost(resolveUri.getHost());
@@ -96,18 +90,14 @@ public class IntegrationResource extends AbstractBaseResource {
         final List<String> statusList = parseStatus(status);
         final Meta meta = new Meta(200, pageSize, from, after);
         final Set<ResourceDTO> resources = domain.getResources(pageSize, from, codeSchemeUri, language, statusList, meta.getAfter(), meta, searchTerm, null);
-        if (includeMeta) {
-            meta.setResultCount(resources.size());
-            if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&includeMeta=true&container=" + codeSchemeUri);
-            }
-            final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setResults(resources);
-            wrapper.setMeta(meta);
-            return Response.ok(wrapper).build();
-        } else {
-            return Response.ok(resources).build();
+        meta.setResultCount(resources.size());
+        if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+            meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&container=" + codeSchemeUri);
         }
+        final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
+        wrapper.setResults(resources);
+        wrapper.setMeta(meta);
+        return Response.ok(wrapper).build();
     }
 
     /**
@@ -127,7 +117,6 @@ public class IntegrationResource extends AbstractBaseResource {
                                  @ApiParam(value = "Container URI.", required = true) @QueryParam("container") final String codeSchemeUri,
                                  @ApiParam(value = "Search term used to filter results based on partial prefLabel match.") @QueryParam("searchTerm") final String searchTerm,
                                  @ApiParam(value = "A set of resource URIs in CSL format to be excluded from the results.") @RequestBody final String excludedResourceUris,
-                                 @ApiParam(value = "Include pagination related meta element and wrap response items in bulk array.") @QueryParam("includeMeta") @DefaultValue("false") final boolean includeMeta,
                                  @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         final URI resolveUri = parseUriFromString(codeSchemeUri);
         ensureSuomiFiUriHost(resolveUri.getHost());
@@ -136,17 +125,13 @@ public class IntegrationResource extends AbstractBaseResource {
         final Set<String> excludedUrisSet = parseUri(excludedResourceUris);
         final Meta meta = new Meta(200, pageSize, from, after);
         final Set<ResourceDTO> resources = domain.getResources(pageSize, from, codeSchemeUri, language, statusList, meta.getAfter(), meta, searchTerm, excludedUrisSet);
-        if (includeMeta) {
-            meta.setResultCount(resources.size());
-            if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&includeMeta=true&container=" + codeSchemeUri);
-            }
-            final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
-            wrapper.setResults(resources);
-            wrapper.setMeta(meta);
-            return Response.ok(wrapper).build();
-        } else {
-            return Response.ok(resources).build();
+        meta.setResultCount(resources.size());
+        if (pageSize != null && from + pageSize < meta.getTotalResults()) {
+            meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&container=" + codeSchemeUri);
         }
+        final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
+        wrapper.setResults(resources);
+        wrapper.setMeta(meta);
+        return Response.ok(wrapper).build();
     }
 }
