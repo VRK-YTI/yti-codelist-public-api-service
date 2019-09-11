@@ -86,7 +86,7 @@ public class IntegrationResource extends AbstractBaseResource {
                                  @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                  @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
                                  @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                 @ApiParam(value = "Container URI.", required = true) @QueryParam("uri") final String codeSchemeUri,
+                                 @ApiParam(value = "Container URI.", required = true) @QueryParam("container") final String codeSchemeUri,
                                  @ApiParam(value = "Search term used to filter results based on partial prefLabel match.") @QueryParam("searchTerm") final String searchTerm,
                                  @ApiParam(value = "Include pagination related meta element and wrap response items in bulk array.") @QueryParam("includeMeta") @DefaultValue("false") final boolean includeMeta,
                                  @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
@@ -124,7 +124,7 @@ public class IntegrationResource extends AbstractBaseResource {
                                  @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
                                  @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
                                  @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                 @ApiParam(value = "Container URI.", required = true) @QueryParam("uri") final String codeSchemeUri,
+                                 @ApiParam(value = "Container URI.", required = true) @QueryParam("container") final String codeSchemeUri,
                                  @ApiParam(value = "Search term used to filter results based on partial prefLabel match.") @QueryParam("searchTerm") final String searchTerm,
                                  @ApiParam(value = "A set of resource URIs in CSL format to be excluded from the results.") @RequestBody final String excludedResourceUris,
                                  @ApiParam(value = "Include pagination related meta element and wrap response items in bulk array.") @QueryParam("includeMeta") @DefaultValue("false") final boolean includeMeta,
