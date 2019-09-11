@@ -99,7 +99,7 @@ public class IntegrationResource extends AbstractBaseResource {
         if (includeMeta) {
             meta.setResultCount(resources.size());
             if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&includeMeta=true&uri=" + codeSchemeUri);
+                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&includeMeta=true&container=" + codeSchemeUri);
             }
             final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(resources);
@@ -139,7 +139,7 @@ public class IntegrationResource extends AbstractBaseResource {
         if (includeMeta) {
             meta.setResultCount(resources.size());
             if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&includeMeta=true&uri=" + codeSchemeUri);
+                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&includeMeta=true&container=" + codeSchemeUri);
             }
             final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(resources);
