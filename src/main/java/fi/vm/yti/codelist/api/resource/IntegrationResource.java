@@ -135,7 +135,7 @@ public class IntegrationResource extends AbstractBaseResource {
             excludedUrisSet = null;
         }
         final Integer pageSize = request.getPageSize();
-        final Integer from = request.getFrom();
+        final Integer from = request.getPageFrom();
         final String after = request.getAfter();
         final Meta meta = new Meta(200, pageSize, from, after);
         final Set<ResourceDTO> resources = domain.getResources(pageSize, from, container, request.getLanguage(), statusList, meta.getAfter(), meta, request.getSearchTerm(), excludedUrisSet);

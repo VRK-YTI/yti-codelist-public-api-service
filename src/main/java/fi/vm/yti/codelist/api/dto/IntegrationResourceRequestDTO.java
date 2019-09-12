@@ -5,7 +5,7 @@ import java.util.List;
 public class IntegrationResourceRequestDTO {
 
     private String container;
-    private Integer from;
+    private Integer pageFrom;
     private Integer pageSize;
     private List<String> status;
     private String after;
@@ -22,12 +22,12 @@ public class IntegrationResourceRequestDTO {
         this.container = container;
     }
 
-    public Integer getFrom() {
-        return from;
+    public Integer getPageFrom() {
+        return pageFrom;
     }
 
-    public void setFrom(final Integer from) {
-        this.from = from;
+    public void setPageFrom(final Integer pageFrom) {
+        this.pageFrom = pageFrom;
     }
 
     public Integer getPageSize() {
