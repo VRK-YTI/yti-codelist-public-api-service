@@ -1040,7 +1040,7 @@ public class DomainImpl implements Domain {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_CODE);
             final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
-            final BoolQueryBuilder builder = constructSearchQuery(null, searchTerm, after);
+            final BoolQueryBuilder builder = constructAndOrQueryForPrefLabelAndCodeValue(searchTerm, after);
             builder.must(matchQuery("codeScheme.uri", codeSchemeUri.toLowerCase()).analyzer(TEXT_ANALYZER));
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
@@ -1082,6 +1082,22 @@ public class DomainImpl implements Domain {
         }
         if (prefLabel != null && !prefLabel.isEmpty()) {
             builder.must(luceneQueryFactory.buildPrefixSuffixQuery(prefLabel).field("prefLabel.*"));
+        }
+        if (after != null) {
+            final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
+            final String afterString = dateFormat.format(after);
+            builder.must(rangeQuery("modified").gt(afterString));
+        }
+        return builder;
+    }
+
+    private BoolQueryBuilder constructAndOrQueryForPrefLabelAndCodeValue(final String searchTern,
+                                                                         final Date after) {
+        final BoolQueryBuilder builder = boolQuery();
+        if (searchTern != null && !searchTern.isEmpty()) {
+            builder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTern).field("codeValue"));
+            builder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTern).field("prefLabel.*"));
+            builder.minimumShouldMatch(1);
         }
         if (after != null) {
             final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
