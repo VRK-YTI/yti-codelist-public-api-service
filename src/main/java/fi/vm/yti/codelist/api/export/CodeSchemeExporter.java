@@ -50,6 +50,7 @@ public class CodeSchemeExporter extends BaseExporter {
         final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
         final Set<String> descriptionLanguages = resolveCodeSchemeDescriptionLanguages(codeSchemes);
         final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
+        final Set<String> feedbackChannelLanguages = resolveCodeSchemeFeedbackChannelLanguages(codeSchemes);
         final StringBuilder csv = new StringBuilder();
         appendValue(csv, CONTENT_HEADER_CODEVALUE);
         appendValue(csv, CONTENT_HEADER_URI);
@@ -71,6 +72,7 @@ public class CodeSchemeExporter extends BaseExporter {
         appendValue(csv, CONTENT_HEADER_ENDDATE);
         appendValue(csv, CONTENT_HEADER_CREATED);
         appendValue(csv, CONTENT_HEADER_MODIFIED);
+        feedbackChannelLanguages.forEach(language -> appendValue(csv, CONTENT_HEADER_FEEDBACK_CHANNEL_PREFIX + language.toUpperCase()));
         appendValue(csv, CONTENT_HEADER_HREF, true);
         for (final CodeSchemeDTO codeScheme : codeSchemes) {
             appendValue(csv, codeScheme.getCodeValue());
@@ -93,7 +95,8 @@ public class CodeSchemeExporter extends BaseExporter {
             appendValue(csv, codeScheme.getEndDate() != null ? formatDateWithISO8601(codeScheme.getEndDate()) : "");
             appendValue(csv, codeScheme.getCreated() != null ? formatDateWithSeconds(codeScheme.getCreated()) : "");
             appendValue(csv, codeScheme.getModified() != null ? formatDateWithSeconds(codeScheme.getModified()) : "");
-            appendValue(csv, formatExternalReferencesToString(codeScheme.getExternalReferences()), true);
+            feedbackChannelLanguages.forEach(language -> appendValue(csv, getCodeSchemeFeedbackChannel(codeScheme, language)));
+            appendValue(csv, formatExternalReferencesToString(codeScheme.getExternalReferences()),true);
         }
         return csv.toString();
     }
@@ -134,6 +137,7 @@ public class CodeSchemeExporter extends BaseExporter {
     private void addCodeSchemeSheet(final Workbook workbook,
                                     final Set<CodeSchemeDTO> codeSchemes) {
         final Set<String> prefLabelLanguages = resolveCodeSchemePrefLabelLanguages(codeSchemes);
+        final Set<String> feedbackChannelLanguages = resolveCodeSchemeFeedbackChannelLanguages(codeSchemes);
         final Set<String> definitionLanguages = resolveCodeSchemeDefinitionLanguages(codeSchemes);
         final Set<String> descriptionLanguages = resolveCodeSchemeDescriptionLanguages(codeSchemes);
         final Set<String> changeNoteLanguages = resolveCodeSchemeChangeNoteLanguages(codeSchemes);
@@ -168,6 +172,9 @@ public class CodeSchemeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
+        for (final String language : feedbackChannelLanguages) {
+            rowhead.createCell(j++).setCellValue(CONTENT_HEADER_FEEDBACK_CHANNEL_PREFIX + language.toUpperCase());
+        }
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_HREF);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CODESSHEET);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_LINKSSHEET);
@@ -204,6 +211,9 @@ public class CodeSchemeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(codeScheme.getEndDate() != null ? formatDateWithISO8601(codeScheme.getEndDate()) : "");
             row.createCell(k++).setCellValue(codeScheme.getCreated() != null ? formatDateWithSeconds(codeScheme.getCreated()) : "");
             row.createCell(k++).setCellValue(codeScheme.getModified() != null ? formatDateWithSeconds(codeScheme.getModified()) : "");
+            for (final String language : feedbackChannelLanguages) {
+                row.createCell(k++).setCellValue(getCodeSchemeFeedbackChannel(codeScheme, language));
+            }
             row.createCell(k++).setCellValue(checkEmptyValue(formatExternalReferencesToString(codeScheme.getExternalReferences())));
             row.createCell(k++).setCellValue(checkEmptyValue(createCodesSheetName(codeScheme)));
             row.createCell(k++).setCellValue(checkEmptyValue(createLinksSheetName(codeScheme)));
@@ -217,6 +227,17 @@ public class CodeSchemeExporter extends BaseExporter {
             final Map<String, String> prefLabel = codeScheme.getPrefLabel();
             if (prefLabel != null && !prefLabel.isEmpty()) {
                 languages.addAll(prefLabel.keySet());
+            }
+        }
+        return languages;
+    }
+
+    private Set<String> resolveCodeSchemeFeedbackChannelLanguages(final Set<CodeSchemeDTO> codeSchemes) {
+        final Set<String> languages = new LinkedHashSet<>();
+        for (final CodeSchemeDTO codeScheme : codeSchemes) {
+            final Map<String, String> feedbackChannel = codeScheme.getFeedbackChannel();
+            if (feedbackChannel != null && !feedbackChannel.isEmpty()) {
+                languages.addAll(feedbackChannel.keySet());
             }
         }
         return languages;

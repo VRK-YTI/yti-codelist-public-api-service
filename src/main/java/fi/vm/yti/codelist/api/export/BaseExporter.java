@@ -145,6 +145,11 @@ abstract class BaseExporter {
         return codeScheme.getPrefLabel() != null ? codeScheme.getPrefLabel().get(language) : "";
     }
 
+    String getCodeSchemeFeedbackChannel(final CodeSchemeDTO codeScheme,
+                                  final String language) {
+        return codeScheme.getFeedbackChannel() != null ? codeScheme.getFeedbackChannel().get(language) : "";
+    }
+
     String getCodeSchemeDefinition(final CodeSchemeDTO codeScheme,
                                    final String language) {
         return codeScheme.getDefinition() != null ? codeScheme.getDefinition().get(language) : "";
