@@ -152,7 +152,8 @@ public interface Domain {
                                    final Integer from,
                                    final String language,
                                    final List<String> statuses,
-                                   final Date after,
+                                   final String searchTerm,
+                                   final Set<String> excludedContainerUris,
                                    final Meta meta);
 
     Set<ResourceDTO> getResources(final Integer pageSize,
@@ -160,8 +161,7 @@ public interface Domain {
                                   final String codeSchemeUri,
                                   final String language,
                                   final List<String> statuses,
-                                  final Date after,
-                                  final Meta meta,
                                   final String searchTerm,
-                                  final Set<String> excludedResourceUris);
+                                  final Set<String> excludedResourceUris,
+                                  final Meta meta);
 }

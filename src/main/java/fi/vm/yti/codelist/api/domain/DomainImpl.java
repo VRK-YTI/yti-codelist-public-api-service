@@ -970,7 +970,8 @@ public class DomainImpl implements Domain {
                                           final Integer from,
                                           final String language,
                                           final List<String> statuses,
-                                          final Date after,
+                                          final String searchTerm,
+                                          final Set<String> excludedContainerUris,
                                           final Meta meta) {
         validatePageSize(pageSize);
         final Set<ResourceDTO> containers = new LinkedHashSet<>();
@@ -978,13 +979,17 @@ public class DomainImpl implements Domain {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_CODESCHEME);
             final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
-            final BoolQueryBuilder builder = boolQuery();
+            final Date after = meta.getAfter();
+            final BoolQueryBuilder builder = constructSearchQuery(null, searchTerm, after);
             if (after != null) {
                 final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
                 final String afterString = dateFormat.format(after);
                 builder.must(rangeQuery("modified").gt(afterString));
             }
             addLanguagePrefLabelSort(language, "codeValue.raw", "codeValue.raw", searchBuilder);
+            if (excludedContainerUris != null && excludedContainerUris.size() > 0) {
+                builder.mustNot(termsQuery("uri.keyword", excludedContainerUris));
+            }
             if (statuses != null && !statuses.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 if (statuses.contains(Status.INCOMPLETE.toString())) {
@@ -1030,16 +1035,16 @@ public class DomainImpl implements Domain {
                                          final String codeSchemeUri,
                                          final String language,
                                          final List<String> statuses,
-                                         final Date after,
-                                         final Meta meta,
                                          final String searchTerm,
-                                         final Set<String> excludedResourceUris) {
+                                         final Set<String> excludedResourceUris,
+                                         final Meta meta) {
         validatePageSize(pageSize);
         final Set<ResourceDTO> resources = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_CODE);
             final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
+            final Date after = meta.getAfter();
             final BoolQueryBuilder builder = constructAndOrQueryForPrefLabelAndCodeValue(searchTerm, after);
             builder.must(matchQuery("codeScheme.uri", codeSchemeUri.toLowerCase()).analyzer(TEXT_ANALYZER));
             if (statuses != null && !statuses.isEmpty()) {
@@ -1049,6 +1054,11 @@ public class DomainImpl implements Domain {
                 builder.mustNot(termsQuery("uri.keyword", excludedResourceUris));
             }
             addLanguagePrefLabelSort(language, "codeValue.raw", "order", searchBuilder);
+            if (after != null) {
+                final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
+                final String afterString = dateFormat.format(after);
+                builder.must(rangeQuery("modified").gt(afterString));
+            }
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
             try {
