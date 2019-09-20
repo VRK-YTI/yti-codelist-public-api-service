@@ -306,14 +306,14 @@ public class DomainImpl implements Domain {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 if (statuses.contains(Status.INCOMPLETE.toString())) {
                     if (includeIncomplete) {
-                        final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
-                        unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
-                        boolQueryBuilder.should(unfinishedQueryBuilder);
-                    } else {
-                        final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
-                        unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
-                        unfinishedQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", userOrganizationIds), ScoreMode.None));
-                        boolQueryBuilder.should(unfinishedQueryBuilder);
+                        final BoolQueryBuilder incompleteQueryBuilder = boolQuery();
+                        incompleteQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
+                        boolQueryBuilder.should(incompleteQueryBuilder);
+                    } else if (userOrganizationIds != null && !userOrganizationIds.isEmpty()) {
+                        final BoolQueryBuilder incompleteQueryBuilder = boolQuery();
+                        incompleteQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
+                        incompleteQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", userOrganizationIds), ScoreMode.None));
+                        boolQueryBuilder.should(incompleteQueryBuilder);
                         statuses.remove(Status.INCOMPLETE.toString());
                     }
                 }
@@ -325,14 +325,14 @@ public class DomainImpl implements Domain {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 boolQueryBuilder.should(termsQuery("status.keyword", getRegularStatuses()));
                 if (includeIncomplete) {
-                    final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
-                    unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
-                    boolQueryBuilder.should(unfinishedQueryBuilder);
-                } else if (!includeIncomplete && userOrganizationIds != null && !userOrganizationIds.isEmpty()) {
-                    final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
-                    unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
-                    unfinishedQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", userOrganizationIds), ScoreMode.None));
-                    boolQueryBuilder.should(unfinishedQueryBuilder);
+                    final BoolQueryBuilder incompleteQueryBuilder = boolQuery();
+                    incompleteQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
+                    boolQueryBuilder.should(incompleteQueryBuilder);
+                } else if (userOrganizationIds != null && !userOrganizationIds.isEmpty()) {
+                    final BoolQueryBuilder incompleteQueryBuilder = boolQuery();
+                    incompleteQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
+                    incompleteQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", userOrganizationIds), ScoreMode.None));
+                    boolQueryBuilder.should(incompleteQueryBuilder);
                 }
                 boolQueryBuilder.minimumShouldMatch(1);
                 builder.must(boolQueryBuilder);
@@ -972,6 +972,7 @@ public class DomainImpl implements Domain {
                                           final List<String> statuses,
                                           final String searchTerm,
                                           final Set<String> excludedContainerUris,
+                                          final Set<String> includeIncompleteFrom,
                                           final Meta meta) {
         validatePageSize(pageSize);
         final Set<ResourceDTO> containers = new LinkedHashSet<>();
@@ -993,9 +994,10 @@ public class DomainImpl implements Domain {
             if (statuses != null && !statuses.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 if (statuses.contains(Status.INCOMPLETE.toString())) {
-                    final BoolQueryBuilder unfinishedQueryBuilder = boolQuery();
-                    unfinishedQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
-                    boolQueryBuilder.should(unfinishedQueryBuilder);
+                    final BoolQueryBuilder incompleteQueryBuilder = boolQuery();
+                    incompleteQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
+                    incompleteQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", includeIncompleteFrom), ScoreMode.None));
+                    boolQueryBuilder.should(incompleteQueryBuilder);
                     statuses.remove(Status.INCOMPLETE.toString());
                 }
                 boolQueryBuilder.should(termsQuery("status.keyword", statuses));
@@ -1005,9 +1007,17 @@ public class DomainImpl implements Domain {
             } else {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 boolQueryBuilder.should(termsQuery("status.keyword", getRegularStatuses()));
+                if (includeIncompleteFrom != null && !includeIncompleteFrom.isEmpty()) {
+                    final BoolQueryBuilder incompleteQueryBuilder = boolQuery();
+                    incompleteQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
+                    incompleteQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", includeIncompleteFrom), ScoreMode.None));
+                    boolQueryBuilder.should(incompleteQueryBuilder);
+                }
                 boolQueryBuilder.minimumShouldMatch(1);
                 builder.must(boolQueryBuilder);
             }
+            final String[] includeFields = new String[] { "id", "codeValue", "prefLabel", "description", "modified", "status", "uri", "organization" };
+            searchBuilder.fetchSource(includeFields, null);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
             try {
@@ -1037,6 +1047,7 @@ public class DomainImpl implements Domain {
                                          final List<String> statuses,
                                          final String searchTerm,
                                          final Set<String> excludedResourceUris,
+                                         final Set<String> includeIncompleteFrom,
                                          final Meta meta) {
         validatePageSize(pageSize);
         final Set<ResourceDTO> resources = new LinkedHashSet<>();
@@ -1059,6 +1070,8 @@ public class DomainImpl implements Domain {
                 final String afterString = dateFormat.format(after);
                 builder.must(rangeQuery("modified").gt(afterString));
             }
+            final String[] includeFields = new String[] { "id", "codeValue", "prefLabel", "description", "modified", "status", "uri" };
+            searchBuilder.fetchSource(includeFields, null);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
             try {

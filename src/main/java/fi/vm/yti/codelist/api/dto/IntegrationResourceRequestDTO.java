@@ -13,6 +13,7 @@ public class IntegrationResourceRequestDTO {
     private String language;
     private String searchTerm;
     private String pretty;
+    private List<String> includeIncompleteFrom;
 
     public String getContainer() {
         return container;
@@ -84,5 +85,13 @@ public class IntegrationResourceRequestDTO {
 
     public void setPretty(final String pretty) {
         this.pretty = pretty;
+    }
+
+    public List<String> getIncludeIncompleteFrom() {
+        return includeIncompleteFrom;
+    }
+
+    public void setIncludeIncompleteFrom(final List<String> includeIncompleteFrom) {
+        this.includeIncompleteFrom = includeIncompleteFrom;
     }
 }

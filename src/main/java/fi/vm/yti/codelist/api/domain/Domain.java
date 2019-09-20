@@ -154,6 +154,7 @@ public interface Domain {
                                    final List<String> statuses,
                                    final String searchTerm,
                                    final Set<String> excludedContainerUris,
+                                   final Set<String> includeIncompleteFrom,
                                    final Meta meta);
 
     Set<ResourceDTO> getResources(final Integer pageSize,
@@ -163,5 +164,6 @@ public interface Domain {
                                   final List<String> statuses,
                                   final String searchTerm,
                                   final Set<String> excludedResourceUris,
+                                  final Set<String> includeIncompleteFrom,
                                   final Meta meta);
 }
