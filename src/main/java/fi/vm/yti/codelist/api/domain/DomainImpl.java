@@ -972,7 +972,7 @@ public class DomainImpl implements Domain {
                                           final List<String> statuses,
                                           final String searchTerm,
                                           final Set<String> excludedContainerUris,
-                                          final Set<String> includeIncompleteFrom,
+                                          final List<String> includeIncompleteFrom,
                                           final boolean includeIncomplete,
                                           final Meta meta) {
         validatePageSize(pageSize);
@@ -1021,7 +1021,7 @@ public class DomainImpl implements Domain {
                 boolQueryBuilder.minimumShouldMatch(1);
                 builder.must(boolQueryBuilder);
             }
-            final String[] includeFields = new String[] { "id", "codeValue", "prefLabel", "description", "modified", "status", "uri", "organization" };
+            final String[] includeFields = new String[] { "id", "codeValue", "prefLabel", "description", "modified", "status", "uri", "organizations" };
             searchBuilder.fetchSource(includeFields, null);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
@@ -1052,7 +1052,7 @@ public class DomainImpl implements Domain {
                                          final List<String> statuses,
                                          final String searchTerm,
                                          final Set<String> excludedResourceUris,
-                                         final Set<String> includeIncompleteFrom,
+                                         final List<String> includeIncompleteFrom,
                                          final Meta meta) {
         validatePageSize(pageSize);
         final Set<ResourceDTO> resources = new LinkedHashSet<>();

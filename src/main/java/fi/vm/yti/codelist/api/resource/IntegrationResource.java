@@ -74,13 +74,7 @@ public class IntegrationResource extends AbstractBaseResource {
         final Meta meta = new Meta(200, pageSize, from, after);
         final List<String> statusList = parseStatus(status);
         final List<String> includeIncompleteFromList = includeIncompleteFrom == null ? null : asList(includeIncompleteFrom.toLowerCase().split(","));
-        final Set<String> includeIncompleteFromSet;
-        if (includeIncompleteFrom != null) {
-            includeIncompleteFromSet = new HashSet(Arrays.asList(includeIncompleteFromList));
-        } else {
-            includeIncompleteFromSet = null;
-        }
-        final Set<ResourceDTO> containers = domain.getContainers(pageSize, from, language, statusList, searchTerm, null, includeIncompleteFromSet, includeIncomplete, meta);
+        final Set<ResourceDTO> containers = domain.getContainers(pageSize, from, language, statusList, searchTerm, null, includeIncompleteFromList, includeIncomplete, meta);
         meta.setResultCount(containers.size());
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_CONTAINERS, after, pageSize, from + pageSize));
@@ -107,13 +101,7 @@ public class IntegrationResource extends AbstractBaseResource {
         } else {
             excludedUrisSet = null;
         }
-        final List<String> includeIncompleteFrom = request.getIncludeIncompleteFrom();
-        final Set<String> includeIncompleteFromSet;
-        if (includeIncompleteFrom != null) {
-            includeIncompleteFromSet = new HashSet<>(includeIncompleteFrom);
-        } else {
-            includeIncompleteFromSet = null;
-        }
+        final List<String> includeIncompleteFromList = request.getIncludeIncompleteFrom();
         final Integer pageSize = request.getPageSize();
         final Integer from = request.getPageFrom();
         final String after = request.getAfter();
@@ -121,7 +109,7 @@ public class IntegrationResource extends AbstractBaseResource {
         final String language = request.getLanguage();
         final boolean includeIncomplete = request.getIncludeIncomplete();
         final Meta meta = new Meta(200, pageSize, from, after);
-        final Set<ResourceDTO> containers = domain.getContainers(pageSize, from, language, statusList, searchTerm, excludedUrisSet, includeIncompleteFromSet, includeIncomplete, meta);
+        final Set<ResourceDTO> containers = domain.getContainers(pageSize, from, language, statusList, searchTerm, excludedUrisSet, includeIncompleteFromList, includeIncomplete, meta);
         meta.setResultCount(containers.size());
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_CONTAINERS, after, pageSize, from + pageSize));
@@ -151,14 +139,8 @@ public class IntegrationResource extends AbstractBaseResource {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(), pretty));
         final List<String> statusList = parseStatus(status);
         final List<String> includeIncompleteFromList = includeIncompleteFrom == null ? null : asList(includeIncompleteFrom.toLowerCase().split(","));
-        final Set<String> includeIncompleteFromSet;
-        if (includeIncompleteFrom != null) {
-            includeIncompleteFromSet = new HashSet(Arrays.asList(includeIncompleteFromList));
-        } else {
-            includeIncompleteFromSet = null;
-        }
         final Meta meta = new Meta(200, pageSize, from, after);
-        final Set<ResourceDTO> resources = domain.getResources(pageSize, from, codeSchemeUri, language, statusList, searchTerm, null, includeIncompleteFromSet, meta);
+        final Set<ResourceDTO> resources = domain.getResources(pageSize, from, codeSchemeUri, language, statusList, searchTerm, null, includeIncompleteFromList, meta);
         meta.setResultCount(resources.size());
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&container=" + codeSchemeUri);
@@ -188,20 +170,14 @@ public class IntegrationResource extends AbstractBaseResource {
         } else {
             excludedUrisSet = null;
         }
-        final List<String> includeIncompleteFrom = request.getIncludeIncompleteFrom();
-        final Set<String> includeIncompleteFromSet;
-        if (includeIncompleteFrom != null) {
-            includeIncompleteFromSet = new HashSet<>(includeIncompleteFrom);
-        } else {
-            includeIncompleteFromSet = null;
-        }
+        final List<String> includeIncompleteFromList = request.getIncludeIncompleteFrom();
         final Integer pageSize = request.getPageSize();
         final Integer from = request.getPageFrom();
         final String after = request.getAfter();
         final String language = request.getLanguage();
         final String searchTerm = request.getSearchTerm();
         final Meta meta = new Meta(200, pageSize, from, after);
-        final Set<ResourceDTO> resources = domain.getResources(pageSize, from, container, language, statusList, searchTerm, excludedUrisSet, includeIncompleteFromSet, meta);
+        final Set<ResourceDTO> resources = domain.getResources(pageSize, from, container, language, statusList, searchTerm, excludedUrisSet, includeIncompleteFromList, meta);
         meta.setResultCount(resources.size());
         final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
         wrapper.setResults(resources);

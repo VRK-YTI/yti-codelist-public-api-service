@@ -154,7 +154,7 @@ public interface Domain {
                                    final List<String> statuses,
                                    final String searchTerm,
                                    final Set<String> excludedContainerUris,
-                                   final Set<String> includeIncompleteFrom,
+                                   final List<String> includeIncompleteFrom,
                                    final boolean includeIncomplete,
                                    final Meta meta);
 
@@ -165,6 +165,6 @@ public interface Domain {
                                   final List<String> statuses,
                                   final String searchTerm,
                                   final Set<String> excludedResourceUris,
-                                  final Set<String> includeIncompleteFrom,
+                                  final List<String> includeIncompleteFrom,
                                   final Meta meta);
 }
