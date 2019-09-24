@@ -155,6 +155,7 @@ public interface Domain {
                                    final String searchTerm,
                                    final Set<String> excludedContainerUris,
                                    final Set<String> includeIncompleteFrom,
+                                   final boolean includeIncomplete,
                                    final Meta meta);
 
     Set<ResourceDTO> getResources(final Integer pageSize,

@@ -973,6 +973,7 @@ public class DomainImpl implements Domain {
                                           final String searchTerm,
                                           final Set<String> excludedContainerUris,
                                           final Set<String> includeIncompleteFrom,
+                                          final boolean includeIncomplete,
                                           final Meta meta) {
         validatePageSize(pageSize);
         final Set<ResourceDTO> containers = new LinkedHashSet<>();
@@ -993,7 +994,7 @@ public class DomainImpl implements Domain {
             }
             if (statuses != null && !statuses.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
-                if (statuses.contains(Status.INCOMPLETE.toString())) {
+                if (!includeIncomplete && statuses.contains(Status.INCOMPLETE.toString())) {
                     final BoolQueryBuilder incompleteQueryBuilder = boolQuery();
                     incompleteQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
                     incompleteQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", includeIncompleteFrom), ScoreMode.None));
@@ -1007,7 +1008,11 @@ public class DomainImpl implements Domain {
             } else {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 boolQueryBuilder.should(termsQuery("status.keyword", getRegularStatuses()));
-                if (includeIncompleteFrom != null && !includeIncompleteFrom.isEmpty()) {
+                if (includeIncomplete) {
+                    final BoolQueryBuilder incompleteQueryBuilder = boolQuery();
+                    incompleteQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
+                    boolQueryBuilder.should(incompleteQueryBuilder);
+                } else if (includeIncompleteFrom != null && !includeIncompleteFrom.isEmpty()) {
                     final BoolQueryBuilder incompleteQueryBuilder = boolQuery();
                     incompleteQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
                     incompleteQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", includeIncompleteFrom), ScoreMode.None));

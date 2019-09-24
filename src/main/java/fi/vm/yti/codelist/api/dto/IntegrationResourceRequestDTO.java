@@ -14,6 +14,7 @@ public class IntegrationResourceRequestDTO {
     private String searchTerm;
     private String pretty;
     private List<String> includeIncompleteFrom;
+    private boolean includeIncomplete;
 
     public String getContainer() {
         return container;
@@ -93,5 +94,13 @@ public class IntegrationResourceRequestDTO {
 
     public void setIncludeIncompleteFrom(final List<String> includeIncompleteFrom) {
         this.includeIncompleteFrom = includeIncompleteFrom;
+    }
+
+    public boolean getIncludeIncomplete() {
+        return includeIncomplete;
+    }
+
+    public void setIncludeIncomplete(final boolean includeIncomplete) {
+        this.includeIncomplete = includeIncomplete;
     }
 }
