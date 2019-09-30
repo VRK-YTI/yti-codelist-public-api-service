@@ -237,7 +237,8 @@ abstract class AbstractBaseResource {
 
     String urlDecodeString(final String string) {
         try {
-            return URLDecoder.decode(string, "UTF-8");
+            final String stringToDecode = string.replaceAll("\\+", "%2b");
+            return URLDecoder.decode(stringToDecode, "UTF-8");
         } catch (final UnsupportedEncodingException e) {
             LOG.error("Issue with url decoding a string.", e);
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), ERR_MSG_USER_406));

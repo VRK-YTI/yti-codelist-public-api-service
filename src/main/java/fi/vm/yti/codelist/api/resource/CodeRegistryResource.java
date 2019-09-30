@@ -516,7 +516,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
                                                   @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand), pretty));
-        final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+        final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeString(codeCodeValue));
         if (code != null) {
             return Response.ok(code).build();
         }
