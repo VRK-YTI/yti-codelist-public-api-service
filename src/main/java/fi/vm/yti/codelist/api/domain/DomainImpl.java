@@ -245,14 +245,18 @@ public class DomainImpl implements Domain {
 
         if (searchCodes && searchTerm != null) {
             final Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = getCodeSchemesMatchingCodes(searchTerm, searchResultWithMetaData);
-            codeSchemeUuids.addAll(deepSearchHits.keySet());
-            codeSchemeUuidsWithDeepHitsCodes.addAll(deepSearchHits.keySet());
+            if (deepSearchHits != null) {
+                codeSchemeUuids.addAll(deepSearchHits.keySet());
+                codeSchemeUuidsWithDeepHitsCodes.addAll(deepSearchHits.keySet());
+            }
         }
 
         if (searchExtensions && searchTerm != null) {
-            Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = getCodeSchemesMatchingExtensions(searchTerm, extensionPropertyType, searchResultWithMetaData);
-            codeSchemeUuids.addAll(deepSearchHits.keySet());
-            codeSchemeUuidsWithDeepHitsExtensions.addAll(deepSearchHits.keySet());
+            final Map<String, List<DeepSearchHitListDTO<?>>> deepSearchHits = getCodeSchemesMatchingExtensions(searchTerm, extensionPropertyType, searchResultWithMetaData);
+            if (deepSearchHits != null) {
+                codeSchemeUuids.addAll(deepSearchHits.keySet());
+                codeSchemeUuidsWithDeepHitsExtensions.addAll(deepSearchHits.keySet());
+            }
         }
 
         final Set<CodeSchemeDTO> codeSchemes = new LinkedHashSet<>();
@@ -1047,7 +1051,7 @@ public class DomainImpl implements Domain {
 
     public Set<ResourceDTO> getResources(final Integer pageSize,
                                          final Integer from,
-                                         final String codeSchemeUri,
+                                         final String containerUri,
                                          final String language,
                                          final List<String> statuses,
                                          final String searchTerm,
@@ -1061,7 +1065,9 @@ public class DomainImpl implements Domain {
             final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
             final Date after = meta.getAfter();
             final BoolQueryBuilder builder = constructAndOrQueryForPrefLabelAndCodeValue(searchTerm, after);
-            builder.must(matchQuery("codeScheme.uri", codeSchemeUri.toLowerCase()).analyzer(TEXT_ANALYZER));
+            if (containerUri != null && !containerUri.isEmpty()) {
+                builder.must(matchQuery("codeScheme.uri", containerUri.toLowerCase()).analyzer(TEXT_ANALYZER));
+            }
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }
