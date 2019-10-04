@@ -128,18 +128,23 @@ public class IntegrationResource extends AbstractBaseResource {
                                  @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
                                  @Parameter(description = "Status enumerations in CSL format.", in = ParameterIn.QUERY) @QueryParam("status") final String status,
                                  @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
-                                 @Parameter(description = "Container URI.", required = true , in = ParameterIn.QUERY) @QueryParam("container") final String codeSchemeUri,
+                                 @Parameter(description = "Container URI.", in = ParameterIn.QUERY) @QueryParam("container") final String containerUri,
                                  @Parameter(description = "Search term used to filter results based on partial prefLabel or codeValue match.", in = ParameterIn.QUERY) @QueryParam("searchTerm") final String searchTerm,
                                  @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-        final URI resolveUri = parseUriFromString(codeSchemeUri);
-        ensureSuomiFiUriHost(resolveUri.getHost());
+        if (containerUri != null) {
+            final URI resolveUri = parseUriFromString(containerUri);
+            ensureSuomiFiUriHost(resolveUri.getHost());
+        }
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), pretty));
         final List<String> statusList = parseStatus(status);
         final Meta meta = new Meta(200, pageSize, from, after);
-        final Set<ResourceDTO> resources = domain.getResources(pageSize, from, codeSchemeUri, language, statusList, searchTerm, null, meta);
+        final Set<ResourceDTO> resources = domain.getResources(pageSize, from, containerUri, language, statusList, searchTerm, null, meta);
         meta.setResultCount(resources.size());
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-            meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&container=" + codeSchemeUri);
+            if (containerUri != null) {
+                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&container=" + containerUri);
+            }
+            meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&container=" + containerUri);
         }
         final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
         wrapper.setResults(resources);
@@ -155,8 +160,10 @@ public class IntegrationResource extends AbstractBaseResource {
     public Response getResources(@Parameter(description = "Integration resource request parameters as JSON payload.") @RequestBody final String integrationRequestData) {
         final IntegrationResourceRequestDTO request = parseIntegrationRequestDto(integrationRequestData);
         final String container = request.getContainer();
-        final URI containerUri = parseUriFromString(container);
-        ensureSuomiFiUriHost(containerUri.getHost());
+        if (container != null) {
+            final URI containerUri = parseUriFromString(container);
+            ensureSuomiFiUriHost(containerUri.getHost());
+        }
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), request.getPretty()));
         final List<String> statusList = request.getStatus();
         final List<String> filter = request.getFilter();
