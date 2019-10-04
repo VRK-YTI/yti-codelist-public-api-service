@@ -9,22 +9,20 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.cfg.ObjectWriterInjector;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.api.exception.NotFoundException;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_CODE;
 
 @Component
 @Path("/v1/codes")
-@Api(value = "codes")
 @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
 public class CodeResource extends AbstractBaseResource {
 
@@ -37,13 +35,13 @@ public class CodeResource extends AbstractBaseResource {
 
     @GET
     @Path("{codeId}")
-    @ApiOperation(value = "Return one specific Code.", response = CodeDTO.class)
-    @ApiResponse(code = 200, message = "Returns one specific Code in JSON format.")
+    @Operation(description = "Return one specific Code.")
+    @ApiResponse(responseCode = "200", description = "Returns one specific Code in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getCode(@ApiParam(value = "Code Id.", required = true) @PathParam("codeId") final String codeId,
-                            @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
-                            @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand), pretty));
+    public Response getCode(@Parameter(description = "Code Id.", in = ParameterIn.PATH, required = true) @PathParam("codeId") final String codeId,
+                            @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
+                            @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
+        ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand), pretty));
         final CodeDTO code = domain.getCode(codeId);
         if (code != null) {
             return Response.ok(code).build();

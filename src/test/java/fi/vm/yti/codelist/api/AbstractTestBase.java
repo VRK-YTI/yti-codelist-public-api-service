@@ -185,7 +185,6 @@ abstract public class AbstractTestBase {
 
     private ObjectMapper createObjectMapper() {
         final ObjectMapper mapper = new ObjectMapper();
-        mapper.setFilterProvider(new SimpleFilterProvider().setFailOnUnknownId(false));
         mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
         mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);

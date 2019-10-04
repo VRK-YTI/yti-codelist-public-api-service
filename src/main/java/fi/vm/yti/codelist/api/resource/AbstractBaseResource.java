@@ -14,6 +14,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 
 import org.apache.poi.ss.usermodel.Workbook;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.cfg.EndpointConfigBase;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.cfg.ObjectWriterModifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -23,8 +25,6 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
-import com.fasterxml.jackson.jaxrs.cfg.EndpointConfigBase;
-import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterModifier;
 
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
@@ -58,8 +58,7 @@ abstract class AbstractBaseResource {
         return createSimpleFilterProvider(baseFilters, expand);
     }
 
-    private SimpleFilterProvider createSimpleFilterProvider(final List<String> baseFilters,
-                                                            final String expand) {
+    private SimpleFilterProvider createBaseFilterProvider() {
         final SimpleFilterProvider filterProvider = new SimpleFilterProvider();
         filterProvider.addFilter(FILTER_NAME_CODEREGISTRY, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI, FIELD_NAME_URL));
         filterProvider.addFilter(FILTER_NAME_CODESCHEME, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI, FIELD_NAME_URL));
@@ -72,14 +71,21 @@ abstract class AbstractBaseResource {
         filterProvider.addFilter(FILTER_NAME_MEMBER, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI, FIELD_NAME_URL));
         filterProvider.addFilter(FILTER_NAME_VALUETYPE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_URI, FIELD_NAME_URL));
         filterProvider.addFilter(FILTER_NAME_MEMBERVALUE, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_ID));
+        filterProvider.addFilter(FILTER_NAME_SEARCHHIT, SimpleBeanPropertyFilter.filterOutAllExcept(FIELD_NAME_ID));
+        return filterProvider;
+    }
+
+    private SimpleFilterProvider createSimpleFilterProvider(final List<String> baseFilters,
+                                                            final String expand) {
+        final SimpleFilterProvider filterProvider = createBaseFilterProvider();
         filterProvider.setFailOnUnknownId(false);
         for (final String baseFilter : baseFilters) {
-            filterProvider.removeFilter(baseFilter);
+            filterProvider.removeFilter(baseFilter.trim());
         }
         if (expand != null && !expand.isEmpty()) {
             final String[] filterOptions = expand.split(",");
             for (final String filter : filterOptions) {
-                filterProvider.removeFilter(filter);
+                filterProvider.removeFilter(filter.trim());
             }
         }
         return filterProvider;
@@ -94,16 +100,6 @@ abstract class AbstractBaseResource {
             }
         }
         return new ArrayList<>(statusSet);
-    }
-
-    Set<String> parseUri(final String uriCsl) {
-        final Set<String> uriSet = new HashSet<>();
-        if (uriCsl != null) {
-            for (final String uri : uriCsl.split(",")) {
-                uriSet.add(uri);
-            }
-        }
-        return uriSet;
     }
 
     List<String> parseInfoDomains(final String infoDomainCsl) {

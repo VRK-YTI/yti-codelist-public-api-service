@@ -13,9 +13,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.poi.ss.usermodel.Workbook;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.cfg.ObjectWriterInjector;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
@@ -24,15 +23,14 @@ import fi.vm.yti.codelist.api.export.ExternalReferenceExporter;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ExternalReferenceDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 @Path("/v1/externalreferences")
-@Api(value = "externalreferences")
 @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
 public class ExternalReferenceResource extends AbstractBaseResource {
 
@@ -47,18 +45,18 @@ public class ExternalReferenceResource extends AbstractBaseResource {
     }
 
     @GET
-    @ApiOperation(value = "Return a list of available ExternalReferences.", response = ExternalReferenceDTO.class, responseContainer = "List")
-    @ApiResponse(code = 200, message = "Returns all ExternalReferences in specified format.")
+    @Operation(description = "Return a list of available ExternalReferences.")
+    @ApiResponse(responseCode = "200", description = "Returns all ExternalReferences in specified format.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
-    public Response getExternalReferences(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
-                                          @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                          @ApiParam(value = "ExternalReference name as string value.") @QueryParam("name") final String name,
-                                          @ApiParam(value = "CodeScheme id.") @QueryParam("codeSchemeId") final String codeSchemeId,
-                                          @ApiParam(value = "Return all links from the system.") @QueryParam("all") @DefaultValue("false") final Boolean all,
-                                          @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
-                                          @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                          @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
-                                          @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
+    public Response getExternalReferences(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
+                                          @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
+                                          @Parameter(description = "ExternalReference name as string value.", in = ParameterIn.QUERY) @QueryParam("name") final String name,
+                                          @Parameter(description = "CodeScheme id.", in = ParameterIn.QUERY) @QueryParam("codeSchemeId") final String codeSchemeId,
+                                          @Parameter(description = "Return all links from the system.", in = ParameterIn.QUERY) @QueryParam("all") @DefaultValue("false") final Boolean all,
+                                          @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
+                                          @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                          @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
+                                          @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         CodeSchemeDTO codeScheme = null;
         if (codeSchemeId != null && !codeSchemeId.isEmpty()) {
             codeScheme = domain.getCodeScheme(codeSchemeId);
@@ -76,7 +74,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
             return streamExcelExternalReferencesOutput(workbook);
         } else {
             final Meta meta = new Meta(200, pageSize, from, after);
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand), pretty));
+            ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand), pretty));
             final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, all, meta.getAfter(), meta);
             meta.setResultCount(externalReferences.size());
             final ResponseWrapper<ExternalReferenceDTO> wrapper = new ResponseWrapper<>();
@@ -88,13 +86,13 @@ public class ExternalReferenceResource extends AbstractBaseResource {
 
     @GET
     @Path("{externalReferenceId}")
-    @ApiOperation(value = "Return one specific ExternalReference.", response = ExternalReferenceDTO.class)
-    @ApiResponse(code = 200, message = "Returns one specific ExternalReference in JSON format.")
+    @Operation(description = "Return one specific ExternalReference.")
+    @ApiResponse(responseCode = "200", description = "Returns one specific ExternalReference in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getExternalReference(@ApiParam(value = "ExternalReference CodeValue.", required = true) @PathParam("externalReferenceId") final String externalReferenceId,
-                                         @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
-                                         @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand), pretty));
+    public Response getExternalReference(@Parameter(description = "ExternalReference CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("externalReferenceId") final String externalReferenceId,
+                                         @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
+                                         @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
+        ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand), pretty));
         final ExternalReferenceDTO externalReference = domain.getExternalReference(externalReferenceId);
         if (externalReference != null) {
             return Response.ok(externalReference).build();

@@ -13,26 +13,23 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.poi.ss.usermodel.Workbook;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.cfg.ObjectWriterInjector;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
 import fi.vm.yti.codelist.api.exception.NotFoundException;
 import fi.vm.yti.codelist.api.export.MemberExporter;
-import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.MemberDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 @Path("/v1/members")
-@Api(value = "members")
 @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
 public class MemberResource extends AbstractBaseResource {
 
@@ -47,15 +44,15 @@ public class MemberResource extends AbstractBaseResource {
     }
 
     @GET
-    @ApiOperation(value = "Return list of available Members.", response = CodeSchemeDTO.class, responseContainer = "List")
-    @ApiResponse(code = 200, message = "Returns all Members in specified format.")
+    @Operation(description = "Return list of available Members.")
+    @ApiResponse(responseCode = "200", description = "Returns all Members in specified format.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN })
-    public Response getMembers(@ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
-                               @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                               @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
-                               @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                               @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
-                               @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
+    public Response getMembers(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
+                               @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
+                               @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
+                               @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                               @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
+                               @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
             final Set<MemberDTO> members = domain.getMembers(pageSize, from, Meta.parseAfterFromString(after), null);
             final String csv = memberExporter.createCsv(null, members);
@@ -66,7 +63,7 @@ public class MemberResource extends AbstractBaseResource {
             return streamExcelMembersOutput(workbook);
         } else {
             final Meta meta = new Meta(200, pageSize, from, after);
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand), pretty));
+            ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand), pretty));
             final Set<MemberDTO> members = domain.getMembers(pageSize, from, meta.getAfter(), meta);
             meta.setResultCount(members.size());
             final ResponseWrapper<MemberDTO> wrapper = new ResponseWrapper<>();
@@ -78,14 +75,14 @@ public class MemberResource extends AbstractBaseResource {
 
     @GET
     @Path("{memberId}")
-    @ApiOperation(value = "Return one specific Member.", response = CodeSchemeDTO.class)
-    @ApiResponse(code = 200, message = "Returns one specific Member in JSON format.")
+    @Operation(description = "Return one specific Member.")
+    @ApiResponse(responseCode = "200", description = "Returns one specific Member in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getMember(@ApiParam(value = "Member UUID or sequenceId depending on the context of the call.", required = true) @PathParam("memberId") final String memberId,
-                              @ApiParam(value = "Member's extension's codeValue", required = true) @QueryParam("extensionCodeValue") final String extensionCodeValue,
-                              @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
-                              @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand), pretty));
+    public Response getMember(@Parameter(description = "Member UUID or sequenceId depending on the context of the call.", in = ParameterIn.PATH, required = true) @PathParam("memberId") final String memberId,
+                              @Parameter(description = "Member's extension's codeValue", required = true , in = ParameterIn.QUERY) @QueryParam("extensionCodeValue") final String extensionCodeValue,
+                              @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
+                              @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
+        ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand), pretty));
         final MemberDTO member = domain.getMember(memberId, extensionCodeValue);
         if (member != null) {
             return Response.ok(member).build();

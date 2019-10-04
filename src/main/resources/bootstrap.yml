@@ -2,6 +2,6 @@ spring:
   cloud:
     config:
       failFast: false
-      uri: ${config_server_uri:file:../yti-config/yti-codelist-public-api-service.yml}
+      uri: ${config_server_uri:file:../yti-compose/config/yti-codelist-public-api-service.yml}
   application:
     name: yti-codelist-public-api-service

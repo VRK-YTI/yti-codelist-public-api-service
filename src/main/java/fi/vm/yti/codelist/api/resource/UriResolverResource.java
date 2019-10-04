@@ -35,15 +35,14 @@ import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.MemberDTO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @Component
 @Path("/v1/uris")
-@Api(value = "uris")
 @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
 public class UriResolverResource extends AbstractBaseResource {
 
@@ -64,10 +63,10 @@ public class UriResolverResource extends AbstractBaseResource {
 
     @GET
     @Path("resolve")
-    @ApiOperation(value = "Resolve URI resource.", response = String.class)
-    @ApiResponse(code = 200, message = "Resolves the API url for the given codelist resource URI.")
+    @Operation(description = "Resolve URI resource.")
+    @ApiResponse(responseCode = "200", description = "Resolves the API url for the given codelist resource URI.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN })
-    public Response resolveUri(@ApiParam(value = "Resource URI.", required = true) @QueryParam("uri") final String uri) {
+    public Response resolveUri(@Parameter(description = "Resource URI.", required = true , in = ParameterIn.QUERY) @QueryParam("uri") final String uri) {
         final URI resolveUri = parseUriFromString(uri);
         ensureSuomiFiUriHost(resolveUri.getHost());
         final String uriPath = resolveUri.getPath();
@@ -85,14 +84,18 @@ public class UriResolverResource extends AbstractBaseResource {
 
     @GET
     @Path("redirect")
-    @ApiOperation(value = "Redirect URI resource.")
+    @Operation(description = "Redirect URI resource.")
     @Consumes({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
     @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-    @ApiResponses(value = { @ApiResponse(code = 303, message = "Does a redirect from codelist resource URI to codelist API."), @ApiResponse(code = 406, message = "Resource not found."), @ApiResponse(code = 406, message = "Cannot redirect to given URI.") })
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "303", description = "Does a redirect from codelist resource URI to codelist API."),
+        @ApiResponse(responseCode = "406", description = "Resource not found."),
+        @ApiResponse(responseCode = "406", description = "Cannot redirect to given URI.")
+    })
     public Response redirectUri(@HeaderParam("Accept") String accept,
-                                @ApiParam(value = "Format for returning content.") @QueryParam("format") final String format,
-                                @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
-                                @ApiParam(value = "Resource URI.", required = true) @QueryParam("uri") final String uri) {
+                                @Parameter(description = "Format for returning content.", in = ParameterIn.QUERY) @QueryParam("format") final String format,
+                                @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
+                                @Parameter(description = "Resource URI.", required = true , in = ParameterIn.QUERY) @QueryParam("uri") final String uri) {
         final URI resolveUri = parseUriFromString(uri);
         ensureSuomiFiUriHost(resolveUri.getHost());
         final String uriPath = resolveUri.getPath();

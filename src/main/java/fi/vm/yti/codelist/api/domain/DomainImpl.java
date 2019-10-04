@@ -33,7 +33,7 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -75,8 +75,8 @@ public class DomainImpl implements Domain {
     private final LuceneQueryFactory luceneQueryFactory;
 
     @Inject
-    private DomainImpl(final RestHighLevelClient client) {
-        this.client = client;
+    private DomainImpl(final RestHighLevelClient elasticSearchRestHighLevelClient) {
+        this.client = elasticSearchRestHighLevelClient;
         this.luceneQueryFactory = new LuceneQueryFactory();
         this.deepCodeQueryFactory = new DeepCodeQueryFactory(new ObjectMapper(), this, luceneQueryFactory);
         this.deepExtensionQueryFactory = new DeepExtensionQueryFactory(new ObjectMapper(), this, luceneQueryFactory);
@@ -215,7 +215,7 @@ public class DomainImpl implements Domain {
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes(final String language) {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, null, false,null, null, null, null, language, null, false, false, null, null, null, null, null);
+        return getCodeSchemes(MAX_SIZE, 0, null, null, null, false, null, null, null, null, language, null, false, false, null, null, null, null, null);
     }
 
     public Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
@@ -278,7 +278,7 @@ public class DomainImpl implements Domain {
                 builder.must(luceneQueryFactory.buildPrefixSuffixQuery(codeSchemePrefLabel).field("prefLabel.*"));
             }
             if (after != null) {
-                final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
+                final StdDateFormat dateFormat = new StdDateFormat();
                 final String afterString = dateFormat.format(after);
                 builder.must(rangeQuery("modified").gt(afterString));
             }
@@ -984,7 +984,7 @@ public class DomainImpl implements Domain {
             final Date after = meta.getAfter();
             final BoolQueryBuilder builder = constructSearchQuery(null, searchTerm, after);
             if (after != null) {
-                final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
+                final StdDateFormat dateFormat = new StdDateFormat();
                 final String afterString = dateFormat.format(after);
                 builder.must(rangeQuery("modified").gt(afterString));
             }
@@ -1021,7 +1021,7 @@ public class DomainImpl implements Domain {
                 boolQueryBuilder.minimumShouldMatch(1);
                 builder.must(boolQueryBuilder);
             }
-            final String[] includeFields = new String[] { "id", "codeValue", "prefLabel", "description", "modified", "status", "uri", "organizations" };
+            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "status", "uri", "organizations" };
             searchBuilder.fetchSource(includeFields, null);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
@@ -1052,7 +1052,6 @@ public class DomainImpl implements Domain {
                                          final List<String> statuses,
                                          final String searchTerm,
                                          final Set<String> excludedResourceUris,
-                                         final List<String> includeIncompleteFrom,
                                          final Meta meta) {
         validatePageSize(pageSize);
         final Set<ResourceDTO> resources = new LinkedHashSet<>();
@@ -1071,11 +1070,11 @@ public class DomainImpl implements Domain {
             }
             addLanguagePrefLabelSort(language, "codeValue.raw", "order", searchBuilder);
             if (after != null) {
-                final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
+                final StdDateFormat dateFormat = new StdDateFormat();
                 final String afterString = dateFormat.format(after);
                 builder.must(rangeQuery("modified").gt(afterString));
             }
-            final String[] includeFields = new String[] { "id", "codeValue", "prefLabel", "description", "modified", "status", "uri" };
+            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "status", "uri" };
             searchBuilder.fetchSource(includeFields, null);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
@@ -1112,7 +1111,7 @@ public class DomainImpl implements Domain {
             builder.must(luceneQueryFactory.buildPrefixSuffixQuery(prefLabel).field("prefLabel.*"));
         }
         if (after != null) {
-            final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
+            final StdDateFormat dateFormat = new StdDateFormat();
             final String afterString = dateFormat.format(after);
             builder.must(rangeQuery("modified").gt(afterString));
         }
@@ -1128,7 +1127,7 @@ public class DomainImpl implements Domain {
             builder.minimumShouldMatch(1);
         }
         if (after != null) {
-            final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
+            final StdDateFormat dateFormat = new StdDateFormat();
             final String afterString = dateFormat.format(after);
             builder.must(rangeQuery("modified").gt(afterString));
         }

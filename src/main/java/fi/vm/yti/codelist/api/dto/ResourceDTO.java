@@ -2,7 +2,6 @@ package fi.vm.yti.codelist.api.dto;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -17,13 +16,12 @@ import com.fasterxml.jackson.annotation.JsonView;
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.Views;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @JsonFilter("resource")
 @XmlRootElement
 @XmlType(propOrder = { "uri", "prefLabel", "localName", "description", "status", "modified" })
-@ApiModel(value = "Resource", description = "Resource DTO that represents data for one single container or resource for integration use.")
+@Schema(name = "Resource", description = "Resource DTO that represents data for one single container or resource for integration use.")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ResourceDTO implements Serializable {
@@ -93,6 +91,7 @@ public class ResourceDTO implements Serializable {
     public void setLocalName(final String localName) {
         this.localName = localName;
     }
+
     public String getStatus() {
         return status;
     }
@@ -101,7 +100,7 @@ public class ResourceDTO implements Serializable {
         this.status = status;
     }
 
-    @ApiModelProperty(dataType = "dateTime")
+    @Schema(format = "dateTime")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
     @JsonView(Views.Normal.class)
     public Date getModified() {

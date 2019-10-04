@@ -7,13 +7,11 @@ import javax.ws.rs.Produces;
 import org.springframework.stereotype.Component;
 
 import fi.vm.yti.codelist.api.configuration.VersionInformation;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @Component
 @Path("/version")
-@Api(value = "version")
 @Produces("text/plain")
 public class VersionResource extends AbstractBaseResource {
 
@@ -24,8 +22,8 @@ public class VersionResource extends AbstractBaseResource {
     }
 
     @GET
-    @ApiOperation(value = "Get version information", response = String.class)
-    @ApiResponse(code = 200, message = "Returns the version of the running Public API Service application.")
+    @Operation(description = "Get version information")
+    @ApiResponse(responseCode = "200", description = "Returns the version of the running Public API Service application.")
     public String getVersionInformation() {
         return "\n" +
             "          __  .__                      ___.   .__  .__        \n" +

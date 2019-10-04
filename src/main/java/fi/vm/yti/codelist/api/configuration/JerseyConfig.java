@@ -1,12 +1,10 @@
 package fi.vm.yti.codelist.api.configuration;
 
 import javax.ws.rs.ApplicationPath;
-import javax.ws.rs.core.MediaType;
 
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import fi.vm.yti.codelist.api.exception.exceptionmapping.YtiCodeListExceptionMapper;
 import fi.vm.yti.codelist.api.filter.CacheFilter;
@@ -20,19 +18,19 @@ import fi.vm.yti.codelist.api.resource.IntegrationResource;
 import fi.vm.yti.codelist.api.resource.MemberResource;
 import fi.vm.yti.codelist.api.resource.PingResource;
 import fi.vm.yti.codelist.api.resource.PropertyTypeResource;
-import fi.vm.yti.codelist.api.resource.SwaggerResource;
 import fi.vm.yti.codelist.api.resource.UriResolverResource;
 import fi.vm.yti.codelist.api.resource.ValueTypeResource;
 import fi.vm.yti.codelist.api.resource.VersionResource;
 import fi.vm.yti.codelist.common.constants.ApiConstants;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.Contact;
-import io.swagger.annotations.Info;
-import io.swagger.annotations.License;
-import io.swagger.annotations.SwaggerDefinition;
+import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.info.Contact;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.info.License;
+import io.swagger.v3.oas.annotations.servers.Server;
 
 @Component
-@SwaggerDefinition(
+@OpenAPIDefinition(
     info = @Info(
         description = "YTI Codelist Service - Public API Service - Spring Boot microservice.",
         version = ApiConstants.API_VERSION,
@@ -48,20 +46,18 @@ import io.swagger.annotations.SwaggerDefinition;
             url = "https://opensource.org/licenses/EUPL-1.1"
         )
     ),
-    host = "localhost:9601",
-    basePath = ApiConstants.API_CONTEXT_PATH_RESTAPI + ApiConstants.API_BASE_PATH,
-    consumes = { MediaType.APPLICATION_JSON },
-    produces = { MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN, "application/csv", "application/xls", "application/xlsx" },
-    schemes = { SwaggerDefinition.Scheme.HTTPS }
+    servers = {
+        @Server(
+            description = "Codelist Public API Service",
+            url = "/codelist-api")
+    }
 )
-@Api(value = ApiConstants.API_BASE_PATH)
 @ApplicationPath(ApiConstants.API_BASE_PATH)
 public class JerseyConfig extends ResourceConfig {
 
     public JerseyConfig() {
         final JacksonJaxbJsonProvider provider = new JacksonJaxbJsonProvider();
-        CustomObjectMapper cm = new CustomObjectMapper();
-        provider.setMapper(cm);
+        provider.setMapper(new CustomObjectMapper());
 
         // ExceptionMappers
         register(YtiCodeListExceptionMapper.class);
@@ -75,14 +71,16 @@ public class JerseyConfig extends ResourceConfig {
         // Logging
         register(RequestLoggingFilter.class);
 
-        // Health.
+        // Health
         register(PingResource.class);
 
         // Generic resources.
         register(VersionResource.class);
-        register(SwaggerResource.class);
 
-        // API: Generic Register resources.
+        // Swagger
+        register(OpenApiResource.class);
+
+        // API: Generic Register resources
         register(CodeRegistryResource.class);
         register(CodeSchemeResource.class);
         register(PropertyTypeResource.class);

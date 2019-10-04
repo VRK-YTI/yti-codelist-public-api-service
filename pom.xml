@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>1.5.21.RELEASE</version>
+        <version>2.1.8.RELEASE</version>
         <relativePath/>
     </parent>
 
@@ -30,7 +30,7 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>Dalston.RELEASE</version>
+                <version>Greenwich.RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -65,6 +65,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
         </dependency>
 
         <!-- Apache Commons NET -->
@@ -140,6 +145,11 @@
         <!-- Spring Cloud -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-config</artifactId>
         </dependency>
 
@@ -149,18 +159,30 @@
             <artifactId>spring-cloud-starter-sleuth</artifactId>
         </dependency>
 
+        <!-- Google Guava -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>28.1-jre</version>
+        </dependency>
+
+        <!-- Jackson mapping needs this with LocalDate -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
         <!-- Swagger -->
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-core</artifactId>
-            <scope>compile</scope>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-jaxrs2</artifactId>
             <version>${swagger.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.ws.rs</groupId>
-                    <artifactId>jsr311-api</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-jaxrs2-servlet-initializer</artifactId>
+            <version>${swagger.version}</version>
         </dependency>
 
         <!-- FindBugs Annotations -->
@@ -175,19 +197,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
         </dependency>
-
-        <!-- Jackson mapping needs this with LocalDate -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>RELEASE</version>
-            <scope>compile</scope>
-        </dependency>
-
 
     </dependencies>
 
@@ -282,31 +291,7 @@
                 </configuration>
             </plugin>
 
-            <!-- Swagger generation plugin -->
-            <plugin>
-                <groupId>com.github.kongchen</groupId>
-                <artifactId>swagger-maven-plugin</artifactId>
-                <version>${swagger-maven-plugin.version}</version>
-                <configuration>
-                    <apiSources>
-                        <apiSource>
-                            <springmvc>false</springmvc>
-                            <locations>fi.vm.yti.codelist.api</locations>
-                            <swaggerDirectory>${project.build.outputDirectory}/swagger/</swaggerDirectory>
-                            <attachSwaggerArtifact>true</attachSwaggerArtifact>
-                        </apiSource>
-                    </apiSources>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
+            <!-- Swagger UI download -->
             <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
                 <artifactId>download-maven-plugin</artifactId>
@@ -327,9 +312,10 @@
                 </executions>
             </plugin>
 
+            <!-- Swagger UI resource copying -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.0.2</version><!--$NO-MVN-MAN-VER$ -->
+                <version>3.0.2</version>
                 <executions>
                     <execution>
                         <id>copy-swagger-resources</id>
@@ -352,6 +338,7 @@
                 </executions>
             </plugin>
 
+            <!-- Swagger UI spec path changes to index.html file -->
             <plugin>
                 <groupId>com.google.code.maven-replacer-plugin</groupId>
                 <artifactId>replacer</artifactId>
@@ -368,8 +355,8 @@
                     <file>${project.build.directory}/classes/static/swagger/index.html</file>
                     <replacements>
                         <replacement>
-                            <token>url: "http://petstore.swagger.io/v2/swagger.json"</token>
-                            <value>urls: [{url: "/codelist-api/api/swagger.json", name: "Codelist Public API"},{url: "/codelist-intake/api/swagger.json", name: "Codelist Intake API"}],
+                            <token>url: "https://petstore.swagger.io/v2/swagger.json"</token>
+                            <value>urls: [{url: "/codelist-api/api/openapi.yaml", name: "Codelist Public API"},{url: "/codelist-intake/api/openapi.yaml", name: "Codelist Intake API"}],
                                 validatorUrl: null
                             </value>
                         </replacement>
@@ -377,6 +364,7 @@
                 </configuration>
             </plugin>
 
+            <!-- Integration testing -->
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
@@ -498,11 +486,8 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
-
     </build>
-
 
     <properties>
         <java.version>1.8</java.version>
@@ -511,10 +496,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spotify-docker.version>1.1.1</spotify-docker.version>
         <elastic.version>6.5.4</elastic.version>
-        <swagger.version>1.5.18</swagger.version>
-        <swagger-ui.version>3.1.6</swagger-ui.version>
-        <swagger-maven-plugin.version>3.1.6</swagger-maven-plugin.version>
-        <apache.poi.version>3.17</apache.poi.version>
+        <swagger.version>2.0.9</swagger.version>
+        <swagger-ui.version>3.23.11</swagger-ui.version>
+        <apache.poi.version>4.1.0</apache.poi.version>
     </properties>
 
 </project>

@@ -21,17 +21,6 @@ public class ApiUtils {
         this.frontendProperties = frontendProperties;
     }
 
-    public String getPublicApiServiceHostname() {
-        final StringBuilder builder = new StringBuilder();
-        final String port = publicApiServiceProperties.getPort();
-        builder.append(publicApiServiceProperties.getHost());
-        if (port != null && port.length() > 0) {
-            builder.append(":");
-            builder.append(port);
-        }
-        return builder.toString();
-    }
-
     public String createNextPageUrl(final String apiVersion,
                                     final String apiPath,
                                     final String after,

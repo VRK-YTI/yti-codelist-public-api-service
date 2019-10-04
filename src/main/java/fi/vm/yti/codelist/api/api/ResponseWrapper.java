@@ -6,8 +6,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 import fi.vm.yti.codelist.common.dto.Meta;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @XmlRootElement
+@Schema(name = "ResponseWrapper", description = "Response wrapper for DTO objects returned from list APIs.")
 @XmlType(propOrder = { "meta", "results" })
 public class ResponseWrapper<T> {
 

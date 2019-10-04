@@ -14,9 +14,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.poi.ss.usermodel.Workbook;
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.cfg.ObjectWriterInjector;
 import org.springframework.stereotype.Component;
-
-import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
 import fi.vm.yti.codelist.api.domain.Domain;
@@ -24,16 +23,15 @@ import fi.vm.yti.codelist.api.exception.NotFoundException;
 import fi.vm.yti.codelist.api.export.CodeSchemeExporter;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
 import fi.vm.yti.codelist.common.dto.Meta;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.util.Arrays.asList;
 
 @Component
 @Path("/v1/codeschemes")
-@Api(value = "codeschemes")
 @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
 public class CodeSchemeResource extends AbstractBaseResource {
 
@@ -48,30 +46,30 @@ public class CodeSchemeResource extends AbstractBaseResource {
     }
 
     @GET
-    @ApiOperation(value = "Return list of available CodeSchemes.", response = CodeSchemeDTO.class, responseContainer = "List")
-    @ApiResponse(code = 200, message = "Returns all CodeSchemes in specified format.")
+    @Operation(description = "Return list of available CodeSchemes.")
+    @ApiResponse(responseCode = "200", description = "Returns all CodeSchemes in specified format.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN })
-    public Response getCodeSchemes(@ApiParam(value = "CodeRegistry CodeValue.") @QueryParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
-                                   @ApiParam(value = "CodeRegistry Name.") @QueryParam("codeRegistryName") final String codeRegistryPrefLabel,
-                                   @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
-                                   @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                   @ApiParam(value = "Service information domain classifications in CSL format.") @QueryParam("infoDomain") final String infoDomain,
-                                   @ApiParam(value = "CodeScheme codeValue as string value.") @QueryParam("codeValue") final String codeSchemeCodeValue,
-                                   @ApiParam(value = "CodeScheme PrefLabel as string value.") @QueryParam("prefLabel") final String codeSchemePrefLabel,
-                                   @ApiParam(value = "Language code for sorting results.") @QueryParam("language") @DefaultValue("fi") final String language,
-                                   @ApiParam(value = "Search term for matching codeValue and prefLabel.") @QueryParam("searchTerm") final String searchTerm,
-                                   @ApiParam(value = "Boolean that controls is search also matches codes' codeValues and prefLabels inside CodeSchemes.") @QueryParam("searchCodes") @DefaultValue("false") final Boolean searchCodes,
-                                   @ApiParam(value = "Boolean that controls is search also matches extensions' codeValues and prefLabels inside CodeSchemes.") @QueryParam("searchExtensions") @DefaultValue("false") final Boolean searchExtensions,
-                                   @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
-                                   @ApiParam(value = "Extension PropertyType localName as string value for searching.") @QueryParam("extensionPropertyType") final String extensionPropertyType,
-                                   @ApiParam(value = "Format for content.") @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
-                                   @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                   @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
-                                   @ApiParam(value = "Sort mode for response values.") @QueryParam("sortMode") @DefaultValue("default") final String sortMode,
-                                   @ApiParam(value = "Organizations filtering parameter, results will be codeschemes belonging to these organizations") @QueryParam("organizations") final String organizationsCsv,
-                                   @ApiParam(value = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv,
-                                   @ApiParam(value = "Include INCOMPLETE statused code schemes.") @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
-                                   @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
+    public Response getCodeSchemes(@Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.QUERY) @QueryParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
+                                   @Parameter(description = "CodeRegistry Name.", in = ParameterIn.QUERY) @QueryParam("codeRegistryName") final String codeRegistryPrefLabel,
+                                   @Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
+                                   @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
+                                   @Parameter(description = "Service information domain classifications in CSL format.", in = ParameterIn.QUERY) @QueryParam("infoDomain") final String infoDomain,
+                                   @Parameter(description = "CodeScheme codeValue as string value.", in = ParameterIn.QUERY) @QueryParam("codeValue") final String codeSchemeCodeValue,
+                                   @Parameter(description = "CodeScheme PrefLabel as string value.", in = ParameterIn.QUERY) @QueryParam("prefLabel") final String codeSchemePrefLabel,
+                                   @Parameter(description = "Language code for sorting results.", in = ParameterIn.QUERY) @QueryParam("language") @DefaultValue("fi") final String language,
+                                   @Parameter(description = "Search term for matching codeValue and prefLabel.", in = ParameterIn.QUERY) @QueryParam("searchTerm") final String searchTerm,
+                                   @Parameter(description = "Boolean that controls is search also matches codes' codeValues and prefLabels inside CodeSchemes.", in = ParameterIn.QUERY) @QueryParam("searchCodes") @DefaultValue("false") final Boolean searchCodes,
+                                   @Parameter(description = "Boolean that controls is search also matches extensions' codeValues and prefLabels inside CodeSchemes.", in = ParameterIn.QUERY) @QueryParam("searchExtensions") @DefaultValue("false") final Boolean searchExtensions,
+                                   @Parameter(description = "Status enumerations in CSL format.", in = ParameterIn.QUERY) @QueryParam("status") final String status,
+                                   @Parameter(description = "Extension PropertyType localName as string value for searching.", in = ParameterIn.QUERY) @QueryParam("extensionPropertyType") final String extensionPropertyType,
+                                   @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
+                                   @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                   @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
+                                   @Parameter(description = "Sort mode for response values.", in = ParameterIn.QUERY) @QueryParam("sortMode") @DefaultValue("default") final String sortMode,
+                                   @Parameter(description = "Organizations filtering parameter, results will be codeschemes belonging to these organizations", in = ParameterIn.QUERY) @QueryParam("organizations") final String organizationsCsv,
+                                   @Parameter(description = "User organizations filtering parameter, for filtering unfinished code schemes", in = ParameterIn.QUERY) @QueryParam("userOrganizations") final String userOrganizationsCsv,
+                                   @Parameter(description = "Include INCOMPLETE statused code schemes.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
+                                   @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         final List<String> infoDomainsList = parseInfoDomains(infoDomain);
         final List<String> organizations = organizationsCsv == null ? null : asList(organizationsCsv.toLowerCase().split(","));
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
@@ -86,7 +84,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
             return streamExcelCodeSchemesOutput(workbook);
         } else {
             final Meta meta = new Meta(200, pageSize, from, after);
-            ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand), pretty));
+            ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand), pretty));
             final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, organizations, userOrganizations, includeIncomplete, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, searchExtensions, statusList, infoDomainsList, extensionPropertyType, meta.getAfter(), meta);
             meta.setResultCount(codeSchemes.size());
             final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
@@ -98,13 +96,13 @@ public class CodeSchemeResource extends AbstractBaseResource {
 
     @GET
     @Path("{codeSchemeId}")
-    @ApiOperation(value = "Return one specific CodeScheme.", response = CodeSchemeDTO.class)
-    @ApiResponse(code = 200, message = "Returns one specific CodeScheme in JSON format.")
+    @Operation(description = "Return one specific CodeScheme.")
+    @ApiResponse(responseCode = "200", description = "Returns one specific CodeScheme in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getCodeScheme(@ApiParam(value = "CodeScheme CodeValue.", required = true) @PathParam("codeSchemeId") final String codeSchemeId,
-                                  @ApiParam(value = "Filter string (csl) for expanding specific child resources.") @QueryParam("expand") final String expand,
-                                  @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand), pretty));
+    public Response getCodeScheme(@Parameter(description = "CodeScheme CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeSchemeId") final String codeSchemeId,
+                                  @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
+                                  @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
+        ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand), pretty));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeSchemeId);
         if (codeScheme != null) {
             return Response.ok(codeScheme).build();

@@ -5,9 +5,9 @@ import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
-import org.springframework.boot.context.embedded.jetty.JettyEmbeddedServletContainerFactory;
-import org.springframework.boot.web.servlet.ErrorPage;
+import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
+import org.springframework.boot.web.server.ErrorPage;
+import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -40,8 +40,8 @@ public class SpringAppConfig {
     }
 
     @Bean
-    public EmbeddedServletContainerFactory servletContainer() {
-        final JettyEmbeddedServletContainerFactory factory = new JettyEmbeddedServletContainerFactory();
+    public ConfigurableServletWebServerFactory servletContainer() {
+        final JettyServletWebServerFactory factory = new JettyServletWebServerFactory();
         factory.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/notfound.html"));
         factory.setContextPath(contextPath);
         return factory;

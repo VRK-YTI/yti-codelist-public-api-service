@@ -2,7 +2,6 @@ package fi.vm.yti.codelist.api.resource;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -17,13 +16,13 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.glassfish.jersey.jackson.internal.jackson.jaxrs.cfg.ObjectWriterInjector;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.jaxrs.cfg.ObjectWriterInjector;
 
 import fi.vm.yti.codelist.api.api.ApiUtils;
 import fi.vm.yti.codelist.api.api.ResponseWrapper;
@@ -33,16 +32,15 @@ import fi.vm.yti.codelist.api.dto.ResourceDTO;
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.dto.Meta;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.util.Arrays.asList;
 
 @Component
 @Path("/v1/integration")
-@Api(value = "integration")
 @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
 public class IntegrationResource extends AbstractBaseResource {
 
@@ -58,19 +56,19 @@ public class IntegrationResource extends AbstractBaseResource {
 
     @GET
     @Path("/containers")
-    @ApiOperation(value = "API for fetching container resources")
-    @ApiResponse(code = 200, message = "Returns container resources with meta element that shows details and a results list.")
+    @Operation(description = "API for fetching container resources")
+    @ApiResponse(responseCode = "200", description = "Returns container resources with meta element that shows details and a results list.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getContainers(@ApiParam(value = "Language code for sorting results.") @QueryParam("language") @DefaultValue("fi") final String language,
-                                  @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
-                                  @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                  @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
-                                  @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                  @ApiParam(value = "Search term used to filter results based on partial prefLabel or codeValue match.") @QueryParam("searchTerm") final String searchTerm,
-                                  @ApiParam(value = "User organizations filtering parameter, for filtering incomplete code schemes") @QueryParam("includeIncompleteFrom") final String includeIncompleteFrom,
-                                  @ApiParam(value = "User organizations filtering parameter, for filtering incomplete code schemes") @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
-                                  @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(), pretty));
+    public Response getContainers(@Parameter(description = "Language code for sorting results.", in = ParameterIn.QUERY) @QueryParam("language") @DefaultValue("fi") final String language,
+                                  @Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
+                                  @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
+                                  @Parameter(description = "Status enumerations in CSL format.", in = ParameterIn.QUERY) @QueryParam("status") final String status,
+                                  @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                  @Parameter(description = "Search term used to filter results based on partial prefLabel or codeValue match.", in = ParameterIn.QUERY) @QueryParam("searchTerm") final String searchTerm,
+                                  @Parameter(description = "User organizations filtering parameter, for filtering incomplete code schemes", in = ParameterIn.QUERY) @QueryParam("includeIncompleteFrom") final String includeIncompleteFrom,
+                                  @Parameter(description = "User organizations filtering parameter, for filtering incomplete code schemes", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
+                                  @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
+        ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), pretty));
         final Meta meta = new Meta(200, pageSize, from, after);
         final List<String> statusList = parseStatus(status);
         final List<String> includeIncompleteFromList = includeIncompleteFrom == null ? null : asList(includeIncompleteFrom.toLowerCase().split(","));
@@ -87,12 +85,12 @@ public class IntegrationResource extends AbstractBaseResource {
 
     @POST
     @Path("/containers")
-    @ApiOperation(value = "API for fetching container resources")
-    @ApiResponse(code = 200, message = "Returns container resources with meta element that shows details and a results list.")
+    @Operation(description = "API for fetching container resources")
+    @ApiResponse(responseCode = "200", description = "Returns container resources with meta element that shows details and a results list.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getContainers(@ApiParam(value = "Integration resource request parameters as JSON payload.") @RequestBody final String integrationRequestData) {
+    public Response getContainers(@Parameter(description = "Integration resource request parameters as JSON payload.") @RequestBody final String integrationRequestData) {
         final IntegrationResourceRequestDTO request = parseIntegrationRequestDto(integrationRequestData);
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(), request.getPretty()));
+        ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), request.getPretty()));
         final List<String> statusList = request.getStatus();
         final List<String> filter = request.getFilter();
         final Set<String> excludedUrisSet;
@@ -122,25 +120,23 @@ public class IntegrationResource extends AbstractBaseResource {
 
     @GET
     @Path("/resources")
-    @ApiOperation(value = "API for fetching resources for a container")
-    @ApiResponse(code = 200, message = "Returns resources for a specific container with meta element that shows details and a results list.")
+    @Operation(description = "API for fetching resources for a container")
+    @ApiResponse(responseCode = "200", description = "Returns resources for a specific container with meta element that shows details and a results list.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getResources(@ApiParam(value = "Language code for sorting results.") @QueryParam("language") @DefaultValue("fi") final String language,
-                                 @ApiParam(value = "Pagination parameter for page size.") @QueryParam("pageSize") final Integer pageSize,
-                                 @ApiParam(value = "Pagination parameter for start index.") @QueryParam("from") @DefaultValue("0") final Integer from,
-                                 @ApiParam(value = "Status enumerations in CSL format.") @QueryParam("status") final String status,
-                                 @ApiParam(value = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.") @QueryParam("after") final String after,
-                                 @ApiParam(value = "Container URI.", required = true) @QueryParam("container") final String codeSchemeUri,
-                                 @ApiParam(value = "Search term used to filter results based on partial prefLabel or codeValue match.") @QueryParam("searchTerm") final String searchTerm,
-                                 @ApiParam(value = "User organizations filtering parameter, for filtering incomplete code schemes") @QueryParam("includeIncompleteFrom") final String includeIncompleteFrom,
-                                 @ApiParam(value = "Pretty format JSON output.") @QueryParam("pretty") final String pretty) {
+    public Response getResources(@Parameter(description = "Language code for sorting results.", in = ParameterIn.QUERY) @QueryParam("language") @DefaultValue("fi") final String language,
+                                 @Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
+                                 @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
+                                 @Parameter(description = "Status enumerations in CSL format.", in = ParameterIn.QUERY) @QueryParam("status") final String status,
+                                 @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                 @Parameter(description = "Container URI.", required = true , in = ParameterIn.QUERY) @QueryParam("container") final String codeSchemeUri,
+                                 @Parameter(description = "Search term used to filter results based on partial prefLabel or codeValue match.", in = ParameterIn.QUERY) @QueryParam("searchTerm") final String searchTerm,
+                                 @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         final URI resolveUri = parseUriFromString(codeSchemeUri);
         ensureSuomiFiUriHost(resolveUri.getHost());
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(), pretty));
+        ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), pretty));
         final List<String> statusList = parseStatus(status);
-        final List<String> includeIncompleteFromList = includeIncompleteFrom == null ? null : asList(includeIncompleteFrom.toLowerCase().split(","));
         final Meta meta = new Meta(200, pageSize, from, after);
-        final Set<ResourceDTO> resources = domain.getResources(pageSize, from, codeSchemeUri, language, statusList, searchTerm, null, includeIncompleteFromList, meta);
+        final Set<ResourceDTO> resources = domain.getResources(pageSize, from, codeSchemeUri, language, statusList, searchTerm, null, meta);
         meta.setResultCount(resources.size());
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&container=" + codeSchemeUri);
@@ -153,15 +149,15 @@ public class IntegrationResource extends AbstractBaseResource {
 
     @POST
     @Path("/resources")
-    @ApiOperation(value = "API for fetching resources for a container")
-    @ApiResponse(code = 200, message = "Returns resources for a specific container with meta element that shows details and a results list.")
+    @Operation(description = "API for fetching resources for a container")
+    @ApiResponse(responseCode = "200", description = "Returns resources for a specific container with meta element that shows details and a results list.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getResources(@ApiParam(value = "Integration resource request parameters as JSON payload.") @RequestBody final String integrationRequestData) {
+    public Response getResources(@Parameter(description = "Integration resource request parameters as JSON payload.") @RequestBody final String integrationRequestData) {
         final IntegrationResourceRequestDTO request = parseIntegrationRequestDto(integrationRequestData);
         final String container = request.getContainer();
         final URI containerUri = parseUriFromString(container);
         ensureSuomiFiUriHost(containerUri.getHost());
-        ObjectWriterInjector.set(new AbstractBaseResource.FilterModifier(createSimpleFilterProvider(), request.getPretty()));
+        ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), request.getPretty()));
         final List<String> statusList = request.getStatus();
         final List<String> filter = request.getFilter();
         final Set<String> excludedUrisSet;
@@ -170,14 +166,13 @@ public class IntegrationResource extends AbstractBaseResource {
         } else {
             excludedUrisSet = null;
         }
-        final List<String> includeIncompleteFromList = request.getIncludeIncompleteFrom();
         final Integer pageSize = request.getPageSize();
         final Integer from = request.getPageFrom();
         final String after = request.getAfter();
         final String language = request.getLanguage();
         final String searchTerm = request.getSearchTerm();
         final Meta meta = new Meta(200, pageSize, from, after);
-        final Set<ResourceDTO> resources = domain.getResources(pageSize, from, container, language, statusList, searchTerm, excludedUrisSet, includeIncompleteFromList, meta);
+        final Set<ResourceDTO> resources = domain.getResources(pageSize, from, container, language, statusList, searchTerm, excludedUrisSet, meta);
         meta.setResultCount(resources.size());
         final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
         wrapper.setResults(resources);
