@@ -7,6 +7,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.Encoded;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -66,7 +67,7 @@ public class UriResolverResource extends AbstractBaseResource {
     @Operation(description = "Resolve URI resource.")
     @ApiResponse(responseCode = "200", description = "Resolves the API url for the given codelist resource URI.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN })
-    public Response resolveUri(@Parameter(description = "Resource URI.", required = true , in = ParameterIn.QUERY) @QueryParam("uri") final String uri) {
+    public Response resolveUri(@Parameter(description = "Resource URI.", required = true, in = ParameterIn.QUERY) @QueryParam("uri") final String uri) {
         final URI resolveUri = parseUriFromString(uri);
         ensureSuomiFiUriHost(resolveUri.getHost());
         final String uriPath = resolveUri.getPath();
@@ -95,13 +96,14 @@ public class UriResolverResource extends AbstractBaseResource {
     public Response redirectUri(@HeaderParam("Accept") String accept,
                                 @Parameter(description = "Format for returning content.", in = ParameterIn.QUERY) @QueryParam("format") final String format,
                                 @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
-                                @Parameter(description = "Resource URI.", required = true , in = ParameterIn.QUERY) @QueryParam("uri") final String uri) {
-        final URI resolveUri = parseUriFromString(uri);
+                                @Parameter(description = "Resource URI.", required = true, in = ParameterIn.QUERY) @Encoded @QueryParam("uri") final String uri) {
+        final String uriDecoded = urlDecodeString(uri);
+        final URI resolveUri = parseUriFromString(uriDecoded);
         ensureSuomiFiUriHost(resolveUri.getHost());
-        final String uriPath = resolveUri.getPath();
+        final String uriPath = uriDecoded.substring(("http://uri.suomi.fi").length());
         checkResourceValidity(uriPath);
         final String resourcePath = uriPath.substring(API_PATH_CODELIST.length() + 1);
-        final List<String> resourcePathParams = Arrays.asList(resourcePath.split("/"));
+        final List<String> resourcePathParams = parseResourcePathIdentifiers(resourcePath);
         final List<String> acceptHeaders = parseAcceptHeaderValues(accept);
         if (format != null && !format.isEmpty()) {
             final URI redirectUrl;
@@ -118,6 +120,10 @@ public class UriResolverResource extends AbstractBaseResource {
             final URI redirectUrl = URI.create(resolveWebResourceUrl(resourcePathParams));
             return Response.seeOther(redirectUrl).build();
         }
+    }
+
+    private List<String> parseResourcePathIdentifiers(final String resourcePath) {
+        return Arrays.asList(resourcePath.replaceAll("\\+", "%2B").split("/"));
     }
 
     private List<String> parseAcceptHeaderValues(final String accept) {
@@ -154,7 +160,7 @@ public class UriResolverResource extends AbstractBaseResource {
                 final String pathIdentifier = checkNotEmpty(resourceCodeValues.get(2));
                 if (PATH_CODE.equalsIgnoreCase(pathIdentifier)) {
                     final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(3));
-                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeString(codeCodeValue));
                     url = apiUtils.createCodeUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
                     break;
                 } else if (PATH_EXTENSION.equalsIgnoreCase(pathIdentifier)) {
@@ -203,7 +209,7 @@ public class UriResolverResource extends AbstractBaseResource {
                 final String pathIdentifier = checkNotEmpty(resourceCodeValues.get(2));
                 if (PATH_CODE.equalsIgnoreCase(pathIdentifier)) {
                     final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(3));
-                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeString(codeCodeValue));
                     url = apiUtils.createCodeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
                     break;
                 } else if (PATH_EXTENSION.equalsIgnoreCase(pathIdentifier)) {
