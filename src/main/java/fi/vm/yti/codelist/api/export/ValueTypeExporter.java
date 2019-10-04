@@ -42,6 +42,12 @@ public class ValueTypeExporter extends BaseExporter {
     public Workbook createExcel(final Set<ValueTypeDTO> valueTypes,
                                 final String format) {
         final Workbook workbook = createWorkBook(format);
+        addValueTypes(workbook, valueTypes);
+        return workbook;
+    }
+
+    private void addValueTypes(final Workbook workbook,
+                          final Set<ValueTypeDTO> valueTypes) {
         final Set<String> prefLabelLanguages = resolveValueTypePrefLabelLanguages(valueTypes);
         final Sheet sheet = workbook.createSheet(EXCEL_SHEET_VALUETYPES);
         final Row rowhead = sheet.createRow((short) 0);
@@ -69,7 +75,6 @@ public class ValueTypeExporter extends BaseExporter {
             }
             row.createCell(k).setCellValue(Boolean.toString(valueType.getRequired()));
         }
-        return workbook;
     }
 
     private Set<String> resolveValueTypePrefLabelLanguages(final Set<ValueTypeDTO> valueTypes) {
