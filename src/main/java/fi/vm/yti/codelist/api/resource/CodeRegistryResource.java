@@ -7,6 +7,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.Encoded;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -43,6 +44,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import static fi.vm.yti.codelist.api.util.EncodingUtils.urlDecodeCodeValue;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.util.Arrays.asList;
 
@@ -511,11 +513,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getCodeRegistryCodeSchemeCode(@Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                   @Parameter(description = "CodeScheme CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
-                                                  @Parameter(description = "Code code.", in = ParameterIn.PATH, required = true) @PathParam("codeCodeValue") final String codeCodeValue,
+                                                  @Parameter(description = "Code code.", in = ParameterIn.PATH, required = true) @Encoded @PathParam("codeCodeValue") final String codeCodeValue,
                                                   @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                   @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand), pretty));
-        final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeString(codeCodeValue));
+        final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeCodeValue(codeCodeValue));
         if (code != null) {
             return Response.ok(code).build();
         }
@@ -538,7 +540,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                          @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                          @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
-        final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeString(codeCodeValue));
+        final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeCodeValue(codeCodeValue));
         if (code != null) {
             if (FORMAT_CSV.startsWith(format.toLowerCase())) {
                 final Set<MemberDTO> members = domain.getMembers(pageSize, from, code, meta.getAfter(), meta);

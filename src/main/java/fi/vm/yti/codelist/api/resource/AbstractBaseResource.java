@@ -1,8 +1,6 @@
 package fi.vm.yti.codelist.api.resource;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,13 +27,13 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.model.Status;
-import static fi.vm.yti.codelist.api.exception.ErrorConstants.ERR_MSG_USER_406;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 abstract class AbstractBaseResource {
 
+    public static final String SUOMI_URI_HOST = "http://uri.suomi.fi";
+
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBaseResource.class);
-    private static final String SUOMI_URI_HOST = "uri.suomi.fi";
     private static final String DOWNLOAD_FILENAME_CODEREGISTRIES = "coderegistries";
     private static final String DOWNLOAD_FILENAME_CODESCHEMES = "codeschemes";
     private static final String DOWNLOAD_FILENAME_CODES = "codes";
@@ -231,18 +229,8 @@ abstract class AbstractBaseResource {
         return Response.ok(stream).header(HEADER_CONTENT_DISPOSITION, "attachment; filename = " + createDownloadFilename(FORMAT_EXCEL, filename)).build();
     }
 
-    String urlDecodeString(final String string) {
-        try {
-            final String stringToDecode = string.replaceAll("\\+", "%2b");
-            return URLDecoder.decode(stringToDecode, "UTF-8");
-        } catch (final UnsupportedEncodingException e) {
-            LOG.error("Issue with url decoding a string.", e);
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), ERR_MSG_USER_406));
-        }
-    }
-
     void ensureSuomiFiUriHost(final String host) {
-        if (!SUOMI_URI_HOST.equalsIgnoreCase(host)) {
+        if (!host.startsWith(SUOMI_URI_HOST)) {
             LOG.error("This URI is not resolvable as a codelist resource, wrong host.");
             throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), "This URI is not resolvable as a codelist resource."));
         }

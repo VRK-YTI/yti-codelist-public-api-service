@@ -41,6 +41,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import static fi.vm.yti.codelist.api.util.EncodingUtils.*;
 
 @Component
 @Path("/v1/uris")
@@ -98,9 +99,8 @@ public class UriResolverResource extends AbstractBaseResource {
                                 @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                 @Parameter(description = "Resource URI.", required = true, in = ParameterIn.QUERY) @Encoded @QueryParam("uri") final String uri) {
         final String uriDecoded = urlDecodeString(uri);
-        final URI resolveUri = parseUriFromString(uriDecoded);
-        ensureSuomiFiUriHost(resolveUri.getHost());
-        final String uriPath = uriDecoded.substring(("http://uri.suomi.fi").length());
+        ensureSuomiFiUriHost(uriDecoded);
+        final String uriPath = uriDecoded.substring((SUOMI_URI_HOST).length());
         checkResourceValidity(uriPath);
         final String resourcePath = uriPath.substring(API_PATH_CODELIST.length() + 1);
         final List<String> resourcePathParams = parseResourcePathIdentifiers(resourcePath);
@@ -123,7 +123,7 @@ public class UriResolverResource extends AbstractBaseResource {
     }
 
     private List<String> parseResourcePathIdentifiers(final String resourcePath) {
-        return Arrays.asList(resourcePath.replaceAll("\\+", "%2B").split("/"));
+        return Arrays.asList(resourcePath.split("/"));
     }
 
     private List<String> parseAcceptHeaderValues(final String accept) {
@@ -160,7 +160,7 @@ public class UriResolverResource extends AbstractBaseResource {
                 final String pathIdentifier = checkNotEmpty(resourceCodeValues.get(2));
                 if (PATH_CODE.equalsIgnoreCase(pathIdentifier)) {
                     final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(3));
-                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeString(codeCodeValue));
+                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeCodeValue(codeCodeValue));
                     url = apiUtils.createCodeUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
                     break;
                 } else if (PATH_EXTENSION.equalsIgnoreCase(pathIdentifier)) {
@@ -209,8 +209,8 @@ public class UriResolverResource extends AbstractBaseResource {
                 final String pathIdentifier = checkNotEmpty(resourceCodeValues.get(2));
                 if (PATH_CODE.equalsIgnoreCase(pathIdentifier)) {
                     final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(3));
-                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeString(codeCodeValue));
-                    url = apiUtils.createCodeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                    url = apiUtils.createCodeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, urlEncodeCodeValue(codeCodeValue));
                     break;
                 } else if (PATH_EXTENSION.equalsIgnoreCase(pathIdentifier)) {
                     final String extensionCodeValue = checkNotEmpty(resourceCodeValues.get(3));
