@@ -74,10 +74,10 @@ public class JerseyConfig extends ResourceConfig {
         // Health
         register(PingResource.class);
 
-        // Generic resources.
+        // Generic resources
         register(VersionResource.class);
 
-        // Swagger
+        // OpenAPI
         register(OpenApiResource.class);
 
         // API: Generic Register resources
