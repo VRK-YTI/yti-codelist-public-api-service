@@ -21,6 +21,15 @@ public interface EncodingUtils {
         }
     }
 
+    static String decodeDotCodeValues(final String codeValue) {
+        if (codeValue.equalsIgnoreCase("U+002E")) {
+            return ".";
+        } else if (codeValue.equalsIgnoreCase("U+002EU+002E")) {
+            return "..";
+        }
+        return codeValue;
+    }
+
     static String urlDecodeCodeValue(final String string) {
         if (string.equalsIgnoreCase("U+002E")) {
             return ".";

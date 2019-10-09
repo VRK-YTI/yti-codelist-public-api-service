@@ -160,7 +160,7 @@ public class UriResolverResource extends AbstractBaseResource {
                 final String pathIdentifier = checkNotEmpty(resourceCodeValues.get(2));
                 if (PATH_CODE.equalsIgnoreCase(pathIdentifier)) {
                     final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(3));
-                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeCodeValue(codeCodeValue));
+                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, decodeDotCodeValues(codeCodeValue));
                     url = apiUtils.createCodeUrl(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
                     break;
                 } else if (PATH_EXTENSION.equalsIgnoreCase(pathIdentifier)) {
@@ -209,7 +209,7 @@ public class UriResolverResource extends AbstractBaseResource {
                 final String pathIdentifier = checkNotEmpty(resourceCodeValues.get(2));
                 if (PATH_CODE.equalsIgnoreCase(pathIdentifier)) {
                     final String codeCodeValue = checkNotEmpty(resourceCodeValues.get(3));
-                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue);
+                    checkCodeExists(codeRegistryCodeValue, codeSchemeCodeValue, decodeDotCodeValues(codeCodeValue));
                     url = apiUtils.createCodeWebUrl(codeRegistryCodeValue, codeSchemeCodeValue, urlEncodeCodeValue(codeCodeValue));
                     break;
                 } else if (PATH_EXTENSION.equalsIgnoreCase(pathIdentifier)) {
