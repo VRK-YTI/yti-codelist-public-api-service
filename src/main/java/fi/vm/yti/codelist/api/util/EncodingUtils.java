@@ -31,9 +31,9 @@ public interface EncodingUtils {
     }
 
     static String urlDecodeCodeValue(final String string) {
-        if (string.equalsIgnoreCase("U+002E")) {
+        if (string.equalsIgnoreCase("U+002E") || string.equalsIgnoreCase("U%2B002E")) {
             return ".";
-        } else if (string.equalsIgnoreCase("U+002EU+002E")) {
+        } else if (string.equalsIgnoreCase("U+002EU+002E") || string.equalsIgnoreCase("U%2B002EU%2B002E")) {
             return "..";
         }
         return urlDecodeString(string);
