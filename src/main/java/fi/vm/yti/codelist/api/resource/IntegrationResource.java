@@ -132,8 +132,7 @@ public class IntegrationResource extends AbstractBaseResource {
                                  @Parameter(description = "Search term used to filter results based on partial prefLabel or codeValue match.", in = ParameterIn.QUERY) @QueryParam("searchTerm") final String searchTerm,
                                  @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         if (containerUri != null) {
-            final URI resolveUri = parseUriFromString(containerUri);
-            ensureSuomiFiUriHost(resolveUri.getHost());
+            ensureSuomiFiUriHost(containerUri);
         }
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), pretty));
         final List<String> statusList = parseStatus(status);
@@ -161,8 +160,7 @@ public class IntegrationResource extends AbstractBaseResource {
         final IntegrationResourceRequestDTO request = parseIntegrationRequestDto(integrationRequestData);
         final String container = request.getContainer();
         if (container != null) {
-            final URI containerUri = parseUriFromString(container);
-            ensureSuomiFiUriHost(containerUri.getHost());
+            ensureSuomiFiUriHost(container);
         }
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), request.getPretty()));
         final List<String> statusList = request.getStatus();

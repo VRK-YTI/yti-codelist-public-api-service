@@ -70,7 +70,7 @@ public class UriResolverResource extends AbstractBaseResource {
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN })
     public Response resolveUri(@Parameter(description = "Resource URI.", required = true, in = ParameterIn.QUERY) @QueryParam("uri") final String uri) {
         final URI resolveUri = parseUriFromString(uri);
-        ensureSuomiFiUriHost(resolveUri.getHost());
+        ensureSuomiFiUriHost(uri);
         final String uriPath = resolveUri.getPath();
         final ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
