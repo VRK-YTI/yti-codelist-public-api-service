@@ -534,7 +534,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                          @Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                          @Parameter(description = "CodeScheme CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                          @Parameter(description = "Extension PrefLabel.", in = ParameterIn.QUERY) @QueryParam("prefLabel") final String prefLabel,
-                                                         @Parameter(description = "Code code.", in = ParameterIn.PATH, required = true) @PathParam("codeCodeValue") final String codeCodeValue,
+                                                         @Parameter(description = "Code code.", in = ParameterIn.PATH, required = true) @Encoded @PathParam("codeCodeValue") final String codeCodeValue,
                                                          @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                          @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
                                                          @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
