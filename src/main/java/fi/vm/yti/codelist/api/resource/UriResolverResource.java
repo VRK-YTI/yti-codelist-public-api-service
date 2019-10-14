@@ -123,6 +123,9 @@ public class UriResolverResource extends AbstractBaseResource {
     }
 
     private List<String> parseResourcePathIdentifiers(final String resourcePath) {
+        if (resourcePath.contains("?")) {
+            return Arrays.asList(resourcePath.substring(0, resourcePath.indexOf("?")).split("/"));
+        }
         return Arrays.asList(resourcePath.split("/"));
     }
 
