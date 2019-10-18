@@ -986,7 +986,7 @@ public class DomainImpl implements Domain {
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_CODESCHEME);
             final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
             final Date after = meta.getAfter();
-            final BoolQueryBuilder builder = constructSearchQuery(null, searchTerm, after);
+            final BoolQueryBuilder builder = constructAndOrQueryForPrefLabelAndCodeValue(searchTerm, after);
             if (after != null) {
                 final StdDateFormat dateFormat = new StdDateFormat();
                 final String afterString = dateFormat.format(after);
@@ -1124,12 +1124,12 @@ public class DomainImpl implements Domain {
         return builder;
     }
 
-    private BoolQueryBuilder constructAndOrQueryForPrefLabelAndCodeValue(final String searchTern,
+    private BoolQueryBuilder constructAndOrQueryForPrefLabelAndCodeValue(final String searchTerm,
                                                                          final Date after) {
         final BoolQueryBuilder builder = boolQuery();
-        if (searchTern != null && !searchTern.isEmpty()) {
-            builder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTern).field("codeValue"));
-            builder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTern).field("prefLabel.*"));
+        if (searchTerm != null && !searchTerm.isEmpty()) {
+            builder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTerm).field("codeValue"));
+            builder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTerm).field("prefLabel.*"));
             builder.minimumShouldMatch(1);
         }
         if (after != null) {
