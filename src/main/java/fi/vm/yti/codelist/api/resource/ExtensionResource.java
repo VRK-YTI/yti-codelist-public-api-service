@@ -52,21 +52,19 @@ public class ExtensionResource extends AbstractBaseResource {
                                   @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                   @Parameter(description = "Extension PrefLabel.", in = ParameterIn.QUERY) @QueryParam("prefLabel") final String prefLabel,
                                   @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                  @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                   @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                   @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
+        final Meta meta = new Meta(200, pageSize, from, after, before);
+        final Set<ExtensionDTO> extensions = domain.getExtensions(prefLabel, meta);
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-            final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, prefLabel, null, Meta.parseAfterFromString(after), null);
             final String csv = extensionExporter.createCsv(extensions);
             return streamCsvExtensionsOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, prefLabel, null, Meta.parseAfterFromString(after), null);
             final Workbook workbook = extensionExporter.createExcel(extensions, format);
             return streamExcelExtensionsOutput(workbook);
         } else {
-            final Meta meta = new Meta(200, pageSize, from, after);
             ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand), pretty));
-            final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, prefLabel, null, meta.getAfter(), meta);
-            meta.setResultCount(extensions.size());
             final ResponseWrapper<ExtensionDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(extensions);
             wrapper.setMeta(meta);

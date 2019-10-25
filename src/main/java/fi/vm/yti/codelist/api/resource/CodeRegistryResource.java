@@ -89,23 +89,21 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                       @Parameter(description = "CodeRegistry name as string value.", in = ParameterIn.QUERY) @QueryParam("name") final String name,
                                       @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                       @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                      @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                       @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                       @Parameter(description = "Organizations filtering parameter, results will be registries belonging to these organizations", in = ParameterIn.QUERY) @QueryParam("organizations") final String organizationsCsv,
                                       @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         final List<String> organizations = organizationsCsv == null ? null : asList(organizationsCsv.split(","));
+        final Meta meta = new Meta(200, pageSize, from, after, before);
+        final Set<CodeRegistryDTO> codeRegistries = domain.getCodeRegistries(codeRegistryCodeValue, name, meta, organizations);
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
-            final Set<CodeRegistryDTO> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, Meta.parseAfterFromString(after), null, organizations);
             final String csv = codeRegistryExporter.createCsv(codeRegistries);
             return streamCsvCodeRegistriesOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<CodeRegistryDTO> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, Meta.parseAfterFromString(after), null, organizations);
             final Workbook workbook = codeRegistryExporter.createExcel(codeRegistries, format);
             return streamExcelCodeRegistriesOutput(workbook);
         } else {
-            final Meta meta = new Meta(200, pageSize, from, after);
             ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand), pretty));
-            final Set<CodeRegistryDTO> codeRegistries = domain.getCodeRegistries(pageSize, from, codeRegistryCodeValue, name, meta.getAfter(), meta, organizations);
-            meta.setResultCount(codeRegistries.size());
             final ResponseWrapper<CodeRegistryDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(codeRegistries);
             wrapper.setMeta(meta);
@@ -156,29 +154,27 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                @Parameter(description = "Extension PropertyType localName as string value for searching.", in = ParameterIn.QUERY) @QueryParam("extensionPropertyType") final String extensionPropertyType,
                                                @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                               @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                                @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                @Parameter(description = "Sort mode for response values.", in = ParameterIn.QUERY) @QueryParam("sortMode") @DefaultValue("default") final String sortMode,
                                                @Parameter(description = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv,
                                                @Parameter(description = "Include INCOMPLETE statused code schemes.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
                                                @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-        final Meta meta = new Meta(200, pageSize, from, after);
+        final Meta meta = new Meta(200, pageSize, from, after, before);
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
         final List<String> infoDomainsList = parseInfoDomains(infoDomain);
         final List<String> statusList = parseStatus(status);
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
+            final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(sortMode, null, userOrganizations, includeIncomplete, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, false, false, statusList, infoDomainsList, extensionPropertyType, meta);
             if (FORMAT_CSV.equalsIgnoreCase(format.toLowerCase())) {
-                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, null, userOrganizations, includeIncomplete, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, false, false, statusList, infoDomainsList, extensionPropertyType, Meta.parseAfterFromString(after), null);
                 final String csv = codeSchemeExporter.createCsv(codeSchemes);
                 return streamCsvCodeSchemesOutput(csv);
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, null, userOrganizations, includeIncomplete, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, false, false, statusList, infoDomainsList, extensionPropertyType, Meta.parseAfterFromString(after), null);
                 final Workbook workbook = codeSchemeExporter.createExcel(codeSchemes, format);
                 return streamExcelCodeSchemesOutput(workbook);
             } else {
                 ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand), pretty));
-                final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(pageSize, from, sortMode, null, userOrganizations, includeIncomplete, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, false, false, statusList, infoDomainsList, extensionPropertyType, meta.getAfter(), meta);
-                meta.setResultCount(codeSchemes.size());
                 final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
                 wrapper.setResults(codeSchemes);
                 wrapper.setMeta(meta);
@@ -231,11 +227,11 @@ public class CodeRegistryResource extends AbstractBaseResource {
                         codeScheme.setCodes(codes);
                     }
                     if (embedExtensions) {
-                        Set<ExtensionDTO> extensions = domain.getExtensions(null, null, null, codeScheme, null, null);
+                        Set<ExtensionDTO> extensions = domain.getExtensions(codeScheme);
                         filterExtensions(extensions);
                         if (embedMembers) {
                             for (ExtensionDTO extension : extensions) {
-                                final Set<MemberDTO> members = domain.getMembers(null, null, extension, null, null);
+                                final Set<MemberDTO> members = domain.getMembers(extension, null);
                                 filterMembers(members);
                                 extension.setMembers(members);
                             }
@@ -273,25 +269,24 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                    @Parameter(description = "Status enumerations in CSL format.", in = ParameterIn.QUERY) @QueryParam("status") final String status,
                                                    @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                    @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                                   @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                                    @Parameter(description = "Language code for sorting results.", in = ParameterIn.QUERY) @QueryParam("language") final String language,
                                                    @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                    @Parameter(description = "Returns code codeValues in JSON array format") @QueryParam("array") final String array,
                                                    @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty,
                                                    @Parameter(description = "True if the JSON array should be downloaded as file", in = ParameterIn.QUERY) @QueryParam("downloadArray") final boolean downloadArray) {
-        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
+        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after, before);
         final List<String> statusList = parseStatus(status);
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
+            final Set<CodeDTO> codes = domain.getCodes(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, language, statusList, meta);
             if (FORMAT_CSV.equalsIgnoreCase(format)) {
-                final Set<CodeDTO> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, language, statusList, Meta.parseAfterFromString(after), null);
                 final String csv = codeExporter.createCsv(codes);
                 return streamCsvCodesOutput(csv);
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                final Set<CodeDTO> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, language, statusList, Meta.parseAfterFromString(after), null);
                 final Workbook workbook = codeExporter.createExcel(codes, format);
                 return streamExcelCodesOutput(workbook);
             } else if (array != null) {
-                final Set<CodeDTO> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, language, statusList, meta.getAfter(), meta);
                 final ObjectMapper mapper = new ObjectMapper();
                 final ArrayNode arrayNode = mapper.createArrayNode();
                 codes.forEach(code -> arrayNode.add(code.getCodeValue()));
@@ -302,7 +297,6 @@ public class CodeRegistryResource extends AbstractBaseResource {
                 return response;
             } else {
                 ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, expand), pretty));
-                final Set<CodeDTO> codes = domain.getCodes(pageSize, from, codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, language, statusList, meta.getAfter(), meta);
                 if (pageSize != null && from + pageSize < meta.getTotalResults()) {
                     meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES, after, pageSize, from + pageSize));
                 }
@@ -331,22 +325,21 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                         @Parameter(description = "Extension PrefLabel.", in = ParameterIn.QUERY) @QueryParam("prefLabel") final String prefLabel,
                                                         @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                         @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                                        @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                                         @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                         @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
+        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after, before);
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
+            final Set<ExtensionDTO> extensions = domain.getExtensions(codeScheme, prefLabel, meta);
             if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-                final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, prefLabel, codeScheme, Meta.parseAfterFromString(after), null);
                 final String csv = extensionExporter.createCsv(extensions);
                 return streamCsvExtensionsOutput(csv);
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, prefLabel, codeScheme, Meta.parseAfterFromString(after), null);
                 final Workbook workbook = extensionExporter.createExcel(extensions, format);
                 return streamExcelExtensionsOutput(workbook);
             } else {
                 ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTENSION, expand), pretty));
-                final Set<ExtensionDTO> extensions = domain.getExtensions(pageSize, from, prefLabel, codeScheme, meta.getAfter(), meta);
                 if (pageSize != null && from + pageSize < meta.getTotalResults()) {
                     meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONS, after, pageSize, from + pageSize));
                 }
@@ -411,27 +404,26 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                               @Parameter(description = "Extension PrefLabel.", in = ParameterIn.QUERY) @QueryParam("prefLabel") final String prefLabel,
                                                               @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                               @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                                              @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                                               @Parameter(description = "Is this a Cross-Refence List or not.", in = ParameterIn.QUERY) @QueryParam("crossreferencelist") @DefaultValue("false") final boolean exportAsSimplifiedCrossReferenceList,
                                                               @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                               @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
 
-        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
+        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after, before);
         final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
         if (extension != null) {
+            final Set<MemberDTO> members = domain.getMembers(extension, meta);
             if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-                final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
                 if (exportAsSimplifiedCrossReferenceList) {
                     return streamCsvCrossReferenceListOutput(memberExporter.createSimplifiedCsvForCrossReferenceList(extension, members));
                 } else {
                     return streamCsvMembersOutput(memberExporter.createCsv(extension, members));
                 }
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
                 final Workbook workbook = memberExporter.createExcel(extension, members, format);
                 return streamExcelMembersOutput(workbook);
             } else {
                 ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand), pretty));
-                final Set<MemberDTO> members = domain.getMembers(pageSize, from, extension, meta.getAfter(), meta);
                 if (pageSize != null && from + pageSize < meta.getTotalResults()) {
                     meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTENSIONS + "/" + extensionCodeValue + API_PATH_MEMBERS, after, pageSize, from + pageSize));
                 }
@@ -484,13 +476,14 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                                 @Parameter(description = "CodeScheme CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                                 @Parameter(description = "Extension PrefLabel.", in = ParameterIn.QUERY) @QueryParam("prefLabel") final String prefLabel,
                                                                 @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                                                @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                                                 @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                                 @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
+        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after, before);
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
             ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand), pretty));
-            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, prefLabel, codeScheme, false, meta.getAfter(), meta);
+            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(prefLabel, codeScheme, false, meta);
             if (pageSize != null && from + pageSize < meta.getTotalResults()) {
                 meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_EXTERNALREFERENCES, after, pageSize, from + pageSize));
             }
@@ -537,22 +530,21 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                          @Parameter(description = "Code code.", in = ParameterIn.PATH, required = true) @Encoded @PathParam("codeCodeValue") final String codeCodeValue,
                                                          @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                                          @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                                         @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                                          @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                          @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after);
+        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after, before);
         final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeCodeValue(codeCodeValue));
         if (code != null) {
+            final Set<MemberDTO> members = domain.getMembers(code, meta);
             if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-                final Set<MemberDTO> members = domain.getMembers(pageSize, from, code, meta.getAfter(), meta);
                 final String csv = memberExporter.createCsv(null, members);
                 return streamCsvMembersOutput(csv);
             } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-                final Set<MemberDTO> members = domain.getMembers(pageSize, from, code, meta.getAfter(), meta);
                 final Workbook workbook = memberExporter.createExcel(null, members, format);
                 return streamExcelMembersOutput(workbook);
             } else {
                 ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand), pretty));
-                final Set<MemberDTO> members = domain.getMembers(pageSize, from, code, meta.getAfter(), meta);
                 if (pageSize != null && from + pageSize < meta.getTotalResults()) {
                     meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_CODEREGISTRIES + "/" + codeRegistryCodeValue + API_PATH_CODESCHEMES + "/" + codeSchemeCodeValue + API_PATH_CODES + "/" + codeCodeValue + API_PATH_MEMBERS, after, pageSize, from + pageSize));
                 }
@@ -585,14 +577,12 @@ public class CodeRegistryResource extends AbstractBaseResource {
         }
         final LinkedHashSet<CodeSchemeListItem> allVersions = codeScheme.getAllVersions();
         final LinkedHashSet<CodeSchemeDTO> results = new LinkedHashSet<>();
-
         if (allVersions == null || allVersions.isEmpty()) {
             results.add(codeScheme);
         } else {
             allVersions.forEach(version -> results.add(domain.getCodeScheme(version.getId().toString())));
         }
-
-        final Meta meta = new Meta(200, null, null, null);
+        final Meta meta = new Meta(200, null, null, null, null);
         final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
         meta.setResultCount(results.size());
         wrapper.setResults(results);
@@ -611,19 +601,15 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                           @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand), pretty));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-
         if (codeScheme == null) {
             throw new NotFoundException();
         }
-
         final LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
         final LinkedHashSet<CodeSchemeListItem> variants = codeScheme.getVariantsOfThisCodeScheme();
-
         if (variants != null && !variants.isEmpty()) {
             variants.forEach(variant -> result.add(domain.getCodeScheme(variant.getId().toString())));
         }
-
-        final Meta meta = new Meta(200, null, null, null);
+        final Meta meta = new Meta(200, null, null, null, null);
         meta.setResultCount(result.size());
         final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
         wrapper.setResults(result);
@@ -642,19 +628,16 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                 @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand), pretty));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
-
         if (codeScheme == null) {
             throw new NotFoundException();
         }
-
         final LinkedHashSet<CodeSchemeListItem> variantMothers = codeScheme.getVariantMothersOfThisCodeScheme();
         final LinkedHashSet<CodeSchemeDTO> result = new LinkedHashSet<>();
 
         if (variantMothers != null && !variantMothers.isEmpty()) {
             variantMothers.forEach(variantMother -> result.add(domain.getCodeScheme(variantMother.getId().toString())));
         }
-
-        final Meta meta = new Meta(200, null, null, null);
+        final Meta meta = new Meta(200, null, null, null, null);
         meta.setResultCount(result.size());
         final ResponseWrapper<CodeSchemeDTO> wrapper = new ResponseWrapper<>();
         wrapper.setResults(result);

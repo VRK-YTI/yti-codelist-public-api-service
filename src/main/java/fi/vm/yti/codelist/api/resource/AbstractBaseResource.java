@@ -89,6 +89,16 @@ abstract class AbstractBaseResource {
         return filterProvider;
     }
 
+    Set<String> parseUris(final String urisCsl) {
+        final Set<String> uriSet = new HashSet<>();
+        if (urisCsl != null) {
+            for (final String uri : urisCsl.split(",")) {
+                uriSet.add(uri.trim());
+            }
+        }
+        return uriSet;
+    }
+
     List<String> parseStatus(final String statusCsl) {
         final Set<String> statusSet = new HashSet<>();
         if (statusCsl != null) {

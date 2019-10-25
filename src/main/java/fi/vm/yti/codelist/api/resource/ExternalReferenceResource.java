@@ -55,6 +55,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
                                           @Parameter(description = "Return all links from the system.", in = ParameterIn.QUERY) @QueryParam("all") @DefaultValue("false") final Boolean all,
                                           @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                           @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                          @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                           @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                           @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         CodeSchemeDTO codeScheme = null;
@@ -64,19 +65,16 @@ public class ExternalReferenceResource extends AbstractBaseResource {
                 throw new NotFoundException();
             }
         }
+        final Meta meta = new Meta(200, pageSize, from, after, before);
+        final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(name, codeScheme, all, meta);
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
-            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, all, Meta.parseAfterFromString(after), null);
             final String csv = externalReferenceExporter.createCsv(externalReferences);
             return streamCsvExternalReferencesOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, all, Meta.parseAfterFromString(after), null);
             final Workbook workbook = externalReferenceExporter.createExcel(externalReferences, format);
             return streamExcelExternalReferencesOutput(workbook);
         } else {
-            final Meta meta = new Meta(200, pageSize, from, after);
             ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand), pretty));
-            final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(pageSize, from, name, codeScheme, all, meta.getAfter(), meta);
-            meta.setResultCount(externalReferences.size());
             final ResponseWrapper<ExternalReferenceDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(externalReferences);
             wrapper.setMeta(meta);

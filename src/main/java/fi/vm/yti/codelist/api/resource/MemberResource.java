@@ -51,21 +51,19 @@ public class MemberResource extends AbstractBaseResource {
                                @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
                                @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                               @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
+        final Meta meta = new Meta(200, pageSize, from, after, before);
+        final Set<MemberDTO> members = domain.getMembers(meta);
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
-            final Set<MemberDTO> members = domain.getMembers(pageSize, from, Meta.parseAfterFromString(after), null);
             final String csv = memberExporter.createCsv(null, members);
             return streamCsvMembersOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<MemberDTO> members = domain.getMembers(pageSize, from, Meta.parseAfterFromString(after), null);
             final Workbook workbook = memberExporter.createExcel(null, members, format);
             return streamExcelMembersOutput(workbook);
         } else {
-            final Meta meta = new Meta(200, pageSize, from, after);
             ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand), pretty));
-            final Set<MemberDTO> members = domain.getMembers(pageSize, from, meta.getAfter(), meta);
-            meta.setResultCount(members.size());
             final ResponseWrapper<MemberDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(members);
             wrapper.setMeta(meta);

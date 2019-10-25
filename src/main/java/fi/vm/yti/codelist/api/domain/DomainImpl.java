@@ -114,24 +114,22 @@ public class DomainImpl implements Domain {
     }
 
     public Set<CodeRegistryDTO> getCodeRegistries() {
-        return getCodeRegistries(MAX_SIZE, 0, null, null, null, null, null);
+        return getCodeRegistries(null, null, null, null);
     }
 
-    public Set<CodeRegistryDTO> getCodeRegistries(final Integer pageSize,
-                                                  final Integer from,
-                                                  final String codeRegistryCodeValue,
+    public Set<CodeRegistryDTO> getCodeRegistries(final String codeRegistryCodeValue,
                                                   final String codeRegistryPrefLabel,
-                                                  final Date after,
                                                   final Meta meta,
                                                   final List<String> organizations) {
-        validatePageSize(pageSize);
+        validatePageSize(meta);
         final Set<CodeRegistryDTO> codeRegistries = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_CODEREGISTRY)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_CODEREGISTRY);
-            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
+            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
             searchBuilder.sort("codeValue.raw", SortOrder.ASC);
-            final BoolQueryBuilder builder = constructSearchQuery(codeRegistryCodeValue, codeRegistryPrefLabel, after);
+            final BoolQueryBuilder builder = constructSearchQuery(codeRegistryCodeValue, codeRegistryPrefLabel);
+            embedAfterBeforeToBoolQuery(builder, meta);
             if (organizations != null && !organizations.isEmpty()) {
                 builder.must(termsQuery("organizations.id.keyword", organizations));
             }
@@ -211,16 +209,14 @@ public class DomainImpl implements Domain {
                                                                     final List<String> userOrganizationIds,
                                                                     final boolean includeIncomplete,
                                                                     final String language) {
-        return getCodeSchemes(MAX_SIZE, 0, null, organizations, userOrganizationIds, includeIncomplete, codeRegistryCodeValue, null, null, null, language, null, false, false, null, null, null, null, null);
+        return getCodeSchemes(null, organizations, userOrganizationIds, includeIncomplete, codeRegistryCodeValue, null, null, null, language, null, false, false, null, null, null, null);
     }
 
-    public Set<CodeSchemeDTO> getCodeSchemes(final String language) {
-        return getCodeSchemes(MAX_SIZE, 0, null, null, null, false, null, null, null, null, language, null, false, false, null, null, null, null, null);
+    public Set<CodeSchemeDTO> getCodeSchemes() {
+        return getCodeSchemes(null, null, null, false, null, null, null, null, null, null, false, false, null, null, null, null);
     }
 
-    public Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
-                                             final Integer from,
-                                             final String sortMode,
+    public Set<CodeSchemeDTO> getCodeSchemes(final String sortMode,
                                              final List<String> organizationIds,
                                              final List<String> userOrganizationIds,
                                              final boolean includeIncomplete,
@@ -235,9 +231,8 @@ public class DomainImpl implements Domain {
                                              final List<String> statuses,
                                              final List<String> infoDomains,
                                              final String extensionPropertyType,
-                                             final Date after,
                                              final Meta meta) {
-        validatePageSize(pageSize);
+        validatePageSize(meta);
         final Set<String> codeSchemeUuids = new HashSet<>();
         final Set<String> codeSchemeUuidsWithDeepHitsCodes = new HashSet<>();
         final Set<String> codeSchemeUuidsWithDeepHitsExtensions = new HashSet<>();
@@ -263,8 +258,8 @@ public class DomainImpl implements Domain {
         if (checkIfIndexExists(ELASTIC_INDEX_CODESCHEME)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_CODESCHEME);
-            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
-            final BoolQueryBuilder builder = boolQuery();
+            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
+            final BoolQueryBuilder builder = constructBoolQueryWithAfterAndBeforeRange(meta);
             if (searchTerm != null && !searchTerm.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 boolQueryBuilder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTerm).field("prefLabel.*"));
@@ -280,11 +275,6 @@ public class DomainImpl implements Domain {
             }
             if (codeSchemePrefLabel != null && !codeSchemePrefLabel.isEmpty()) {
                 builder.must(luceneQueryFactory.buildPrefixSuffixQuery(codeSchemePrefLabel).field("prefLabel.*"));
-            }
-            if (after != null) {
-                final StdDateFormat dateFormat = new StdDateFormat();
-                final String afterString = dateFormat.format(after);
-                builder.must(rangeQuery("modified").gt(afterString));
             }
             if (organizationIds != null && !organizationIds.isEmpty()) {
                 builder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", organizationIds), ScoreMode.None));
@@ -368,7 +358,6 @@ public class DomainImpl implements Domain {
             if (searchResultWithMetaData.getTotalhitsCodesPerCodeSchemeMap() != null && !searchResultWithMetaData.getTotalhitsCodesPerCodeSchemeMap().isEmpty() && codeSchemeUuidsWithDeepHitsCodes.contains(cs.getId().toString())) {
                 cs.setTotalNrOfSearchHitsCodes(searchResultWithMetaData.getTotalhitsCodesPerCodeSchemeMap().get(cs.getId().toString()));
             }
-
             if (searchResultWithMetaData.getTotalhitsExtensionsPerCodeSchemeMap() != null && !searchResultWithMetaData.getTotalhitsExtensionsPerCodeSchemeMap().isEmpty() && codeSchemeUuidsWithDeepHitsExtensions.contains(cs.getId().toString())) {
                 cs.setTotalNrOfSearchHitsExtensions(searchResultWithMetaData.getTotalhitsExtensionsPerCodeSchemeMap().get(cs.getId().toString()));
             }
@@ -475,12 +464,10 @@ public class DomainImpl implements Domain {
 
     public Set<CodeDTO> getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(final String codeRegistryCodeValue,
                                                                               final String codeSchemeCodeValue) {
-        return getCodes(MAX_SIZE, 0, codeRegistryCodeValue, codeSchemeCodeValue, null, null, null, null, null, null, null, null);
+        return getCodes(codeRegistryCodeValue, codeSchemeCodeValue, null, null, null, null, null, null, null);
     }
 
-    public Set<CodeDTO> getCodes(final Integer pageSize,
-                                 final Integer from,
-                                 final String codeRegistryCodeValue,
+    public Set<CodeDTO> getCodes(final String codeRegistryCodeValue,
                                  final String codeSchemeCodeValue,
                                  final String codeCodeValue,
                                  final String prefLabel,
@@ -488,17 +475,15 @@ public class DomainImpl implements Domain {
                                  final String broaderCodeId,
                                  final String language,
                                  final List<String> statuses,
-                                 final Date after,
                                  final Meta meta) {
-        validatePageSize(pageSize);
+        validatePageSize(meta);
         final Set<CodeDTO> codes = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_CODE);
-            final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
-            searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
-            searchBuilder.from(from != null ? from : 0);
-            final BoolQueryBuilder builder = constructSearchQuery(codeCodeValue, prefLabel, after);
+            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
+            final BoolQueryBuilder builder = constructSearchQuery(codeCodeValue, prefLabel);
+            embedAfterBeforeToBoolQuery(builder, meta);
             builder.must(matchQuery("codeScheme.codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
             builder.must(boolQuery().should(matchQuery("codeScheme.codeValue", codeSchemeCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER)).should(matchQuery("codeScheme.id", codeSchemeCodeValue.toLowerCase())).minimumShouldMatch(1));
             if (hierarchyLevel != null) {
@@ -559,21 +544,19 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<PropertyTypeDTO> getPropertyTypes(final Integer pageSize,
-                                                 final Integer from,
-                                                 final String propertyTypePrefLabel,
+    public Set<PropertyTypeDTO> getPropertyTypes(final String propertyTypePrefLabel,
                                                  final String context,
                                                  final String language,
                                                  final String type,
-                                                 final Date after,
                                                  final Meta meta) {
-        validatePageSize(pageSize);
+        validatePageSize(meta);
         final Set<PropertyTypeDTO> propertyTypes = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_PROPERTYTYPE)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_PROPERTYTYPE);
-            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
-            final BoolQueryBuilder builder = constructSearchQuery(null, propertyTypePrefLabel, after);
+            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
+            final BoolQueryBuilder builder = constructSearchQuery(null, propertyTypePrefLabel);
+            embedAfterBeforeToBoolQuery(builder, meta);
             if (context != null) {
                 builder.must(prefixQuery("context", context.toLowerCase()));
             }
@@ -629,18 +612,15 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<ValueTypeDTO> getValueTypes(final Integer pageSize,
-                                           final Integer from,
-                                           final String localName,
-                                           final Date after,
+    public Set<ValueTypeDTO> getValueTypes(final String localName,
                                            final Meta meta) {
-        validatePageSize(pageSize);
+        validatePageSize(meta);
         final Set<ValueTypeDTO> valueTypes = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_VALUETYPE)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_VALUETYPE);
-            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
-            final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
+            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
+            final BoolQueryBuilder builder = constructBoolQueryWithAfterAndBeforeRange(meta);
             if (localName != null) {
                 builder.must(prefixQuery("localName", localName.toLowerCase()));
             }
@@ -693,23 +673,21 @@ public class DomainImpl implements Domain {
     }
 
     public Set<ExternalReferenceDTO> getExternalReferences(final CodeSchemeDTO codeScheme) {
-        return getExternalReferences(null, null, null, codeScheme, false, null, null);
+        return getExternalReferences(null, codeScheme, false, null);
     }
 
-    public Set<ExternalReferenceDTO> getExternalReferences(final Integer pageSize,
-                                                           final Integer from,
-                                                           final String externalReferencePrefLabel,
+    public Set<ExternalReferenceDTO> getExternalReferences(final String externalReferencePrefLabel,
                                                            final CodeSchemeDTO codeScheme,
                                                            final Boolean full,
-                                                           final Date after,
                                                            final Meta meta) {
-        validatePageSize(pageSize);
+        validatePageSize(meta);
         final Set<ExternalReferenceDTO> externalReferences = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_EXTERNALREFERENCE)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_EXTERNALREFERENCE);
-            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
-            final BoolQueryBuilder builder = constructSearchQuery(null, externalReferencePrefLabel, after);
+            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
+            final BoolQueryBuilder builder = constructSearchQuery(null, externalReferencePrefLabel);
+            embedAfterBeforeToBoolQuery(builder, meta);
             if (codeScheme != null) {
                 builder.should(boolQuery().should(boolQuery().must(matchQuery("parentCodeScheme.codeRegistry.codeValue", codeScheme.getCodeRegistry().getCodeValue().toLowerCase()).analyzer(TEXT_ANALYZER)).must(matchQuery("parentCodeScheme.id", codeScheme.getId().toString().toLowerCase()))).should(boolQuery().must(matchQuery("global", true))));
             } else if (!full) {
@@ -737,20 +715,27 @@ public class DomainImpl implements Domain {
         return externalReferences;
     }
 
-    public Set<ExtensionDTO> getExtensions(final Integer pageSize,
-                                           final Integer from,
-                                           final String extensionPrefLabel,
-                                           final CodeSchemeDTO codeScheme,
-                                           final Date after,
+    public Set<ExtensionDTO> getExtensions(final CodeSchemeDTO codeScheme) {
+        return getExtensions(codeScheme, null, null);
+    }
+
+    public Set<ExtensionDTO> getExtensions(final String extensionPrefLabel,
                                            final Meta meta) {
-        validatePageSize(pageSize);
+        return getExtensions(null, extensionPrefLabel, meta);
+    }
+
+    public Set<ExtensionDTO> getExtensions(final CodeSchemeDTO codeScheme,
+                                           final String extensionPrefLabel,
+                                           final Meta meta) {
+        validatePageSize(meta);
         final Set<ExtensionDTO> extensions = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_EXTENSION)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_EXTENSION);
-            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
+            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
             searchBuilder.sort("codeValue.raw", SortOrder.ASC);
-            final BoolQueryBuilder builder = constructSearchQuery(null, extensionPrefLabel, after);
+            final BoolQueryBuilder builder = constructSearchQuery(null, extensionPrefLabel);
+            embedAfterBeforeToBoolQuery(builder, meta);
             if (codeScheme != null) {
                 builder.must(matchQuery("parentCodeScheme.id", codeScheme.getId().toString().toLowerCase()));
             }
@@ -825,19 +810,16 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<MemberDTO> getMembers(final Integer pageSize,
-                                     final Integer from,
-                                     final CodeDTO code,
-                                     final Date after,
+    public Set<MemberDTO> getMembers(final CodeDTO code,
                                      final Meta meta) {
-        validatePageSize(pageSize);
+        validatePageSize(meta);
         final Set<MemberDTO> members = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_MEMBER)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_MEMBER);
-            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
+            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
             searchBuilder.sort("order", SortOrder.ASC);
-            final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
+            final BoolQueryBuilder builder = constructBoolQueryWithAfterAndBeforeRange(meta);
             if (code != null) {
                 builder.must(matchQuery("code.id", code.getId().toString().toLowerCase()));
             }
@@ -863,16 +845,13 @@ public class DomainImpl implements Domain {
         return members;
     }
 
-    public Set<MemberDTO> getMembers(final Integer pageSize,
-                                     final Integer from,
-                                     final Date after,
-                                     final Meta meta) {
-        validatePageSize(pageSize);
+    public Set<MemberDTO> getMembers(final Meta meta) {
+        validatePageSize(meta);
         final Set<MemberDTO> members;
         if (checkIfIndexExists(ELASTIC_INDEX_MEMBER)) {
-            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
+            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
             searchBuilder.sort("order", SortOrder.ASC);
-            final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
+            final BoolQueryBuilder builder = constructBoolQueryWithAfterAndBeforeRange(meta);
             searchBuilder.query(builder);
             members = doMemberRequest(searchBuilder, meta);
         } else {
@@ -881,17 +860,14 @@ public class DomainImpl implements Domain {
         return members;
     }
 
-    public Set<MemberDTO> getMembers(final Integer pageSize,
-                                     final Integer from,
-                                     final ExtensionDTO extension,
-                                     final Date after,
+    public Set<MemberDTO> getMembers(final ExtensionDTO extension,
                                      final Meta meta) {
         final Set<MemberDTO> members;
-        validatePageSize(pageSize);
+        validatePageSize(meta);
         if (checkIfIndexExists(ELASTIC_INDEX_MEMBER)) {
-            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
+            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
             searchBuilder.sort("order", SortOrder.ASC);
-            final BoolQueryBuilder builder = constructSearchQuery(null, null, after);
+            final BoolQueryBuilder builder = constructBoolQueryWithAfterAndBeforeRange(meta);
             searchBuilder.query(builder);
             if (extension != null) {
                 builder.must(matchQuery("extension.id", extension.getId().toString().toLowerCase()));
@@ -970,30 +946,26 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<ResourceDTO> getContainers(final Integer pageSize,
-                                          final Integer from,
-                                          final String language,
+    public Set<ResourceDTO> getContainers(final String language,
                                           final List<String> statuses,
                                           final String searchTerm,
+                                          final Set<String> includedContainerUris,
                                           final Set<String> excludedContainerUris,
                                           final List<String> includeIncompleteFrom,
                                           final boolean includeIncomplete,
                                           final Meta meta) {
-        validatePageSize(pageSize);
+        validatePageSize(meta);
         final Set<ResourceDTO> containers = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_CODESCHEME)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_CODESCHEME);
-            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
-            final Date after = meta.getAfter();
-            final BoolQueryBuilder builder = constructAndOrQueryForPrefLabelAndCodeValue(searchTerm, after);
-            if (after != null) {
-                final StdDateFormat dateFormat = new StdDateFormat();
-                final String afterString = dateFormat.format(after);
-                builder.must(rangeQuery("modified").gt(afterString));
-            }
+            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
+            final BoolQueryBuilder builder = constructAndOrQueryForPrefLabelAndCodeValue(searchTerm);
+            embedAfterBeforeToBoolQuery(builder, meta);
             addLanguagePrefLabelSort(language, "codeValue.raw", "codeValue.raw", searchBuilder);
-            if (excludedContainerUris != null && excludedContainerUris.size() > 0) {
+            if (includedContainerUris != null && includedContainerUris.size() > 0) {
+                builder.must(termsQuery("uri.keyword", includedContainerUris));
+            } else if (excludedContainerUris != null && excludedContainerUris.size() > 0) {
                 builder.mustNot(termsQuery("uri.keyword", excludedContainerUris));
             }
             if (statuses != null && !statuses.isEmpty()) {
@@ -1025,7 +997,7 @@ public class DomainImpl implements Domain {
                 boolQueryBuilder.minimumShouldMatch(1);
                 builder.must(boolQueryBuilder);
             }
-            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "status", "uri", "organizations" };
+            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "contentModified", "status", "uri", "organizations", "languageCodes" };
             searchBuilder.fetchSource(includeFields, null);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
@@ -1049,38 +1021,84 @@ public class DomainImpl implements Domain {
         return containers;
     }
 
-    public Set<ResourceDTO> getResources(final Integer pageSize,
-                                         final Integer from,
-                                         final String containerUri,
+    public Set<ResourceDTO> getResources(final String containerUri,
                                          final String language,
                                          final List<String> statuses,
                                          final String searchTerm,
+                                         final String type,
+                                         final Set<String> includedResourceuris,
                                          final Set<String> excludedResourceUris,
+                                         final List<String> includeIncompleteFrom,
+                                         final boolean includeIncomplete,
                                          final Meta meta) {
-        validatePageSize(pageSize);
+        validatePageSize(meta);
         final Set<ResourceDTO> resources = new LinkedHashSet<>();
-        if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
+        if (checkIfIndexExists(ELASTIC_INDEX_CODE) && checkIfIndexExists(ELASTIC_INDEX_EXTENSION)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
-            final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_CODE);
-            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(pageSize, from);
-            final Date after = meta.getAfter();
-            final BoolQueryBuilder builder = constructAndOrQueryForPrefLabelAndCodeValue(searchTerm, after);
+            final SearchRequest searchRequest = new SearchRequest();
+            if (ELASTIC_INDEX_CODE.equalsIgnoreCase(type)) {
+                searchRequest.indices(ELASTIC_INDEX_CODE);
+                searchRequest.types(ELASTIC_TYPE_CODE);
+            } else if (ELASTIC_INDEX_EXTENSION.equalsIgnoreCase(type)) {
+                searchRequest.indices(ELASTIC_INDEX_EXTENSION);
+                searchRequest.types(ELASTIC_TYPE_EXTENSION);
+            } else {
+                searchRequest.indices(ELASTIC_INDEX_CODE, ELASTIC_INDEX_EXTENSION);
+                searchRequest.types(ELASTIC_TYPE_CODE, ELASTIC_TYPE_EXTENSION);
+            }
+            final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
+            final BoolQueryBuilder builder = constructAndOrQueryForPrefLabelAndCodeValue(searchTerm);
+            embedAfterBeforeToBoolQuery(builder, meta);
             if (containerUri != null && !containerUri.isEmpty()) {
-                builder.must(matchQuery("codeScheme.uri", containerUri.toLowerCase()).analyzer(TEXT_ANALYZER));
+                final BoolQueryBuilder boolQuery = boolQuery();
+                boolQuery.should(matchQuery("codeScheme.uri", containerUri.toLowerCase()).analyzer(TEXT_ANALYZER));
+                boolQuery.should(matchQuery("parentCodeScheme.uri", containerUri.toLowerCase()).analyzer(TEXT_ANALYZER));
+                boolQuery.minimumShouldMatch(1);
+                builder.must(boolQuery);
+            } else {
+                final BoolQueryBuilder codeSchemeStatusBuilder = boolQuery();
+                codeSchemeStatusBuilder.should(termsQuery("codeScheme.status.keyword", getRegularStatuses()));
+                codeSchemeStatusBuilder.should(termsQuery("parentCodeScheme.status.keyword", getRegularStatuses()));
+                if (includeIncomplete) {
+                    final BoolQueryBuilder codeSchemeIncompleteQueryBuilder = boolQuery();
+                    if (type == null || type.equalsIgnoreCase(ELASTIC_TYPE_CODE)) {
+                        codeSchemeIncompleteQueryBuilder.should(matchQuery("codeScheme.status.keyword", Status.INCOMPLETE.toString()));
+                    }
+                    if (type == null || type.equalsIgnoreCase(ELASTIC_TYPE_EXTENSION)) {
+                        codeSchemeIncompleteQueryBuilder.should(matchQuery("parentCodeScheme.status.keyword", Status.INCOMPLETE.toString()));
+                    }
+                    codeSchemeIncompleteQueryBuilder.minimumShouldMatch(1);
+                    builder.should(codeSchemeIncompleteQueryBuilder);
+                } else if (includeIncompleteFrom != null && !includeIncompleteFrom.isEmpty()) {
+                    final BoolQueryBuilder codeSchemeIncompleteQueryBuilder = boolQuery();
+                    if (type == null || type.equalsIgnoreCase(ELASTIC_TYPE_CODE)) {
+                        final BoolQueryBuilder codeSchemeStatusQueryBuilder = boolQuery();
+                        codeSchemeStatusQueryBuilder.must(matchQuery("codeScheme.status.keyword", Status.INCOMPLETE.toString()));
+                        codeSchemeStatusQueryBuilder.must(nestedQuery("codeScheme.organizations", termsQuery("codeScheme.organizations.id.keyword", includeIncompleteFrom), ScoreMode.None).ignoreUnmapped(true));
+                        codeSchemeIncompleteQueryBuilder.should(codeSchemeStatusQueryBuilder);
+                    }
+                    if (type == null || type.equalsIgnoreCase(ELASTIC_TYPE_EXTENSION)) {
+                        final BoolQueryBuilder parentCodeSchemeStatusQueryBuilder = boolQuery();
+                        parentCodeSchemeStatusQueryBuilder.must(matchQuery("parentCodeScheme.status.keyword", Status.INCOMPLETE.toString()));
+                        parentCodeSchemeStatusQueryBuilder.must(nestedQuery("parentCodeScheme.organizations", termsQuery("parentCodeScheme.organizations.id.keyword", includeIncompleteFrom), ScoreMode.None).ignoreUnmapped(true));
+                        codeSchemeIncompleteQueryBuilder.should(parentCodeSchemeStatusQueryBuilder);
+                    }
+                    codeSchemeIncompleteQueryBuilder.minimumShouldMatch(1);
+                    builder.should(codeSchemeIncompleteQueryBuilder);
+                }
+                codeSchemeStatusBuilder.minimumShouldMatch(1);
+                builder.should(codeSchemeStatusBuilder);
             }
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }
-            if (excludedResourceUris != null && excludedResourceUris.size() > 0) {
+            if (includedResourceuris != null && includedResourceuris.size() > 0) {
+                builder.must(termsQuery("uri.keyword", includedResourceuris));
+            } else if (excludedResourceUris != null && excludedResourceUris.size() > 0) {
                 builder.mustNot(termsQuery("uri.keyword", excludedResourceUris));
             }
-            addLanguagePrefLabelSort(language, "codeValue.raw", "order", searchBuilder);
-            if (after != null) {
-                final StdDateFormat dateFormat = new StdDateFormat();
-                final String afterString = dateFormat.format(after);
-                builder.must(rangeQuery("modified").gt(afterString));
-            }
-            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "status", "uri" };
+            addLanguagePrefLabelSort(language, "codeValue.raw", "codeValue.raw", searchBuilder);
+            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "contentModified", "statusModified", "status", "uri", "codeScheme", "parentCodeScheme" };
             searchBuilder.fetchSource(includeFields, null);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
@@ -1089,26 +1107,29 @@ public class DomainImpl implements Domain {
                 setResultCounts(meta, response);
                 response.getHits().forEach(hit -> {
                     try {
-                        final CodeDTO codeSchemeDto = mapper.readValue(hit.getSourceAsString(), CodeDTO.class);
-                        resources.add(new ResourceDTO(codeSchemeDto));
+                        final String objectType = hit.getType();
+                        if (ELASTIC_TYPE_CODE.equalsIgnoreCase(objectType)) {
+                            final CodeDTO codeDto = mapper.readValue(hit.getSourceAsString(), CodeDTO.class);
+                            resources.add(new ResourceDTO(codeDto));
+                        } else if (ELASTIC_TYPE_EXTENSION.equalsIgnoreCase(objectType)) {
+                            final ExtensionDTO extensionDto = mapper.readValue(hit.getSourceAsString(), ExtensionDTO.class);
+                            resources.add(new ResourceDTO(extensionDto));
+                        }
                     } catch (final IOException e) {
                         LOG.error("getResources reading value from JSON string failed: " + hit.getSourceAsString(), e);
                         throw new JsonParsingException(ERR_MSG_USER_406);
                     }
                 });
-                return resources;
             } catch (final IOException e) {
                 LOG.error("SearchRequest failed!", e);
                 throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
-
         }
         return resources;
     }
 
     private BoolQueryBuilder constructSearchQuery(final String codeValue,
-                                                  final String prefLabel,
-                                                  final Date after) {
+                                                  final String prefLabel) {
         final BoolQueryBuilder builder = boolQuery();
         if (codeValue != null) {
             builder.must(prefixQuery("codeValue", codeValue.toLowerCase()));
@@ -1116,28 +1137,40 @@ public class DomainImpl implements Domain {
         if (prefLabel != null && !prefLabel.isEmpty()) {
             builder.must(luceneQueryFactory.buildPrefixSuffixQuery(prefLabel).field("prefLabel.*"));
         }
-        if (after != null) {
-            final StdDateFormat dateFormat = new StdDateFormat();
-            final String afterString = dateFormat.format(after);
-            builder.must(rangeQuery("modified").gt(afterString));
-        }
         return builder;
     }
 
-    private BoolQueryBuilder constructAndOrQueryForPrefLabelAndCodeValue(final String searchTerm,
-                                                                         final Date after) {
+    private BoolQueryBuilder constructAndOrQueryForPrefLabelAndCodeValue(final String searchTerm) {
         final BoolQueryBuilder builder = boolQuery();
         if (searchTerm != null && !searchTerm.isEmpty()) {
             builder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTerm).field("codeValue"));
             builder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTerm).field("prefLabel.*"));
             builder.minimumShouldMatch(1);
         }
-        if (after != null) {
-            final StdDateFormat dateFormat = new StdDateFormat();
-            final String afterString = dateFormat.format(after);
-            builder.must(rangeQuery("modified").gt(afterString));
-        }
         return builder;
+    }
+
+    private BoolQueryBuilder constructBoolQueryWithAfterAndBeforeRange(final Meta meta) {
+        final BoolQueryBuilder builder = boolQuery();
+        embedAfterBeforeToBoolQuery(builder, meta);
+        return builder;
+    }
+
+    private void embedAfterBeforeToBoolQuery(final BoolQueryBuilder builder,
+                                             final Meta meta) {
+        final StdDateFormat dateFormat = new StdDateFormat();
+        if (meta != null) {
+            final Date after = meta.getAfter();
+            if (after != null) {
+                final String afterString = dateFormat.format(after);
+                builder.must(rangeQuery("modified").gte(afterString));
+            }
+            final Date before = meta.getBefore();
+            if (before != null) {
+                final String beforeString = dateFormat.format(before);
+                builder.must(rangeQuery("modified").lt(beforeString));
+            }
+        }
     }
 
     private void setResultCounts(final Meta meta,
@@ -1178,9 +1211,12 @@ public class DomainImpl implements Domain {
         }
     }
 
-    private void validatePageSize(final Integer pageSize) {
-        if (pageSize != null && pageSize > MAX_SIZE) {
-            throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), String.format("Paging pageSize parameter value %d exceeds max value %d.", pageSize, MAX_SIZE)));
+    private void validatePageSize(final Meta meta) {
+        if (meta != null) {
+            final Integer pageSize = meta.getPageSize();
+            if (pageSize != null && pageSize > MAX_SIZE) {
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), String.format("Paging pageSize parameter value %d exceeds max value %d.", pageSize, MAX_SIZE)));
+            }
         }
     }
 
@@ -1202,11 +1238,10 @@ public class DomainImpl implements Domain {
         }
     }
 
-    private SearchSourceBuilder createSearchSourceBuilderWithPagination(final Integer pageSize,
-                                                                        final Integer from) {
+    private SearchSourceBuilder createSearchSourceBuilderWithPagination(final Meta meta) {
         final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
-        searchBuilder.size(pageSize != null ? pageSize : MAX_SIZE);
-        searchBuilder.from(from != null ? from : 0);
+        searchBuilder.size(meta != null && meta.getPageSize() != null ? meta.getPageSize() : MAX_SIZE);
+        searchBuilder.from(meta != null && meta.getFrom() != null ? meta.getFrom() : 0);
         return searchBuilder;
     }
 

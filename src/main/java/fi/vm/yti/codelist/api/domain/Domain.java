@@ -1,6 +1,5 @@
 package fi.vm.yti.codelist.api.domain;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -21,11 +20,8 @@ public interface Domain {
 
     Set<CodeRegistryDTO> getCodeRegistries();
 
-    Set<CodeRegistryDTO> getCodeRegistries(final Integer pageSize,
-                                           final Integer from,
-                                           final String codeRegistryCodeValue,
+    Set<CodeRegistryDTO> getCodeRegistries(final String codeRegistryCodeValue,
                                            final String codeRegistryPrefLabel,
-                                           final Date after,
                                            final Meta meta,
                                            final List<String> organizations);
 
@@ -34,7 +30,7 @@ public interface Domain {
     CodeSchemeDTO getCodeScheme(final String codeRegistryCodeValue,
                                 final String codeSchemeCodeValue);
 
-    Set<CodeSchemeDTO> getCodeSchemes(final String language);
+    Set<CodeSchemeDTO> getCodeSchemes();
 
     Set<CodeSchemeDTO> getCodeSchemesByCodeRegistryCodeValue(final String codeRegistryCodeValue,
                                                              final List<String> organizationIds,
@@ -42,9 +38,7 @@ public interface Domain {
                                                              final boolean includeIncomplete,
                                                              final String language);
 
-    Set<CodeSchemeDTO> getCodeSchemes(final Integer pageSize,
-                                      final Integer from,
-                                      final String sortMode,
+    Set<CodeSchemeDTO> getCodeSchemes(final String sortMode,
                                       final List<String> organizationIds,
                                       final List<String> userOrganizationIds,
                                       final boolean includeIncomplete,
@@ -59,7 +53,6 @@ public interface Domain {
                                       final List<String> statuses,
                                       final List<String> infoDomains,
                                       final String extensionPropertyType,
-                                      final Date after,
                                       final Meta meta);
 
     CodeDTO getCode(final String codeId);
@@ -71,9 +64,7 @@ public interface Domain {
     Set<CodeDTO> getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(final String codeRegistryCodeValue,
                                                                        final String codeSchemeCodeValue);
 
-    Set<CodeDTO> getCodes(final Integer pageSize,
-                          final Integer from,
-                          final String codeRegistryCodeValue,
+    Set<CodeDTO> getCodes(final String codeRegistryCodeValue,
                           final String codeSchemeCodeValue,
                           final String codeCodeValue,
                           final String prefLabel,
@@ -81,45 +72,37 @@ public interface Domain {
                           final String broaderCodeId,
                           final String language,
                           final List<String> statuses,
-                          final Date after,
                           final Meta meta);
 
     PropertyTypeDTO getPropertyType(final String propertyTypeId);
 
-    Set<PropertyTypeDTO> getPropertyTypes(final Integer pageSize,
-                                          final Integer from,
-                                          final String propertyTypePrefLabel,
+    Set<PropertyTypeDTO> getPropertyTypes(final String propertyTypePrefLabel,
                                           final String context,
                                           final String language,
                                           final String type,
-                                          final Date after,
                                           final Meta meta);
 
     ValueTypeDTO getValueType(final String valueTypeId);
 
-    Set<ValueTypeDTO> getValueTypes(final Integer pageSize,
-                                    final Integer from,
-                                    final String localName,
-                                    final Date after,
+    Set<ValueTypeDTO> getValueTypes(final String localName,
                                     final Meta meta);
 
     ExternalReferenceDTO getExternalReference(final String externalReferenceId);
 
     Set<ExternalReferenceDTO> getExternalReferences(final CodeSchemeDTO codeScheme);
 
-    Set<ExternalReferenceDTO> getExternalReferences(final Integer pageSize,
-                                                    final Integer from,
-                                                    final String externalReferencePrefLabel,
+    Set<ExternalReferenceDTO> getExternalReferences(final String externalReferencePrefLabel,
                                                     final CodeSchemeDTO codeScheme,
                                                     final Boolean full,
-                                                    final Date after,
                                                     final Meta meta);
 
-    Set<ExtensionDTO> getExtensions(final Integer pageSize,
-                                    final Integer from,
+    Set<ExtensionDTO> getExtensions(final CodeSchemeDTO codeScheme);
+
+    Set<ExtensionDTO> getExtensions(final String extensionPrefLabel,
+                                    final Meta meta);
+
+    Set<ExtensionDTO> getExtensions(final CodeSchemeDTO codeScheme,
                                     final String extensionPrefLabel,
-                                    final CodeSchemeDTO codeScheme,
-                                    final Date after,
                                     final Meta meta);
 
     ExtensionDTO getExtension(final String codeRegistryCodeValue,
@@ -128,42 +111,34 @@ public interface Domain {
 
     ExtensionDTO getExtension(final String extensionId);
 
-    Set<MemberDTO> getMembers(final Integer pageSize,
-                              final Integer from,
-                              final Date after,
+    Set<MemberDTO> getMembers(final Meta meta);
+
+    Set<MemberDTO> getMembers(final ExtensionDTO code,
                               final Meta meta);
 
-    Set<MemberDTO> getMembers(final Integer pageSize,
-                              final Integer from,
-                              final ExtensionDTO code,
-                              final Date after,
-                              final Meta meta);
-
-    Set<MemberDTO> getMembers(final Integer pageSize,
-                              final Integer from,
-                              final CodeDTO code,
-                              final Date after,
+    Set<MemberDTO> getMembers(final CodeDTO code,
                               final Meta meta);
 
     MemberDTO getMember(final String memberId,
                         final String extensionCodeValue);
 
-    Set<ResourceDTO> getContainers(final Integer pageSize,
-                                   final Integer from,
-                                   final String language,
+    Set<ResourceDTO> getContainers(final String language,
                                    final List<String> statuses,
                                    final String searchTerm,
+                                   final Set<String> includedContainerUris,
                                    final Set<String> excludedContainerUris,
                                    final List<String> includeIncompleteFrom,
                                    final boolean includeIncomplete,
                                    final Meta meta);
 
-    Set<ResourceDTO> getResources(final Integer pageSize,
-                                  final Integer from,
-                                  final String codeSchemeUri,
+    Set<ResourceDTO> getResources(final String codeSchemeUri,
                                   final String language,
                                   final List<String> statuses,
+                                  final String type,
                                   final String searchTerm,
+                                  final Set<String> includedResourceUris,
                                   final Set<String> excludedResourceUris,
+                                  final List<String> includeIncompleteFrom,
+                                  final boolean includeIncomplete,
                                   final Meta meta);
 }

@@ -2,7 +2,9 @@ package fi.vm.yti.codelist.api.dto;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
@@ -15,16 +17,21 @@ import com.fasterxml.jackson.annotation.JsonView;
 
 import fi.vm.yti.codelist.common.dto.CodeDTO;
 import fi.vm.yti.codelist.common.dto.CodeSchemeDTO;
+import fi.vm.yti.codelist.common.dto.ExtensionDTO;
 import fi.vm.yti.codelist.common.dto.Views;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @JsonFilter("resource")
 @XmlRootElement
-@XmlType(propOrder = { "uri", "prefLabel", "localName", "description", "status", "modified" })
+@XmlType(propOrder = { "uri", "prefLabel", "type", "container", "localName", "description", "status", "modified", "contentModified", "statusModified", "languages" })
 @Schema(name = "Resource", description = "Resource DTO that represents data for one single container or resource for integration use.")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ResourceDTO implements Serializable {
+
+    public static final String TYPE_CODELIST = "codelist";
+    public static final String TYPE_CODE = "code";
+    public static final String TYPE_EXTENSION = "extension";
 
     private static final long serialVersionUID = 1L;
 
@@ -34,6 +41,11 @@ public class ResourceDTO implements Serializable {
     private String uri;
     private String status;
     private Date modified;
+    private Date contentModified;
+    private Date statusModified;
+    private Set<String> languages;
+    private String type;
+    private String container;
 
     public ResourceDTO() {
     }
@@ -45,6 +57,11 @@ public class ResourceDTO implements Serializable {
         this.uri = codeSchemeDto.getUri();
         this.status = codeSchemeDto.getStatus();
         this.modified = codeSchemeDto.getModified();
+        this.contentModified = codeSchemeDto.getContentModified();
+        this.statusModified = codeSchemeDto.getStatusModified();
+        this.type = TYPE_CODELIST;
+        this.languages = new HashSet<>();
+        codeSchemeDto.getLanguageCodes().forEach(languageCode -> languages.add(languageCode.getCodeValue()));
     }
 
     public ResourceDTO(final CodeDTO codeDto) {
@@ -54,6 +71,20 @@ public class ResourceDTO implements Serializable {
         this.uri = codeDto.getUri();
         this.status = codeDto.getStatus();
         this.modified = codeDto.getModified();
+        this.statusModified = codeDto.getStatusModified();
+        this.type = TYPE_CODE;
+        this.container = codeDto.getCodeScheme().getUri();
+    }
+
+    public ResourceDTO(final ExtensionDTO extensionDto) {
+        this.prefLabel = extensionDto.getPrefLabel();
+        this.localName = extensionDto.getCodeValue();
+        this.uri = extensionDto.getUri();
+        this.status = extensionDto.getStatus();
+        this.modified = extensionDto.getModified();
+        this.statusModified = extensionDto.getStatusModified();
+        this.type = TYPE_EXTENSION;
+        this.container = extensionDto.getParentCodeScheme().getUri();
     }
 
     @JsonView(Views.Normal.class)
@@ -92,6 +123,7 @@ public class ResourceDTO implements Serializable {
         this.localName = localName;
     }
 
+    @JsonView(Views.Normal.class)
     public String getStatus() {
         return status;
     }
@@ -116,5 +148,52 @@ public class ResourceDTO implements Serializable {
         } else {
             this.modified = null;
         }
+    }
+
+    @JsonView(Views.Normal.class)
+    public Set<String> getLanguages() {
+        return this.languages;
+    }
+
+    public void setLanguages(final Set<String> languages) {
+        this.languages = languages;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(final String type) {
+        this.type = type;
+    }
+
+    @Schema(format = "dateTime")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
+    @JsonView(Views.Normal.class)
+    public Date getContentModified() {
+        return contentModified;
+    }
+
+    public void setContentModified(final Date contentModified) {
+        this.contentModified = contentModified;
+    }
+
+    @Schema(format = "dateTime")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
+    @JsonView(Views.Normal.class)
+    public Date getStatusModified() {
+        return statusModified;
+    }
+
+    public void setStatusModified(final Date statusModified) {
+        this.statusModified = statusModified;
+    }
+
+    public String getContainer() {
+        return container;
+    }
+
+    public void setContainer(final String container) {
+        this.container = container;
     }
 }

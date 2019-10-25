@@ -9,11 +9,14 @@ public class IntegrationResourceRequestDTO {
     private Integer pageSize;
     private List<String> status;
     private String after;
+    private String before;
     private List<String> filter;
     private String language;
     private String searchTerm;
     private String pretty;
     private List<String> includeIncompleteFrom;
+    private List<String> uri;
+    private String type;
     private boolean includeIncomplete;
 
     public String getContainer() {
@@ -102,5 +105,29 @@ public class IntegrationResourceRequestDTO {
 
     public void setIncludeIncomplete(final boolean includeIncomplete) {
         this.includeIncomplete = includeIncomplete;
+    }
+
+    public List<String> getUri() {
+        return uri;
+    }
+
+    public void setUri(final List<String> uri) {
+        this.uri = uri;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(final String type) {
+        this.type = type;
+    }
+
+    public String getBefore() {
+        return before;
+    }
+
+    public void setBefore(final String before) {
+        this.before = before;
     }
 }

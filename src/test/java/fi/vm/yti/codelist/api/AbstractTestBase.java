@@ -60,8 +60,10 @@ abstract public class AbstractTestBase {
 
     protected void createAndIndexMockData() {
         createAndIndexMockCodeRegistries();
-        createAndIndexMockCodeSchemes(domain.getCodeRegistries());
-        createAndIndexMockCodes(domain.getCodeSchemes(null));
+        final Set<CodeRegistryDTO> codeRegistries = domain.getCodeRegistries();
+        createAndIndexMockCodeSchemes(codeRegistries);
+        final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes();
+        createAndIndexMockCodes(codeSchemes);
         LOG.debug("Mock data indexed!");
     }
 

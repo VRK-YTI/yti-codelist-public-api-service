@@ -55,21 +55,19 @@ public class PropertyTypeResource extends AbstractBaseResource {
                                      @Parameter(description = "Type as string value.", in = ParameterIn.QUERY) @QueryParam("type") final String type,
                                      @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                      @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                     @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                      @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                      @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
+        final Meta meta = new Meta(200, pageSize, from, after, before);
+        final Set<PropertyTypeDTO> propertyTypes = domain.getPropertyTypes(name, context, language, type, meta);
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
-            final Set<PropertyTypeDTO> propertyTypes = domain.getPropertyTypes(pageSize, from, name, context, language, type, Meta.parseAfterFromString(after), null);
             final String csv = propertyTypeExporter.createCsv(propertyTypes);
             return streamCsvPropertyTypesOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<PropertyTypeDTO> propertyTypes = domain.getPropertyTypes(pageSize, from, name, context, language, type, Meta.parseAfterFromString(after), null);
             final Workbook workbook = propertyTypeExporter.createExcel(propertyTypes, format);
             return streamExcelPropertyTypesOutput(workbook);
         } else {
-            final Meta meta = new Meta(200, pageSize, from, after);
             ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand), pretty));
-            final Set<PropertyTypeDTO> propertyTypes = domain.getPropertyTypes(pageSize, from, name, context, language, type, meta.getAfter(), meta);
-            meta.setResultCount(propertyTypes.size());
             final ResponseWrapper<PropertyTypeDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(propertyTypes);
             wrapper.setMeta(meta);

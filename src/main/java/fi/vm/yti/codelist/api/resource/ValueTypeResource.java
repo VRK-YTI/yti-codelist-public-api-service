@@ -52,21 +52,19 @@ public class ValueTypeResource extends AbstractBaseResource {
                                   @Parameter(description = "ValueType localName as string value.", in = ParameterIn.QUERY) @QueryParam("localName") final String localName,
                                   @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                   @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
+                                  @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                   @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                   @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
+        final Meta meta = new Meta(200, pageSize, from, after, before);
+        final Set<ValueTypeDTO> valueTypes = domain.getValueTypes(localName, meta);
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
-            final Set<ValueTypeDTO> valueTypes = domain.getValueTypes(pageSize, from, localName, Meta.parseAfterFromString(after), null);
             final String csv = valueTypeExporter.createCsv(valueTypes);
             return streamCsvValueTypesOutput(csv);
         } else if (FORMAT_EXCEL.equalsIgnoreCase(format) || FORMAT_EXCEL_XLS.equalsIgnoreCase(format) || FORMAT_EXCEL_XLSX.equalsIgnoreCase(format)) {
-            final Set<ValueTypeDTO> valueTypes = domain.getValueTypes(pageSize, from, localName, Meta.parseAfterFromString(after), null);
             final Workbook workbook = valueTypeExporter.createExcel(valueTypes, format);
             return streamExcelValueTypesOutput(workbook);
         } else {
-            final Meta meta = new Meta(200, pageSize, from, after);
             ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_PROPERTYTYPE, expand), pretty));
-            final Set<ValueTypeDTO> valueTypes = domain.getValueTypes(pageSize, from, localName, meta.getAfter(), meta);
-            meta.setResultCount(valueTypes.size());
             final ResponseWrapper<ValueTypeDTO> wrapper = new ResponseWrapper<>();
             wrapper.setResults(valueTypes);
             wrapper.setMeta(meta);
