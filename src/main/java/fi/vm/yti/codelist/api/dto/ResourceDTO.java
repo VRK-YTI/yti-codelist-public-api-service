@@ -29,11 +29,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class ResourceDTO implements Serializable {
 
-    public static final String TYPE_CODELIST = "codelist";
-    public static final String TYPE_CODE = "code";
-    public static final String TYPE_EXTENSION = "extension";
-
     private static final long serialVersionUID = 1L;
+
+    private static final String TYPE_CODELIST = "codelist";
+    private static final String TYPE_CODE = "code";
+    private static final String TYPE_EXTENSION = "extension";
 
     private Map<String, String> prefLabel;
     private Map<String, String> description;
