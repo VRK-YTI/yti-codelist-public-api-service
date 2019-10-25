@@ -61,7 +61,10 @@ public class ResourceDTO implements Serializable {
         this.statusModified = codeSchemeDto.getStatusModified();
         this.type = TYPE_CODELIST;
         this.languages = new HashSet<>();
-        codeSchemeDto.getLanguageCodes().forEach(languageCode -> languages.add(languageCode.getCodeValue()));
+        final Set<CodeDTO> languageCodes = codeSchemeDto.getLanguageCodes();
+        if (languageCodes != null) {
+            languageCodes.forEach(languageCode -> languages.add(languageCode.getCodeValue()));
+        }
     }
 
     public ResourceDTO(final CodeDTO codeDto) {
