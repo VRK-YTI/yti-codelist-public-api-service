@@ -44,6 +44,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import static fi.vm.yti.codelist.api.util.EncodingUtils.urlDecodeCodeValue;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.util.Arrays.asList;
@@ -83,6 +84,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(summary = "Return a list of available CodeRegistries.")
     @ApiResponse(responseCode = "200", description = "Returns all CodeRegistries in specified format.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Tag(name = "CodeRegistry")
     public Response getCodeRegistries(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                       @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
                                       @Parameter(description = "CodeRegistry CodeValue as string value.", in = ParameterIn.QUERY) @QueryParam("codeValue") final String codeRegistryCodeValue,
@@ -116,6 +118,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Return one specific CodeRegistry.")
     @ApiResponse(responseCode = "200", description = "Returns one specific CodeRegistry in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    @Tag(name = "CodeRegistry")
     public Response getCodeRegistry(@Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                     @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                     @Parameter(description = "Language code for sorting results.", in = ParameterIn.QUERY) @QueryParam("language") @DefaultValue("fi") final String language,
@@ -141,6 +144,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Return CodeSchemes for a CodeRegistry.")
     @ApiResponse(responseCode = "200", description = "Returns CodeSchemes for a CodeRegistry in specified format.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Tag(name = "CodeScheme")
     public Response getCodeRegistryCodeSchemes(@Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                @Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                                @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
@@ -190,6 +194,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Return one specific CodeScheme.")
     @ApiResponse(responseCode = "200", description = "Returns one specific CodeScheme in JSON format.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Tag(name = "CodeScheme")
     public Response getCodeRegistryCodeScheme(@Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                               @Parameter(description = "CodeScheme CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                               @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
@@ -258,6 +263,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Return Codes for a CodeScheme.")
     @ApiResponse(responseCode = "200", description = "Returns all Codes for CodeScheme in specified format.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Tag(name = "Code")
     public Response getCodeRegistryCodeSchemeCodes(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                                    @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
                                                    @Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
@@ -318,6 +324,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Return Extensions for a CodeScheme.")
     @ApiResponse(responseCode = "200", description = "Returns all Extensions for CodeScheme.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
+    @Tag(name = "Extension")
     public Response getCodeRegistryCodeSchemeExtensions(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                                         @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
                                                         @Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
@@ -361,6 +368,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Return Extension for a CodeScheme.")
     @ApiResponse(responseCode = "200", description = "Returns single Extension for CodeScheme.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
+    @Tag(name = "Extension")
     public Response getCodeRegistryCodeSchemeExtension(@Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                        @Parameter(description = "CodeScheme CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                        @Parameter(description = "Extension CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("extensionCodeValue") final String extensionCodeValue,
@@ -396,6 +404,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Return Members for an Extension.")
     @ApiResponse(responseCode = "200", description = "Returns all Members for an Extension.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Tag(name = "Member")
     public Response getCodeRegistryCodeSchemeExtensionMembers(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                                               @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
                                                               @Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
@@ -445,6 +454,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Return Member for an Extension.")
     @ApiResponse(responseCode = "200", description = "Returns single Member for Extension.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
+    @Tag(name = "Member")
     public Response getCodeRegistryCodeSchemeExtensionMember(@Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                              @Parameter(description = "CodeScheme CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                              @Parameter(description = "Extension CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("extensionCodeValue") final String extensionCodeValue,
@@ -470,6 +480,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Return ExternalReferences for a CodeScheme.")
     @ApiResponse(responseCode = "200", description = "Returns all ExternalReferences for CodeScheme.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Tag(name = "ExternalReference")
     public Response getCodeRegistryCodeSchemeExternalReferences(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                                                 @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
                                                                 @Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
@@ -504,6 +515,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Return one Code from specific CodeScheme under specific CodeRegistry.")
     @ApiResponse(responseCode = "200", description = "Returns one Code from specific CodeRegistry in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    @Tag(name = "CodeScheme")
     public Response getCodeRegistryCodeSchemeCode(@Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                   @Parameter(description = "CodeScheme CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                   @Parameter(description = "Code code.", in = ParameterIn.PATH, required = true) @Encoded @PathParam("codeCodeValue") final String codeCodeValue,
@@ -522,6 +534,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Return Members for a Code.")
     @ApiResponse(responseCode = "200", description = "Returns all Members for Code.")
     @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8" })
+    @Tag(name = "Member")
     public Response getCodeRegistryCodeSchemeCodeMembers(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                                          @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
                                                          @Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
@@ -566,6 +579,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Return the complete version history of a specific CodeScheme, latest first.")
     @ApiResponse(responseCode = "200", description = "Return the complete version history of a specific CodeScheme, latest first, in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    @Tag(name = "CodeScheme")
     public Response getCodeSchemeVersions(@Parameter(description = "CodeRegistry codevalue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                           @Parameter(description = "CodeScheme codevalue.", in = ParameterIn.PATH, required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                           @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
@@ -595,6 +609,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Returns the variants of the CodeScheme.")
     @ApiResponse(responseCode = "200", description = "Return the variants of the CodeScheme in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    @Tag(name = "CodeScheme")
     public Response getCodeSchemeVariants(@Parameter(description = "CodeRegistry codevalue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                           @Parameter(description = "CodeScheme codevalue.", in = ParameterIn.PATH, required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                           @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
@@ -622,6 +637,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Operation(description = "Returns the CodeSchemes of which this CodeScheme is a variant of.")
     @ApiResponse(responseCode = "200", description = "Return the CodeSchemes of which this CodeScheme is a variant of in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    @Tag(name = "CodeScheme")
     public Response getCodeSchemeVariantMothers(@Parameter(description = "CodeRegistry codevalue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                 @Parameter(description = "CodeScheme codevalue.", in = ParameterIn.PATH, required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
                                                 @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,

@@ -41,11 +41,13 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import static fi.vm.yti.codelist.api.util.EncodingUtils.*;
 
 @Component
 @Path("/v1/uris")
 @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+@Tag(name = "Resolver")
 public class UriResolverResource extends AbstractBaseResource {
 
     private static final Logger LOG = LoggerFactory.getLogger(UriResolverResource.class);

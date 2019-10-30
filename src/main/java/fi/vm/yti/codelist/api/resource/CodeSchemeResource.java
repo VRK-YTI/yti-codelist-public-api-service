@@ -27,12 +27,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.util.Arrays.asList;
 
 @Component
 @Path("/v1/codeschemes")
 @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+@Tag(name = "CodeScheme")
 public class CodeSchemeResource extends AbstractBaseResource {
 
     private final Domain domain;

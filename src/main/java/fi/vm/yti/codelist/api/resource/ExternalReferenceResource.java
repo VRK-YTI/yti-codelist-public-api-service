@@ -27,11 +27,13 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 @Path("/v1/externalreferences")
 @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+@Tag(name = "ExternalReference")
 public class ExternalReferenceResource extends AbstractBaseResource {
 
     private final Domain domain;

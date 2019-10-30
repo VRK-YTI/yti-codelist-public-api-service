@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.FILTER_NAME_CODE;
 
 @Component
@@ -38,6 +39,7 @@ public class CodeResource extends AbstractBaseResource {
     @Operation(description = "Return one specific Code.")
     @ApiResponse(responseCode = "200", description = "Returns one specific Code in JSON format.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
+    @Tag(name = "Code")
     public Response getCode(@Parameter(description = "Code Id.", in = ParameterIn.PATH, required = true) @PathParam("codeId") final String codeId,
                             @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                             @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
