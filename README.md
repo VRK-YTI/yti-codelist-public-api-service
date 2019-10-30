@@ -10,16 +10,12 @@ This is the implementation of the Public API Service microservice for the YTI Co
 * Embedded [Jetty] to serve
 * [Jersey 2] for JAX-RS
 
-### Example queries:
-
-Do a HTTP GET to public resource:
-`http://localhost:9601/api/v1/hello`
-
 ## Interface Documentation
 
-When the microservice is running, you can get the Swagger REST API documentation from:
-- [http://localhost:9601/api/swagger.json](http://localhost:9601/codelist-api/api/swagger.json)
-- [http://localhost:9601/swagger/index.html](http://localhost:9601/codelist-api/swagger/index.html)
+When the microservice is running, you can get the OpenAPI documentation from:
+- [http://localhost:9601/codelist-api/api/openapi.json](http://localhost:9601/codelist-api/api/openapi.json)
+- [http://localhost:9601/codelist-api/api/openapi.yaml](http://localhost:9601/codelist-api/api/openapi.yaml)
+- [http://localhost:9601/codelist-api/swagger/index.html](http://localhost:9601/codelist-api/swagger/index.html)
 
 ## Prerequisities
 
@@ -30,7 +26,7 @@ When the microservice is running, you can get the Swagger REST API documentation
 
 ## Running
 
-- [yti-codelist-config](https://github.com/vrk-yti/yti-codelist-config) - Default configuration for development use
+- [yti-compose](https://github.com/vrk-yti/yti-compose) - Default configuration for development use
 
 ## Starting service on local development environment
 
@@ -38,7 +34,7 @@ When the microservice is running, you can get the Swagger REST API documentation
 
 Add the following Run configurations options:
 
-- Program arguments: `--spring.profiles.active=local --spring.config.location=../yti-codelist-config/application.yml,../yti-codelist-config/yti-codelist-public-api-service.yml`
+- Program arguments: `--spring.profiles.active=local --spring.config.location=../yti-compose/config/application.yml,../yti-compose/config/yti-codelist-public-api-service.yml`
 - Workdir: `$MODULE_DIR$`
 
 Add folder for yti project, application writes modified files there:
@@ -60,7 +56,7 @@ $ mvn clean package docker:build
 $ docker run --rm -p 9601:9601 -p 19601:19601 -v /path/to/yti-codelist-config:/config --name=yti-codelist-public-api-service yti-codelist-public-api-service -a --spring.config.location=/config/application.yml,/config/yti-codelist-public-api-service.yml
 ```
 
-.. or in [yti-codelist-compose](https://github.com/vrk-yti/yti-codelist-compose/) run
+.. or in [yti-compose](https://github.com/vrk-yti/yti-compose/) run
 
 ```bash
 $ docker-compose up yti-codelist-public-api-service
