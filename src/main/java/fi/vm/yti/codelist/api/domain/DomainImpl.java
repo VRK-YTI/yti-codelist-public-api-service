@@ -1163,12 +1163,20 @@ public class DomainImpl implements Domain {
             final Date after = meta.getAfter();
             if (after != null) {
                 final String afterString = dateFormat.format(after);
-                builder.must(rangeQuery("modified").gte(afterString));
+                final BoolQueryBuilder modifiedAfterQuery = boolQuery();
+                modifiedAfterQuery.should(rangeQuery("modified").gte(afterString));
+                modifiedAfterQuery.should(rangeQuery("contentModified").gte(afterString));
+                modifiedAfterQuery.minimumShouldMatch(1);
+                builder.must(modifiedAfterQuery);
             }
             final Date before = meta.getBefore();
             if (before != null) {
                 final String beforeString = dateFormat.format(before);
-                builder.must(rangeQuery("modified").lt(beforeString));
+                final BoolQueryBuilder modifiedBeforeQuery = boolQuery();
+                modifiedBeforeQuery.should(rangeQuery("modified").lt(beforeString));
+                modifiedBeforeQuery.should(rangeQuery("contentModified").lt(beforeString));
+                modifiedBeforeQuery.minimumShouldMatch(1);
+                builder.must(modifiedBeforeQuery);
             }
         }
     }
