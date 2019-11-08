@@ -20,4 +20,3 @@ public class YtiCodeListExceptionMapper implements BaseExceptionMapper, Exceptio
         return getResponse(ex);
     }
 }
-
