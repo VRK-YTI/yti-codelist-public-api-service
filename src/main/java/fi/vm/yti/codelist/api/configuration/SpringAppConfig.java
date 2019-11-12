@@ -1,13 +1,13 @@
 package fi.vm.yti.codelist.api.configuration;
 
+import org.apache.catalina.connector.Connector;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.embedded.jetty.JettyServletWebServerFactory;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.ErrorPage;
-import org.springframework.boot.web.servlet.server.ConfigurableServletWebServerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -40,11 +40,19 @@ public class SpringAppConfig {
     }
 
     @Bean
-    public ConfigurableServletWebServerFactory servletContainer() {
-        final JettyServletWebServerFactory factory = new JettyServletWebServerFactory();
-        factory.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/notfound.html"));
-        factory.setContextPath(contextPath);
-        return factory;
+    public TomcatServletWebServerFactory servletContainer(@Value("${tomcat.ajp.port:}") final Integer ajpPort) {
+        final TomcatServletWebServerFactory tomcat = new TomcatServletWebServerFactory();
+        tomcat.setContextPath(contextPath);
+        tomcat.addErrorPages(new ErrorPage(HttpStatus.NOT_FOUND, "/notfound.html"));
+        if (ajpPort != null) {
+            final Connector ajpConnector = new Connector("AJP/1.3");
+            ajpConnector.setPort(ajpPort);
+            ajpConnector.setSecure(false);
+            ajpConnector.setAllowTrace(false);
+            ajpConnector.setScheme("http");
+            tomcat.addAdditionalTomcatConnectors(ajpConnector);
+        }
+        return tomcat;
     }
 
     @Bean
