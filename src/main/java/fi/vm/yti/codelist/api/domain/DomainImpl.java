@@ -1021,7 +1021,7 @@ public class DomainImpl implements Domain {
         return containers;
     }
 
-    public Set<ResourceDTO> getResources(final String containerUri,
+    public Set<ResourceDTO> getResources(final List<String> containerUris,
                                          final String language,
                                          final List<String> statuses,
                                          final String searchTerm,
@@ -1049,10 +1049,10 @@ public class DomainImpl implements Domain {
             final SearchSourceBuilder searchBuilder = createSearchSourceBuilderWithPagination(meta);
             final BoolQueryBuilder builder = constructAndOrQueryForPrefLabelAndCodeValue(searchTerm);
             embedAfterBeforeToBoolQuery(builder, meta);
-            if (containerUri != null && !containerUri.isEmpty()) {
+            if (containerUris != null && !containerUris.isEmpty()) {
                 final BoolQueryBuilder boolQuery = boolQuery();
-                boolQuery.should(matchQuery("codeScheme.uri", containerUri.toLowerCase()).analyzer(TEXT_ANALYZER));
-                boolQuery.should(matchQuery("parentCodeScheme.uri", containerUri.toLowerCase()).analyzer(TEXT_ANALYZER));
+                boolQuery.must(nestedQuery("codeScheme.uri", termsQuery("codeScheme.uri", includeIncompleteFrom), ScoreMode.None).ignoreUnmapped(true));
+                boolQuery.must(nestedQuery("parentCodeScheme.uri", termsQuery("parentCodeScheme.uri", includeIncompleteFrom), ScoreMode.None).ignoreUnmapped(true));
                 boolQuery.minimumShouldMatch(1);
                 builder.must(boolQuery);
             } else {
