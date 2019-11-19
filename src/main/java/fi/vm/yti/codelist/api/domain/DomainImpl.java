@@ -1051,8 +1051,8 @@ public class DomainImpl implements Domain {
             embedAfterBeforeToBoolQuery(builder, meta);
             if (containerUris != null && !containerUris.isEmpty()) {
                 final BoolQueryBuilder boolQuery = boolQuery();
-                boolQuery.must(nestedQuery("codeScheme.uri", termsQuery("codeScheme.uri", includeIncompleteFrom), ScoreMode.None).ignoreUnmapped(true));
-                boolQuery.must(nestedQuery("parentCodeScheme.uri", termsQuery("parentCodeScheme.uri", includeIncompleteFrom), ScoreMode.None).ignoreUnmapped(true));
+                boolQuery.should(termsQuery("codeScheme.uri", containerUris));
+                boolQuery.should(termsQuery("parentCodeScheme.uri", containerUris));
                 boolQuery.minimumShouldMatch(1);
                 builder.must(boolQuery);
             } else {
