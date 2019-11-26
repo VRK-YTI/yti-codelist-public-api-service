@@ -131,7 +131,7 @@ public interface Domain {
                                    final boolean includeIncomplete,
                                    final Meta meta);
 
-    Set<ResourceDTO> getResources(final String codeSchemeUri,
+    Set<ResourceDTO> getResources(final List<String> codeSchemeUris,
                                   final String language,
                                   final List<String> statuses,
                                   final String type,

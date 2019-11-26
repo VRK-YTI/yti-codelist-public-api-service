@@ -145,17 +145,15 @@ public class IntegrationResource extends AbstractBaseResource {
                                  @Parameter(description = "Status enumerations in CSL format.", in = ParameterIn.QUERY) @QueryParam("status") final String status,
                                  @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
                                  @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
-                                 @Parameter(description = "Container URI.", in = ParameterIn.QUERY) @QueryParam("container") final String containerUri,
+                                 @Parameter(description = "Container URIs.", in = ParameterIn.QUERY) @QueryParam("container") final String container,
                                  @Parameter(description = "Type for filtering resources.", in = ParameterIn.QUERY) @QueryParam("type") final String type,
                                  @Parameter(description = "Resource URIs.", in = ParameterIn.QUERY) @Encoded @QueryParam("uri") final String uri,
                                  @Parameter(description = "Search term used to filter results based on partial prefLabel or codeValue match.", in = ParameterIn.QUERY) @QueryParam("searchTerm") final String searchTerm,
                                  @Parameter(description = "User organizations filtering parameter, for filtering incomplete code lists", in = ParameterIn.QUERY) @QueryParam("includeIncompleteFrom") final String includeIncompleteFrom,
                                  @Parameter(description = "Control boolean for returning resources from incomplete code lists.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
                                  @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-        if (containerUri != null) {
-            ensureSuomiFiUriHost(containerUri);
-        }
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), pretty));
+        final List<String> containerUriList = container == null ? null : asList(container.toLowerCase().split(","));
         final List<String> includeIncompleteFromList = includeIncompleteFrom == null ? null : asList(includeIncompleteFrom.toLowerCase().split(","));
         final List<String> statusList = parseStatus(status);
         Set<String> includedResourceUris = null;
@@ -164,12 +162,12 @@ public class IntegrationResource extends AbstractBaseResource {
             includedResourceUris = parseUris(uriDecoded);
         }
         final Meta meta = new Meta(200, pageSize, from, after, before);
-        final Set<ResourceDTO> resources = domain.getResources(containerUri, language, statusList, searchTerm, type, includedResourceUris, null, includeIncompleteFromList, includeIncomplete, meta);
+        final Set<ResourceDTO> resources = domain.getResources(containerUriList, language, statusList, searchTerm, type, includedResourceUris, null, includeIncompleteFromList, includeIncomplete, meta);
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
-            if (containerUri != null) {
-                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&container=" + containerUri);
+            if (container != null) {
+                meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&container=" + container);
             }
-            meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&container=" + containerUri);
+            meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&container=" + container);
         }
         final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
         wrapper.setResults(resources);
@@ -184,10 +182,7 @@ public class IntegrationResource extends AbstractBaseResource {
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
     public Response getResources(@Parameter(description = "Integration resource request parameters as JSON payload.") @RequestBody final String integrationRequestData) {
         final IntegrationResourceRequestDTO request = parseIntegrationRequestDto(integrationRequestData);
-        final String container = request.getContainer();
-        if (container != null) {
-            ensureSuomiFiUriHost(container);
-        }
+        final List<String> containerUris = request.getContainer();
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), request.getPretty()));
         final List<String> includeIncompleteFromList = request.getIncludeIncompleteFrom();
         final boolean includeIncomplete = request.getIncludeIncomplete();
@@ -214,7 +209,7 @@ public class IntegrationResource extends AbstractBaseResource {
         final String type = request.getType();
         final String searchTerm = request.getSearchTerm();
         final Meta meta = new Meta(200, pageSize, from, after, before);
-        final Set<ResourceDTO> resources = domain.getResources(container, language, statusList, searchTerm, type, includedResourceUrisSet, excludedResourceUrisSet, includeIncompleteFromList, includeIncomplete, meta);
+        final Set<ResourceDTO> resources = domain.getResources(containerUris, language, statusList, searchTerm, type, includedResourceUrisSet, excludedResourceUrisSet, includeIncompleteFromList, includeIncomplete, meta);
         final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
         wrapper.setResults(resources);
         wrapper.setMeta(meta);

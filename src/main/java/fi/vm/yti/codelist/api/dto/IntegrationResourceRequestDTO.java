@@ -4,7 +4,7 @@ import java.util.List;
 
 public class IntegrationResourceRequestDTO {
 
-    private String container;
+    private List<String> container;
     private Integer pageFrom;
     private Integer pageSize;
     private List<String> status;
@@ -19,11 +19,11 @@ public class IntegrationResourceRequestDTO {
     private String type;
     private boolean includeIncomplete;
 
-    public String getContainer() {
+    public List<String> getContainer() {
         return container;
     }
 
-    public void setContainer(final String container) {
+    public void setContainer(final List<String> container) {
         this.container = container;
     }
 
