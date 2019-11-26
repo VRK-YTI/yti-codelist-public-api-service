@@ -997,7 +997,7 @@ public class DomainImpl implements Domain {
                 boolQueryBuilder.minimumShouldMatch(1);
                 builder.must(boolQueryBuilder);
             }
-            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "contentModified", "status", "uri", "organizations", "languageCodes" };
+            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "contentModified", "statusModified", "status", "uri", "organizations", "languageCodes" };
             searchBuilder.fetchSource(includeFields, null);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
