@@ -1143,9 +1143,11 @@ public class DomainImpl implements Domain {
     private BoolQueryBuilder constructAndOrQueryForPrefLabelAndCodeValue(final String searchTerm) {
         final BoolQueryBuilder builder = boolQuery();
         if (searchTerm != null && !searchTerm.isEmpty()) {
-            builder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTerm).field("codeValue"));
-            builder.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTerm).field("prefLabel.*"));
-            builder.minimumShouldMatch(1);
+            final BoolQueryBuilder prefLabelOrCodeValueMatcher = boolQuery();
+            prefLabelOrCodeValueMatcher.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTerm).field("codeValue"));
+            prefLabelOrCodeValueMatcher.should(luceneQueryFactory.buildPrefixSuffixQuery(searchTerm).field("prefLabel.*"));
+            prefLabelOrCodeValueMatcher.minimumShouldMatch(1);
+            builder.must(prefLabelOrCodeValueMatcher);
         }
         return builder;
     }
