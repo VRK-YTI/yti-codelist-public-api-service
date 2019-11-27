@@ -10,6 +10,7 @@ import fi.vm.yti.codelist.api.exception.exceptionmapping.YtiCodeListExceptionMap
 import fi.vm.yti.codelist.api.filter.CacheFilter;
 import fi.vm.yti.codelist.api.filter.CharsetResponseFilter;
 import fi.vm.yti.codelist.api.filter.RequestLoggingFilter;
+import fi.vm.yti.codelist.api.filter.RobotsFilter;
 import fi.vm.yti.codelist.api.resource.CodeRegistryResource;
 import fi.vm.yti.codelist.api.resource.CodeSchemeResource;
 import fi.vm.yti.codelist.api.resource.ExtensionResource;
@@ -70,6 +71,9 @@ public class JerseyConfig extends ResourceConfig {
 
         // Logging
         register(RequestLoggingFilter.class);
+
+        // X-Robots-Tag filter
+        register(RobotsFilter.class);
 
         // Health
         register(PingResource.class);
