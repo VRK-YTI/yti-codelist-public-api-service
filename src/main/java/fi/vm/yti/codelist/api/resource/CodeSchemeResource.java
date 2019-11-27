@@ -73,7 +73,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @Parameter(description = "User organizations filtering parameter, for filtering unfinished code schemes", in = ParameterIn.QUERY) @QueryParam("userOrganizations") final String userOrganizationsCsv,
                                    @Parameter(description = "Include INCOMPLETE statused code schemes.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
                                    @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-        final Meta meta = new Meta(200, pageSize, from, after, before);
+        final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final List<String> infoDomainsList = parseInfoDomains(infoDomain);
         final List<String> organizations = organizationsCsv == null ? null : asList(organizationsCsv.toLowerCase().split(","));
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));

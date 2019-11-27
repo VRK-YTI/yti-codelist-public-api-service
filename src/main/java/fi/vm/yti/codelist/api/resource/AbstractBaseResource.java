@@ -2,7 +2,9 @@ package fi.vm.yti.codelist.api.resource;
 
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +25,7 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.ser.FilterProvider;
 import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
@@ -277,5 +280,18 @@ abstract class AbstractBaseResource {
             }
             return writer.with(provider);
         }
+    }
+
+    public static Date parseDateFromString(final String dateString) {
+        if (dateString != null) {
+            final ISO8601DateFormat dateFormat = new ISO8601DateFormat();
+            try {
+                return dateFormat.parse(dateString);
+            } catch (ParseException e) {
+                LOG.error("Parsing date from string failed: " + dateString);
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.BAD_REQUEST.value(), "Date input not valid: " + dateString));
+            }
+        }
+        return null;
     }
 }
