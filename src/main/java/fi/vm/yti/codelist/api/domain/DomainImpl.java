@@ -971,14 +971,15 @@ public class DomainImpl implements Domain {
             if (statuses != null && !statuses.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
                 if (!includeIncomplete && statuses.contains(Status.INCOMPLETE.toString())) {
-                    final BoolQueryBuilder incompleteQueryBuilder = boolQuery();
-                    incompleteQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
-                    incompleteQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", includeIncompleteFrom), ScoreMode.None));
-                    boolQueryBuilder.should(incompleteQueryBuilder);
+                    if (includeIncompleteFrom != null && !includeIncompleteFrom.isEmpty()) {
+                        final BoolQueryBuilder incompleteQueryBuilder = boolQuery();
+                        incompleteQueryBuilder.must(matchQuery("status.keyword", Status.INCOMPLETE.toString()));
+                        incompleteQueryBuilder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", includeIncompleteFrom), ScoreMode.None));
+                        boolQueryBuilder.should(incompleteQueryBuilder);
+                    }
                     statuses.remove(Status.INCOMPLETE.toString());
                 }
                 boolQueryBuilder.should(termsQuery("status.keyword", statuses));
-                builder.must(termsQuery("status.keyword", statuses));
                 boolQueryBuilder.minimumShouldMatch(1);
                 builder.must(boolQueryBuilder);
             } else {
@@ -1050,15 +1051,15 @@ public class DomainImpl implements Domain {
             final BoolQueryBuilder builder = constructAndOrQueryForPrefLabelAndCodeValue(searchTerm);
             embedAfterBeforeToBoolQuery(builder, meta);
             if (containerUris != null && !containerUris.isEmpty()) {
-                final BoolQueryBuilder boolQuery = boolQuery();
-                boolQuery.should(termsQuery("codeScheme.uri", containerUris));
-                boolQuery.should(termsQuery("parentCodeScheme.uri", containerUris));
-                boolQuery.minimumShouldMatch(1);
-                builder.must(boolQuery);
+                final BoolQueryBuilder codeschemeUriQueryBuilder = boolQuery();
+                codeschemeUriQueryBuilder.should(termsQuery("codeScheme.uri", containerUris));
+                codeschemeUriQueryBuilder.should(termsQuery("parentCodeScheme.uri", containerUris));
+                codeschemeUriQueryBuilder.minimumShouldMatch(1);
+                builder.must(codeschemeUriQueryBuilder);
             } else {
-                final BoolQueryBuilder codeSchemeStatusBuilder = boolQuery();
-                codeSchemeStatusBuilder.should(termsQuery("codeScheme.status.keyword", getRegularStatuses()));
-                codeSchemeStatusBuilder.should(termsQuery("parentCodeScheme.status.keyword", getRegularStatuses()));
+                final BoolQueryBuilder codeSchemeStatusQueryBuilder = boolQuery();
+                codeSchemeStatusQueryBuilder.should(termsQuery("codeScheme.status.keyword", getRegularStatuses()));
+                codeSchemeStatusQueryBuilder.should(termsQuery("parentCodeScheme.status.keyword", getRegularStatuses()));
                 if (includeIncomplete) {
                     final BoolQueryBuilder codeSchemeIncompleteQueryBuilder = boolQuery();
                     if (type == null || type.equalsIgnoreCase(ELASTIC_TYPE_CODE)) {
@@ -1068,26 +1069,26 @@ public class DomainImpl implements Domain {
                         codeSchemeIncompleteQueryBuilder.should(matchQuery("parentCodeScheme.status.keyword", Status.INCOMPLETE.toString()));
                     }
                     codeSchemeIncompleteQueryBuilder.minimumShouldMatch(1);
-                    builder.should(codeSchemeIncompleteQueryBuilder);
+                    codeSchemeStatusQueryBuilder.should(codeSchemeIncompleteQueryBuilder);
                 } else if (includeIncompleteFrom != null && !includeIncompleteFrom.isEmpty()) {
                     final BoolQueryBuilder codeSchemeIncompleteQueryBuilder = boolQuery();
                     if (type == null || type.equalsIgnoreCase(ELASTIC_TYPE_CODE)) {
-                        final BoolQueryBuilder codeSchemeStatusQueryBuilder = boolQuery();
-                        codeSchemeStatusQueryBuilder.must(matchQuery("codeScheme.status.keyword", Status.INCOMPLETE.toString()));
-                        codeSchemeStatusQueryBuilder.must(nestedQuery("codeScheme.organizations", termsQuery("codeScheme.organizations.id.keyword", includeIncompleteFrom), ScoreMode.None).ignoreUnmapped(true));
-                        codeSchemeIncompleteQueryBuilder.should(codeSchemeStatusQueryBuilder);
+                        final BoolQueryBuilder codeSchemeCodeStatusQueryBuilder = boolQuery();
+                        codeSchemeCodeStatusQueryBuilder.must(matchQuery("codeScheme.status.keyword", Status.INCOMPLETE.toString()));
+                        codeSchemeCodeStatusQueryBuilder.must(nestedQuery("codeScheme.organizations", termsQuery("codeScheme.organizations.id.keyword", includeIncompleteFrom), ScoreMode.None).ignoreUnmapped(true));
+                        codeSchemeIncompleteQueryBuilder.should(codeSchemeCodeStatusQueryBuilder);
                     }
                     if (type == null || type.equalsIgnoreCase(ELASTIC_TYPE_EXTENSION)) {
-                        final BoolQueryBuilder parentCodeSchemeStatusQueryBuilder = boolQuery();
-                        parentCodeSchemeStatusQueryBuilder.must(matchQuery("parentCodeScheme.status.keyword", Status.INCOMPLETE.toString()));
-                        parentCodeSchemeStatusQueryBuilder.must(nestedQuery("parentCodeScheme.organizations", termsQuery("parentCodeScheme.organizations.id.keyword", includeIncompleteFrom), ScoreMode.None).ignoreUnmapped(true));
-                        codeSchemeIncompleteQueryBuilder.should(parentCodeSchemeStatusQueryBuilder);
+                        final BoolQueryBuilder extensionParentCodeSchemeStatusQueryBuilder = boolQuery();
+                        extensionParentCodeSchemeStatusQueryBuilder.must(matchQuery("parentCodeScheme.status.keyword", Status.INCOMPLETE.toString()));
+                        extensionParentCodeSchemeStatusQueryBuilder.must(nestedQuery("parentCodeScheme.organizations", termsQuery("parentCodeScheme.organizations.id.keyword", includeIncompleteFrom), ScoreMode.None).ignoreUnmapped(true));
+                        codeSchemeIncompleteQueryBuilder.should(extensionParentCodeSchemeStatusQueryBuilder);
                     }
                     codeSchemeIncompleteQueryBuilder.minimumShouldMatch(1);
-                    builder.should(codeSchemeIncompleteQueryBuilder);
+                    codeSchemeStatusQueryBuilder.should(codeSchemeIncompleteQueryBuilder);
                 }
-                codeSchemeStatusBuilder.minimumShouldMatch(1);
-                builder.should(codeSchemeStatusBuilder);
+                codeSchemeStatusQueryBuilder.minimumShouldMatch(1);
+                builder.must(codeSchemeStatusQueryBuilder);
             }
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
