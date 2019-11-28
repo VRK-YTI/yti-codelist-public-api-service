@@ -122,22 +122,22 @@ public interface Domain {
     MemberDTO getMember(final String memberId,
                         final String extensionCodeValue);
 
-    Set<ResourceDTO> getContainers(final String language,
+    Set<ResourceDTO> getContainers(final List<String> includedContainerUris,
+                                   final List<String> excludedContainerUris,
+                                   final String language,
                                    final List<String> statuses,
                                    final String searchTerm,
-                                   final Set<String> includedContainerUris,
-                                   final Set<String> excludedContainerUris,
                                    final List<String> includeIncompleteFrom,
                                    final boolean includeIncomplete,
                                    final Meta meta);
 
     Set<ResourceDTO> getResources(final List<String> codeSchemeUris,
+                                  final List<String> includedResourceUris,
+                                  final List<String> excludedResourceUris,
                                   final String language,
                                   final List<String> statuses,
                                   final String type,
                                   final String searchTerm,
-                                  final Set<String> includedResourceUris,
-                                  final Set<String> excludedResourceUris,
                                   final List<String> includeIncompleteFrom,
                                   final boolean includeIncomplete,
                                   final Meta meta);
