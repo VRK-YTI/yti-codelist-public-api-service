@@ -946,11 +946,11 @@ public class DomainImpl implements Domain {
         return null;
     }
 
-    public Set<ResourceDTO> getContainers(final String language,
+    public Set<ResourceDTO> getContainers(final List<String> includedContainerUris,
+                                          final List<String> excludedContainerUris,
+                                          final String language,
                                           final List<String> statuses,
                                           final String searchTerm,
-                                          final Set<String> includedContainerUris,
-                                          final Set<String> excludedContainerUris,
                                           final List<String> includeIncompleteFrom,
                                           final boolean includeIncomplete,
                                           final Meta meta) {
@@ -1023,12 +1023,12 @@ public class DomainImpl implements Domain {
     }
 
     public Set<ResourceDTO> getResources(final List<String> containerUris,
+                                         final List<String> includedResourceUris,
+                                         final List<String> excludedResourceUris,
                                          final String language,
                                          final List<String> statuses,
                                          final String searchTerm,
                                          final String type,
-                                         final Set<String> includedResourceuris,
-                                         final Set<String> excludedResourceUris,
                                          final List<String> includeIncompleteFrom,
                                          final boolean includeIncomplete,
                                          final Meta meta) {
@@ -1093,8 +1093,8 @@ public class DomainImpl implements Domain {
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }
-            if (includedResourceuris != null && includedResourceuris.size() > 0) {
-                builder.must(termsQuery("uri.keyword", includedResourceuris));
+            if (includedResourceUris != null && includedResourceUris.size() > 0) {
+                builder.must(termsQuery("uri.keyword", includedResourceUris));
             } else if (excludedResourceUris != null && excludedResourceUris.size() > 0) {
                 builder.mustNot(termsQuery("uri.keyword", excludedResourceUris));
             }

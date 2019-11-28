@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
 import fi.vm.yti.codelist.common.dto.ErrorModel;
 import fi.vm.yti.codelist.common.model.Status;
+import static fi.vm.yti.codelist.api.util.EncodingUtils.urlDecodeString;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 abstract class AbstractBaseResource {
@@ -89,14 +90,18 @@ abstract class AbstractBaseResource {
         return filterProvider;
     }
 
-    Set<String> parseUris(final String urisCsl) {
-        final Set<String> uriSet = new HashSet<>();
+    List<String> parseAndDecodeUrisFromCsl(final String urisCsl) {
         if (urisCsl != null) {
-            for (final String uri : urisCsl.split(",")) {
-                uriSet.add(uri.trim());
+            final String uriDecoded = urlDecodeString(urisCsl);
+            final List<String> uris = new ArrayList<>();
+            if (urisCsl != null) {
+                for (final String uri : uriDecoded.split(",")) {
+                    uris.add(uri.toLowerCase().trim());
+                }
             }
+            return uris;
         }
-        return uriSet;
+        return null;
     }
 
     List<String> parseStatus(final String statusCsl) {

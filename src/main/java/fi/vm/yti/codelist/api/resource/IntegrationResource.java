@@ -1,9 +1,9 @@
 package fi.vm.yti.codelist.api.resource;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -37,7 +37,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import static fi.vm.yti.codelist.api.util.EncodingUtils.urlDecodeString;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.util.Arrays.asList;
 
@@ -69,20 +68,18 @@ public class IntegrationResource extends AbstractBaseResource {
                                   @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
                                   @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                   @Parameter(description = "Search term used to filter results based on partial prefLabel or codeValue match.", in = ParameterIn.QUERY) @QueryParam("searchTerm") final String searchTerm,
-                                  @Parameter(description = "Container URIs.", in = ParameterIn.QUERY) @Encoded @QueryParam("uri") final String uri,
+                                  @Parameter(description = "Container URIs that are included.", in = ParameterIn.QUERY) @Encoded @QueryParam("uri") final String uri,
+                                  @Parameter(description = "Container URIs that are excluded.", in = ParameterIn.QUERY) @Encoded @QueryParam("filter") final String filter,
                                   @Parameter(description = "User organizations filtering parameter, for filtering incomplete code lists", in = ParameterIn.QUERY) @QueryParam("includeIncompleteFrom") final String includeIncompleteFrom,
                                   @Parameter(description = "Control boolean for returning all incomplete containers.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
                                   @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), pretty));
         final Meta meta = new Meta(200, pageSize, from, after, before);
+        final List<String> includedContainerUris = parseAndDecodeUrisFromCsl(uri);
+        final List<String> excludedContainerUris = parseAndDecodeUrisFromCsl(filter);
         final List<String> statusList = parseStatus(status);
-        Set<String> includedContainerUris = null;
-        if (uri != null) {
-            final String uriDecoded = urlDecodeString(uri);
-            includedContainerUris = parseUris(uriDecoded);
-        }
         final List<String> includeIncompleteFromList = includeIncompleteFrom == null ? null : asList(includeIncompleteFrom.toLowerCase().split(","));
-        final Set<ResourceDTO> containers = domain.getContainers(language, statusList, searchTerm, includedContainerUris, null, includeIncompleteFromList, includeIncomplete, meta);
+        final Set<ResourceDTO> containers = domain.getContainers(includedContainerUris, excludedContainerUris, language, statusList, searchTerm, includeIncompleteFromList, includeIncomplete, meta);
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_CONTAINERS, after, pageSize, from + pageSize));
         }
@@ -97,17 +94,12 @@ public class IntegrationResource extends AbstractBaseResource {
     @Operation(description = "API for fetching container resources")
     @ApiResponse(responseCode = "200", description = "Returns container resources with meta element that shows details and a results list.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getContainers(@Parameter(description = "Integration resource request parameters as JSON payload.") @RequestBody final String integrationRequestData) {
+    public Response getContainersPost(@Parameter(description = "Integration resource request parameters as JSON payload.") @RequestBody final String integrationRequestData) {
         final IntegrationResourceRequestDTO request = parseIntegrationRequestDto(integrationRequestData);
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), request.getPretty()));
         final List<String> statusList = request.getStatus();
-        final List<String> filter = request.getFilter();
-        final Set<String> ecludedContainerUrisSet;
-        if (filter != null) {
-            ecludedContainerUrisSet = new HashSet<>(request.getFilter());
-        } else {
-            ecludedContainerUrisSet = null;
-        }
+        final List<String> excludedContainerUris = convertListToLowerCase(request.getFilter());
+        final List<String> includedContainerUris = convertListToLowerCase(request.getUri());
         final List<String> includeIncompleteFromList = request.getIncludeIncompleteFrom();
         final Integer pageSize = request.getPageSize();
         final Integer from = request.getPageFrom();
@@ -115,16 +107,9 @@ public class IntegrationResource extends AbstractBaseResource {
         final String before = request.getBefore();
         final String searchTerm = request.getSearchTerm();
         final String language = request.getLanguage();
-        final List<String> uris = request.getUri();
-        final Set<String> includedContainerUrisSet;
-        if (filter != null) {
-            includedContainerUrisSet = new HashSet<>(uris);
-        } else {
-            includedContainerUrisSet = null;
-        }
         final boolean includeIncomplete = request.getIncludeIncomplete();
         final Meta meta = new Meta(200, pageSize, from, after, before);
-        final Set<ResourceDTO> containers = domain.getContainers(language, statusList, searchTerm, includedContainerUrisSet, ecludedContainerUrisSet, includeIncompleteFromList, includeIncomplete, meta);
+        final Set<ResourceDTO> containers = domain.getContainers(includedContainerUris, excludedContainerUris, language, statusList, searchTerm, includeIncompleteFromList, includeIncomplete, meta);
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_CONTAINERS, after, pageSize, from + pageSize));
         }
@@ -147,22 +132,20 @@ public class IntegrationResource extends AbstractBaseResource {
                                  @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                  @Parameter(description = "Container URIs.", in = ParameterIn.QUERY) @QueryParam("container") final String container,
                                  @Parameter(description = "Type for filtering resources.", in = ParameterIn.QUERY) @QueryParam("type") final String type,
-                                 @Parameter(description = "Resource URIs.", in = ParameterIn.QUERY) @Encoded @QueryParam("uri") final String uri,
+                                 @Parameter(description = "Resource URIs that are included.", in = ParameterIn.QUERY) @Encoded @QueryParam("uri") final String uri,
+                                 @Parameter(description = "Resource URIs that are filtered.", in = ParameterIn.QUERY) @Encoded @QueryParam("filter") final String filter,
                                  @Parameter(description = "Search term used to filter results based on partial prefLabel or codeValue match.", in = ParameterIn.QUERY) @QueryParam("searchTerm") final String searchTerm,
                                  @Parameter(description = "User organizations filtering parameter, for filtering incomplete code lists", in = ParameterIn.QUERY) @QueryParam("includeIncompleteFrom") final String includeIncompleteFrom,
                                  @Parameter(description = "Control boolean for returning resources from incomplete code lists.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
                                  @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), pretty));
-        final List<String> containerUriList = container == null ? null : asList(container.toLowerCase().split(","));
+        final List<String> containerUris = container == null ? null : asList(container.toLowerCase().split(","));
+        final List<String> includedResourceUris = parseAndDecodeUrisFromCsl(uri);
+        final List<String> excludedResourceUris = parseAndDecodeUrisFromCsl(filter);
         final List<String> includeIncompleteFromList = includeIncompleteFrom == null ? null : asList(includeIncompleteFrom.toLowerCase().split(","));
         final List<String> statusList = parseStatus(status);
-        Set<String> includedResourceUris = null;
-        if (uri != null) {
-            final String uriDecoded = urlDecodeString(uri);
-            includedResourceUris = parseUris(uriDecoded);
-        }
         final Meta meta = new Meta(200, pageSize, from, after, before);
-        final Set<ResourceDTO> resources = domain.getResources(containerUriList, language, statusList, searchTerm, type, includedResourceUris, null, includeIncompleteFromList, includeIncomplete, meta);
+        final Set<ResourceDTO> resources = domain.getResources(containerUris, includedResourceUris, excludedResourceUris, language, statusList, searchTerm, type, includeIncompleteFromList, includeIncomplete, meta);
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
             if (container != null) {
                 meta.setNextPage(apiUtils.createNextPageUrl(API_VERSION, API_PATH_INTEGRATION + API_PATH_RESOURCES, after, pageSize, from + pageSize) + "&container=" + container);
@@ -180,40 +163,35 @@ public class IntegrationResource extends AbstractBaseResource {
     @Operation(description = "API for fetching resources for a container")
     @ApiResponse(responseCode = "200", description = "Returns resources for a specific container with meta element that shows details and a results list.")
     @Produces(MediaType.APPLICATION_JSON + ";charset=UTF-8")
-    public Response getResources(@Parameter(description = "Integration resource request parameters as JSON payload.") @RequestBody final String integrationRequestData) {
+    public Response getResourcesPost(@Parameter(description = "Integration resource request parameters as JSON payload.") @RequestBody final String integrationRequestData) {
         final IntegrationResourceRequestDTO request = parseIntegrationRequestDto(integrationRequestData);
-        final List<String> containerUris = request.getContainer();
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), request.getPretty()));
+        final List<String> containerUris = convertListToLowerCase(request.getContainer());
+        final List<String> excludedResourceUris = convertListToLowerCase(request.getFilter());
+        final List<String> includedResourceUris = convertListToLowerCase(request.getUri());
         final List<String> includeIncompleteFromList = request.getIncludeIncompleteFrom();
         final boolean includeIncomplete = request.getIncludeIncomplete();
         final List<String> statusList = request.getStatus();
-        final List<String> filter = request.getFilter();
-        final Set<String> excludedResourceUrisSet;
-        if (filter != null) {
-            excludedResourceUrisSet = new HashSet<>(filter);
-        } else {
-            excludedResourceUrisSet = null;
-        }
         final Integer pageSize = request.getPageSize();
         final Integer from = request.getPageFrom();
         final String after = request.getAfter();
         final String before = request.getBefore();
         final String language = request.getLanguage();
-        final List<String> uris = request.getUri();
-        final Set<String> includedResourceUrisSet;
-        if (uris != null) {
-            includedResourceUrisSet = new HashSet<>(uris);
-        } else {
-            includedResourceUrisSet = null;
-        }
         final String type = request.getType();
         final String searchTerm = request.getSearchTerm();
         final Meta meta = new Meta(200, pageSize, from, after, before);
-        final Set<ResourceDTO> resources = domain.getResources(containerUris, language, statusList, searchTerm, type, includedResourceUrisSet, excludedResourceUrisSet, includeIncompleteFromList, includeIncomplete, meta);
+        final Set<ResourceDTO> resources = domain.getResources(containerUris, includedResourceUris, excludedResourceUris, language, statusList, searchTerm, type, includeIncompleteFromList, includeIncomplete, meta);
         final ResponseWrapper<ResourceDTO> wrapper = new ResponseWrapper<>();
         wrapper.setResults(resources);
         wrapper.setMeta(meta);
         return Response.ok(wrapper).build();
+    }
+
+    private List<String> convertListToLowerCase(final List<String> list) {
+        if (list != null && !list.isEmpty()) {
+            return list.stream().map(String::toLowerCase).collect(Collectors.toList());
+        }
+        return null;
     }
 
     private IntegrationResourceRequestDTO parseIntegrationRequestDto(final String integrationRequestData) {
