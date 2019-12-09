@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
     <springProfile name="dev,test,prod">
-        <include resource="org/springframework/boot/logging/logback/base.xml"/>
         <logger name="org.apache" level="WARN"/>
         <logger name="org.springframework" level="INFO"/>
         <logger name="fi.vm" level="INFO"/>
         <property name="SERVICE_NAME" value="yti-codelist-public-api-service"/>
-        <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
             <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
                 <providers>
                     <timestamp>
@@ -32,7 +31,7 @@
             </encoder>
         </appender>
         <root level="WARN">
-            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="STDOUT"/>
         </root>
     </springProfile>
 
