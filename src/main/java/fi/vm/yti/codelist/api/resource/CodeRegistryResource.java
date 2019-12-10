@@ -96,7 +96,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                       @Parameter(description = "Organizations filtering parameter, results will be registries belonging to these organizations", in = ParameterIn.QUERY) @QueryParam("organizations") final String organizationsCsv,
                                       @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         final List<String> organizations = organizationsCsv == null ? null : asList(organizationsCsv.split(","));
-        final Meta meta = new Meta(200, pageSize, from, after, before);
+        final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final Set<CodeRegistryDTO> codeRegistries = domain.getCodeRegistries(codeRegistryCodeValue, name, meta, organizations);
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
             final String csv = codeRegistryExporter.createCsv(codeRegistries);
@@ -164,7 +164,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                @Parameter(description = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv,
                                                @Parameter(description = "Include INCOMPLETE statused code schemes.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
                                                @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-        final Meta meta = new Meta(200, pageSize, from, after, before);
+        final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
         final List<String> infoDomainsList = parseInfoDomains(infoDomain);
         final List<String> statusList = parseStatus(status);
@@ -281,7 +281,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                    @Parameter(description = "Returns code codeValues in JSON array format") @QueryParam("array") final String array,
                                                    @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty,
                                                    @Parameter(description = "True if the JSON array should be downloaded as file", in = ParameterIn.QUERY) @QueryParam("downloadArray") final boolean downloadArray) {
-        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after, before);
+        final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final List<String> statusList = parseStatus(status);
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
@@ -335,7 +335,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                         @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                                         @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                         @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after, before);
+        final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
             final Set<ExtensionDTO> extensions = domain.getExtensions(codeScheme, prefLabel, meta);
@@ -417,8 +417,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                               @Parameter(description = "Is this a Cross-Refence List or not.", in = ParameterIn.QUERY) @QueryParam("crossreferencelist") @DefaultValue("false") final boolean exportAsSimplifiedCrossReferenceList,
                                                               @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                               @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-
-        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after, before);
+        final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
         if (extension != null) {
             final Set<MemberDTO> members = domain.getMembers(extension, meta);
@@ -490,7 +489,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                                 @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                                                 @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                                 @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after, before);
+        final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
             ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_EXTERNALREFERENCE, expand), pretty));
@@ -546,7 +545,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                          @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                                          @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                          @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-        final Meta meta = new Meta(Response.Status.OK.getStatusCode(), pageSize, from, after, before);
+        final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final CodeDTO code = domain.getCode(codeRegistryCodeValue, codeSchemeCodeValue, urlDecodeCodeValue(codeCodeValue));
         if (code != null) {
             final Set<MemberDTO> members = domain.getMembers(code, meta);

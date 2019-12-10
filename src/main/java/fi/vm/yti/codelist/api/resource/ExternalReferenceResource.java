@@ -67,7 +67,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
                 throw new NotFoundException();
             }
         }
-        final Meta meta = new Meta(200, pageSize, from, after, before);
+        final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final Set<ExternalReferenceDTO> externalReferences = domain.getExternalReferences(name, codeScheme, all, meta);
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
             final String csv = externalReferenceExporter.createCsv(externalReferences);

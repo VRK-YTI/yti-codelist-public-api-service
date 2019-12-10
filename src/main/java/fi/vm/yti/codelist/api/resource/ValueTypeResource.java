@@ -57,7 +57,7 @@ public class ValueTypeResource extends AbstractBaseResource {
                                   @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,
                                   @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                   @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
-        final Meta meta = new Meta(200, pageSize, from, after, before);
+        final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final Set<ValueTypeDTO> valueTypes = domain.getValueTypes(localName, meta);
         if (FORMAT_CSV.equalsIgnoreCase(format)) {
             final String csv = valueTypeExporter.createCsv(valueTypes);
