@@ -40,7 +40,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import static fi.vm.yti.codelist.api.util.EncodingUtils.*;
 
@@ -91,11 +90,9 @@ public class UriResolverResource extends AbstractBaseResource {
     @Operation(description = "Redirect URI resource.")
     @Consumes({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
     @Produces({ MediaType.APPLICATION_JSON, MediaType.TEXT_HTML })
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "303", description = "Does a redirect from codelist resource URI to codelist API."),
-        @ApiResponse(responseCode = "406", description = "Resource not found."),
-        @ApiResponse(responseCode = "406", description = "Cannot redirect to given URI.")
-    })
+    @ApiResponse(responseCode = "303", description = "Does a redirect from codelist resource URI to codelist API.")
+    @ApiResponse(responseCode = "406", description = "Resource not found.")
+    @ApiResponse(responseCode = "406", description = "Cannot redirect to given URI.")
     public Response redirectUri(@HeaderParam("Accept") String accept,
                                 @Parameter(description = "Format for returning content.", in = ParameterIn.QUERY) @QueryParam("format") final String format,
                                 @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
