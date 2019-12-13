@@ -49,12 +49,10 @@
                 <Pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</Pattern>
             </layout>
         </appender>
-
         <logger name="org.apache" level="WARN"/>
         <logger name="org.springframework" level="ERROR"/>
         <logger name="fi.vm" level="DEBUG"/>
         <logger name="org.hibernate" level="WARN"/>
-
         <root level="WARN">
             <appender-ref ref="CONSOLE"/>
         </root>
