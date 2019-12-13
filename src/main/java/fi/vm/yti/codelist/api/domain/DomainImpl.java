@@ -964,9 +964,9 @@ public class DomainImpl implements Domain {
             embedAfterBeforeToBoolQuery(builder, meta);
             addLanguagePrefLabelSort(language, "codeValue.raw", "codeValue.raw", searchBuilder);
             if (includedContainerUris != null && includedContainerUris.size() > 0) {
-                builder.must(termsQuery("uri.keyword", includedContainerUris));
+                builder.must(termsQuery("uri", includedContainerUris));
             } else if (excludedContainerUris != null && excludedContainerUris.size() > 0) {
-                builder.mustNot(termsQuery("uri.keyword", excludedContainerUris));
+                builder.mustNot(termsQuery("uri", excludedContainerUris));
             }
             if (statuses != null && !statuses.isEmpty()) {
                 final BoolQueryBuilder boolQueryBuilder = boolQuery();
@@ -1094,9 +1094,9 @@ public class DomainImpl implements Domain {
                 builder.must(termsQuery("status.keyword", statuses));
             }
             if (includedResourceUris != null && includedResourceUris.size() > 0) {
-                builder.must(termsQuery("uri.keyword", includedResourceUris));
+                builder.must(termsQuery("uri", includedResourceUris));
             } else if (excludedResourceUris != null && excludedResourceUris.size() > 0) {
-                builder.mustNot(termsQuery("uri.keyword", excludedResourceUris));
+                builder.mustNot(termsQuery("uri", excludedResourceUris));
             }
             addLanguagePrefLabelSort(language, "codeValue.raw", "codeValue.raw", searchBuilder);
             final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "contentModified", "statusModified", "status", "uri", "codeScheme", "parentCodeScheme" };
