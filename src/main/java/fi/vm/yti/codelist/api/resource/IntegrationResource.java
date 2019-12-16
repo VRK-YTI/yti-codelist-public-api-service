@@ -77,7 +77,7 @@ public class IntegrationResource extends AbstractBaseResource {
         final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final List<String> includedContainerUris = parseAndDecodeUrisFromCsl(uri);
         final List<String> excludedContainerUris = parseAndDecodeUrisFromCsl(filter);
-        final List<String> statusList = parseStatus(status);
+        final List<String> statusList = parseStatusCsl(status);
         final List<String> includeIncompleteFromList = includeIncompleteFrom == null ? null : asList(includeIncompleteFrom.toLowerCase().split(","));
         final Set<ResourceDTO> containers = domain.getContainers(includedContainerUris, excludedContainerUris, language, statusList, searchTerm, includeIncompleteFromList, includeIncomplete, meta);
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
@@ -97,7 +97,7 @@ public class IntegrationResource extends AbstractBaseResource {
     public Response getContainersPost(@Parameter(description = "Integration resource request parameters as JSON payload.") @RequestBody final String integrationRequestData) {
         final IntegrationResourceRequestDTO request = parseIntegrationRequestDto(integrationRequestData);
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), request.getPretty()));
-        final List<String> statusList = request.getStatus();
+        final List<String> statusList = parseStatusList(request.getStatus());
         final List<String> excludedContainerUris = convertListToLowerCase(request.getFilter());
         final List<String> includedContainerUris = convertListToLowerCase(request.getUri());
         final List<String> includeIncompleteFromList = request.getIncludeIncompleteFrom();
@@ -143,7 +143,7 @@ public class IntegrationResource extends AbstractBaseResource {
         final List<String> includedResourceUris = parseAndDecodeUrisFromCsl(uri);
         final List<String> excludedResourceUris = parseAndDecodeUrisFromCsl(filter);
         final List<String> includeIncompleteFromList = includeIncompleteFrom == null ? null : asList(includeIncompleteFrom.toLowerCase().split(","));
-        final List<String> statusList = parseStatus(status);
+        final List<String> statusList = parseStatusCsl(status);
         final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final Set<ResourceDTO> resources = domain.getResources(containerUris, includedResourceUris, excludedResourceUris, language, statusList, searchTerm, type, includeIncompleteFromList, includeIncomplete, meta);
         if (pageSize != null && from + pageSize < meta.getTotalResults()) {
@@ -171,7 +171,7 @@ public class IntegrationResource extends AbstractBaseResource {
         final List<String> includedResourceUris = convertListToLowerCase(request.getUri());
         final List<String> includeIncompleteFromList = request.getIncludeIncompleteFrom();
         final boolean includeIncomplete = request.getIncludeIncomplete();
-        final List<String> statusList = request.getStatus();
+        final List<String> statusList = parseStatusList(request.getStatus());
         final Integer pageSize = request.getPageSize();
         final Integer from = request.getPageFrom();
         final String after = request.getAfter();

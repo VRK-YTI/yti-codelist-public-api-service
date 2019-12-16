@@ -74,10 +74,10 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @Parameter(description = "Include INCOMPLETE statused code schemes.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
                                    @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
-        final List<String> infoDomainsList = parseInfoDomains(infoDomain);
+        final List<String> infoDomainsList = parseInfoDomainsCls(infoDomain);
         final List<String> organizations = organizationsCsv == null ? null : asList(organizationsCsv.toLowerCase().split(","));
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
-        final List<String> statusList = parseStatus(status);
+        final List<String> statusList = parseStatusCsl(status);
         if (FORMAT_CSV.startsWith(format.toLowerCase())) {
             final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(sortMode, organizations, userOrganizations, includeIncomplete, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, searchCodes, searchExtensions, statusList, infoDomainsList, extensionPropertyType, meta);
             final String csv = codeSchemeExporter.createCsv(codeSchemes);
