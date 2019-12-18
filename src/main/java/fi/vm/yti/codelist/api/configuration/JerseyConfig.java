@@ -6,6 +6,7 @@ import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonP
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.stereotype.Component;
 
+import fi.vm.yti.codelist.api.exception.exceptionmapping.UncaughtExceptionMapper;
 import fi.vm.yti.codelist.api.exception.exceptionmapping.YtiCodeListExceptionMapper;
 import fi.vm.yti.codelist.api.filter.CacheFilter;
 import fi.vm.yti.codelist.api.filter.CharsetResponseFilter;
@@ -62,6 +63,7 @@ public class JerseyConfig extends ResourceConfig {
 
         // ExceptionMappers
         register(YtiCodeListExceptionMapper.class);
+        register(UncaughtExceptionMapper.class);
 
         // Charset filter
         register(CharsetResponseFilter.class);
