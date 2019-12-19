@@ -64,7 +64,7 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 public class DomainImpl implements Domain {
 
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
-    private static final int MAX_SIZE = 10000;
+    private static final int MAX_SIZE = 20000;
     private static final String TEXT_ANALYZER = "text_analyzer";
     private static final String BOOSTSTATUS = "boostStatus";
     private static final String ELASTIC_QUERY_ERROR = "ElasticSearch index query error!";
