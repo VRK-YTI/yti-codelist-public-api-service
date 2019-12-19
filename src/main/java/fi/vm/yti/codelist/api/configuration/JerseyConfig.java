@@ -3,7 +3,10 @@ package fi.vm.yti.codelist.api.configuration;
 import javax.ws.rs.ApplicationPath;
 
 import org.glassfish.jersey.jackson.internal.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import org.glassfish.jersey.message.DeflateEncoder;
+import org.glassfish.jersey.message.GZipEncoder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.filter.EncodingFilter;
 import org.springframework.stereotype.Component;
 
 import fi.vm.yti.codelist.api.exception.exceptionmapping.UncaughtExceptionMapper;
@@ -64,6 +67,11 @@ public class JerseyConfig extends ResourceConfig {
         // ExceptionMappers
         register(YtiCodeListExceptionMapper.class);
         register(UncaughtExceptionMapper.class);
+
+        // Gzip
+        register(EncodingFilter.class);
+        register(GZipEncoder.class);
+        register(DeflateEncoder.class);
 
         // Charset filter
         register(CharsetResponseFilter.class);
