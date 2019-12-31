@@ -99,7 +99,8 @@ public class CodeExporter extends BaseExporter {
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
         rowhead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
-        rowhead.createCell(j).setCellValue(CONTENT_HEADER_HREF);
+        rowhead.createCell(j++).setCellValue(CONTENT_HEADER_HREF);
+        rowhead.createCell(j).setCellValue(CONTENT_HEADER_OPERATION);
         int i = 1;
         int flatInt = 1;
         for (final CodeDTO code : codes) {
@@ -127,7 +128,8 @@ public class CodeExporter extends BaseExporter {
             row.createCell(k++).setCellValue(code.getEndDate() != null ? formatDateWithISO8601(code.getEndDate()) : "");
             row.createCell(k++).setCellValue(code.getCreated() != null ? formatDateWithSeconds(code.getCreated()) : "");
             row.createCell(k++).setCellValue(code.getModified() != null ? formatDateWithSeconds(code.getModified()) : "");
-            row.createCell(k).setCellValue(checkEmptyValue(formatExternalReferencesToString(code.getExternalReferences())));
+            row.createCell(k++).setCellValue(checkEmptyValue(formatExternalReferencesToString(code.getExternalReferences())));
+            row.createCell(k).setCellValue(""); // OPERATION, always empty when exporting
             flatInt++;
         }
     }

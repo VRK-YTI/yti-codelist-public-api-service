@@ -127,7 +127,8 @@ public class MemberExporter extends BaseExporter {
         rowHead.createCell(j++).setCellValue(CONTENT_HEADER_ENDDATE);
         rowHead.createCell(j++).setCellValue(CONTENT_HEADER_CREATED);
         rowHead.createCell(j++).setCellValue(CONTENT_HEADER_MODIFIED);
-        rowHead.createCell(j).setCellValue(CONTENT_HEADER_ORDER);
+        rowHead.createCell(j++).setCellValue(CONTENT_HEADER_ORDER);
+        rowHead.createCell(j).setCellValue(CONTENT_HEADER_OPERATION);
         int i = 1;
         for (final MemberDTO member : members) {
             final Row row = sheet.createRow(i++);
@@ -151,7 +152,8 @@ public class MemberExporter extends BaseExporter {
             row.createCell(k++).setCellValue(member.getEndDate() != null ? formatDateWithISO8601(member.getEndDate()) : "");
             row.createCell(k++).setCellValue(member.getCreated() != null ? formatDateWithSeconds(member.getCreated()) : "");
             row.createCell(k++).setCellValue(member.getModified() != null ? formatDateWithSeconds(member.getModified()) : "");
-            row.createCell(k).setCellValue(checkEmptyValue(member.getOrder() != null ? member.getOrder().toString() : ""));
+            row.createCell(k++).setCellValue(checkEmptyValue(member.getOrder() != null ? member.getOrder().toString() : ""));
+            row.createCell(k).setCellValue(""); // OPERATION, always empty when exporting
         }
     }
 
