@@ -998,7 +998,7 @@ public class DomainImpl implements Domain {
                 boolQueryBuilder.minimumShouldMatch(1);
                 builder.must(boolQueryBuilder);
             }
-            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "contentModified", "statusModified", "status", "uri", "organizations", "languageCodes" };
+            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "created", "modified", "contentModified", "statusModified", "status", "uri", "organizations", "languageCodes" };
             searchBuilder.fetchSource(includeFields, null);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
@@ -1099,7 +1099,7 @@ public class DomainImpl implements Domain {
                 builder.mustNot(termsQuery("uri", excludedResourceUris));
             }
             addLanguagePrefLabelSort(language, "codeValue.raw", "codeValue.raw", searchBuilder);
-            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "contentModified", "statusModified", "status", "uri", "codeScheme", "parentCodeScheme" };
+            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "created", "modified", "contentModified", "statusModified", "status", "uri", "codeScheme", "parentCodeScheme" };
             searchBuilder.fetchSource(includeFields, null);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
