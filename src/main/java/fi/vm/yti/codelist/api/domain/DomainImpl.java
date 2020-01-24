@@ -466,7 +466,7 @@ public class DomainImpl implements Domain {
 
     public Set<CodeDTO> getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(final String codeRegistryCodeValue,
                                                                               final String codeSchemeCodeValue) {
-        return getCodes(codeRegistryCodeValue, codeSchemeCodeValue, null, null, null, null, null, null, null);
+        return getCodes(codeRegistryCodeValue, codeSchemeCodeValue, null, null, null, null, null, null, new Meta());
     }
 
     public Set<CodeDTO> getCodes(final String codeRegistryCodeValue,
@@ -479,6 +479,7 @@ public class DomainImpl implements Domain {
                                  final List<String> statuses,
                                  final Meta meta) {
         validatePageSize(meta);
+        boolean fetchMore = false;
         final Set<CodeDTO> codes = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
@@ -503,6 +504,9 @@ public class DomainImpl implements Domain {
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 setResultCounts(meta, response);
+                if (meta.getResultCount() == MAX_ES_PAGESIZE && meta.getPageSize() == null) {
+                    fetchMore = true;
+                }
                 response.getHits().forEach(hit -> {
                     try {
                         codes.add(mapper.readValue(hit.getSourceAsString(), CodeDTO.class));
@@ -515,7 +519,13 @@ public class DomainImpl implements Domain {
                 LOG.error("SearchRequest failed!", e);
                 throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
-            return codes;
+            if (!fetchMore) {
+                return codes;
+            } else {
+                meta.setFrom(MAX_ES_PAGESIZE);
+                meta.setPageSize(MAX_ES_PAGESIZE);
+                codes.addAll(getCodes(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, language, statuses, meta));
+            }
         }
         return codes;
     }

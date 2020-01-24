@@ -45,7 +45,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import static fi.vm.yti.codelist.api.domain.DomainImpl.MAX_ES_PAGESIZE;
 import static fi.vm.yti.codelist.api.util.EncodingUtils.urlDecodeCodeValue;
 import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 import static java.util.Arrays.asList;
@@ -287,11 +286,6 @@ public class CodeRegistryResource extends AbstractBaseResource {
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
             final Set<CodeDTO> codes = domain.getCodes(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, language, statusList, meta);
-            if (from == 0 && codes.size() == MAX_ES_PAGESIZE && pageSize == null) {
-                meta.setFrom(MAX_ES_PAGESIZE);
-                meta.setPageSize(MAX_ES_PAGESIZE);
-                codes.addAll(domain.getCodes(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, language, statusList, meta));
-            }
             if (FORMAT_CSV.equalsIgnoreCase(format)) {
                 final String csv = codeExporter.createCsv(codes);
                 return streamCsvCodesOutput(csv);
