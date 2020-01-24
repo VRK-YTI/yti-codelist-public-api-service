@@ -63,8 +63,10 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 @Service
 public class DomainImpl implements Domain {
 
+    public static final int MAX_ES_PAGESIZE = 10000;
+
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
-    private static final int MAX_SIZE = 20000;
+
     private static final String TEXT_ANALYZER = "text_analyzer";
     private static final String BOOSTSTATUS = "boostStatus";
     private static final String ELASTIC_QUERY_ERROR = "ElasticSearch index query error!";
@@ -1225,8 +1227,8 @@ public class DomainImpl implements Domain {
     private void validatePageSize(final Meta meta) {
         if (meta != null) {
             final Integer pageSize = meta.getPageSize();
-            if (pageSize != null && pageSize > MAX_SIZE) {
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), String.format("Paging pageSize parameter value %d exceeds max value %d.", pageSize, MAX_SIZE)));
+            if (pageSize != null && pageSize > MAX_ES_PAGESIZE) {
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), String.format("Paging pageSize parameter value %d exceeds max value %d.", pageSize, MAX_ES_PAGESIZE)));
             }
         }
     }
@@ -1251,7 +1253,7 @@ public class DomainImpl implements Domain {
 
     private SearchSourceBuilder createSearchSourceBuilderWithPagination(final Meta meta) {
         final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
-        searchBuilder.size(meta != null && meta.getPageSize() != null ? meta.getPageSize() : MAX_SIZE);
+        searchBuilder.size(meta != null && meta.getPageSize() != null ? meta.getPageSize() : MAX_ES_PAGESIZE);
         searchBuilder.from(meta != null && meta.getFrom() != null ? meta.getFrom() : 0);
         return searchBuilder;
     }
