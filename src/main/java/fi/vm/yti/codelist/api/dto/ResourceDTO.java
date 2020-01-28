@@ -23,7 +23,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @JsonFilter("resource")
 @XmlRootElement
-@XmlType(propOrder = { "uri", "prefLabel", "type", "container", "localName", "description", "status", "modified", "contentModified", "statusModified", "languages" })
+@XmlType(propOrder = { "uri", "prefLabel", "type", "container", "localName", "description", "status", "created", "modified", "contentModified", "statusModified", "languages" })
 @Schema(name = "Resource", description = "Resource DTO that represents data for one single container or resource for integration use.")
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -40,6 +40,7 @@ public class ResourceDTO implements Serializable {
     private String localName;
     private String uri;
     private String status;
+    private Date created;
     private Date modified;
     private Date contentModified;
     private Date statusModified;
@@ -56,6 +57,7 @@ public class ResourceDTO implements Serializable {
         this.localName = codeSchemeDto.getCodeValue();
         this.uri = codeSchemeDto.getUri();
         this.status = codeSchemeDto.getStatus();
+        this.created = codeSchemeDto.getCreated();
         this.modified = codeSchemeDto.getModified();
         this.contentModified = codeSchemeDto.getContentModified();
         this.statusModified = codeSchemeDto.getStatusModified();
@@ -73,6 +75,7 @@ public class ResourceDTO implements Serializable {
         this.localName = codeDto.getCodeValue();
         this.uri = codeDto.getUri();
         this.status = codeDto.getStatus();
+        this.created = codeDto.getCreated();
         this.modified = codeDto.getModified();
         this.statusModified = codeDto.getStatusModified();
         this.type = TYPE_CODE;
@@ -84,6 +87,7 @@ public class ResourceDTO implements Serializable {
         this.localName = extensionDto.getCodeValue();
         this.uri = extensionDto.getUri();
         this.status = extensionDto.getStatus();
+        this.created = extensionDto.getCreated();
         this.modified = extensionDto.getModified();
         this.statusModified = extensionDto.getStatusModified();
         this.type = TYPE_EXTENSION;
@@ -133,6 +137,24 @@ public class ResourceDTO implements Serializable {
 
     public void setStatus(final String status) {
         this.status = status;
+    }
+
+    @Schema(format = "dateTime")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSX")
+    @JsonView(Views.Normal.class)
+    public Date getCreated() {
+        if (created != null) {
+            return new Date(created.getTime());
+        }
+        return null;
+    }
+
+    public void setCreated(final Date created) {
+        if (created != null) {
+            this.created = new Date(created.getTime());
+        } else {
+            this.created = null;
+        }
     }
 
     @Schema(format = "dateTime")

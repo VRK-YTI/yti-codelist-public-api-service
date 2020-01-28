@@ -166,8 +166,8 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
-        final List<String> infoDomainsList = parseInfoDomains(infoDomain);
-        final List<String> statusList = parseStatus(status);
+        final List<String> infoDomainsList = parseInfoDomainsCls(infoDomain);
+        final List<String> statusList = parseStatusCsl(status);
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
         if (codeRegistry != null) {
             final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes(sortMode, null, userOrganizations, includeIncomplete, codeRegistryCodeValue, codeRegistryPrefLabel, codeSchemeCodeValue, codeSchemePrefLabel, language, searchTerm, false, false, statusList, infoDomainsList, extensionPropertyType, meta);
@@ -282,7 +282,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                    @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty,
                                                    @Parameter(description = "True if the JSON array should be downloaded as file", in = ParameterIn.QUERY) @QueryParam("downloadArray") final boolean downloadArray) {
         final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
-        final List<String> statusList = parseStatus(status);
+        final List<String> statusList = parseStatusCsl(status);
         final CodeSchemeDTO codeScheme = domain.getCodeScheme(codeRegistryCodeValue, codeSchemeCodeValue);
         if (codeScheme != null) {
             final Set<CodeDTO> codes = domain.getCodes(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, language, statusList, meta);

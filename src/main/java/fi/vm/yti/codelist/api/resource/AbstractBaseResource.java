@@ -107,25 +107,44 @@ abstract class AbstractBaseResource {
         return null;
     }
 
-    List<String> parseStatus(final String statusCsl) {
-        final Set<String> statusSet = new HashSet<>();
+    List<String> parseStatusCsl(final String statusCsl) {
+        final List<String> statuses = new ArrayList<>();
         if (statusCsl != null) {
             for (final String s : statusCsl.split(",")) {
-                final Status status = Status.valueOf(s.toUpperCase().trim());
-                statusSet.add(status.toString());
+                try {
+                    final Status status = Status.valueOf(s.toUpperCase().trim());
+                    statuses.add(status.toString());
+                } catch (final Exception e) {
+                    throw new YtiCodeListException(new ErrorModel(HttpStatus.BAD_REQUEST.value(), "Status code is not valid: " + s));
+                }
             }
         }
-        return new ArrayList<>(statusSet);
+        return statuses;
     }
 
-    List<String> parseInfoDomains(final String infoDomainCsl) {
-        final Set<String> infoDomainsSet = new HashSet<>();
+    List<String> parseStatusList(final List<String> statusList) {
+        final List<String> statuses = new ArrayList<>();
+        if (statusList != null) {
+            statusList.forEach(s -> {
+                try {
+                    final Status status = Status.valueOf(s.toUpperCase().trim());
+                    statuses.add(status.toString());
+                } catch (final Exception e) {
+                    throw new YtiCodeListException(new ErrorModel(HttpStatus.BAD_REQUEST.value(), "Status code is not valid: " + s));
+                }
+            });
+        }
+        return statuses;
+    }
+
+    List<String> parseInfoDomainsCls(final String infoDomainCsl) {
+        final List<String> infoDomains = new ArrayList<>();
         if (infoDomainCsl != null) {
             for (final String s : infoDomainCsl.split(",")) {
-                infoDomainsSet.add(s.toUpperCase().trim());
+                infoDomains.add(s.toUpperCase().trim());
             }
         }
-        return new ArrayList<>(infoDomainsSet);
+        return infoDomains;
     }
 
     private String createDownloadFilename(final String format,

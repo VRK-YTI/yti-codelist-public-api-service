@@ -63,8 +63,10 @@ import static org.elasticsearch.index.query.QueryBuilders.*;
 @Service
 public class DomainImpl implements Domain {
 
+    public static final int MAX_ES_PAGESIZE = 10000;
+
     private static final Logger LOG = LoggerFactory.getLogger(DomainImpl.class);
-    private static final int MAX_SIZE = 10000;
+
     private static final String TEXT_ANALYZER = "text_analyzer";
     private static final String BOOSTSTATUS = "boostStatus";
     private static final String ELASTIC_QUERY_ERROR = "ElasticSearch index query error!";
@@ -464,7 +466,7 @@ public class DomainImpl implements Domain {
 
     public Set<CodeDTO> getCodesByCodeRegistryCodeValueAndCodeSchemeCodeValue(final String codeRegistryCodeValue,
                                                                               final String codeSchemeCodeValue) {
-        return getCodes(codeRegistryCodeValue, codeSchemeCodeValue, null, null, null, null, null, null, null);
+        return getCodes(codeRegistryCodeValue, codeSchemeCodeValue, null, null, null, null, null, null, new Meta());
     }
 
     public Set<CodeDTO> getCodes(final String codeRegistryCodeValue,
@@ -477,6 +479,7 @@ public class DomainImpl implements Domain {
                                  final List<String> statuses,
                                  final Meta meta) {
         validatePageSize(meta);
+        boolean fetchMore = false;
         final Set<CodeDTO> codes = new LinkedHashSet<>();
         if (checkIfIndexExists(ELASTIC_INDEX_CODE)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
@@ -501,6 +504,9 @@ public class DomainImpl implements Domain {
             try {
                 final SearchResponse response = client.search(searchRequest, RequestOptions.DEFAULT);
                 setResultCounts(meta, response);
+                if (meta.getResultCount() == MAX_ES_PAGESIZE && meta.getPageSize() == null) {
+                    fetchMore = true;
+                }
                 response.getHits().forEach(hit -> {
                     try {
                         codes.add(mapper.readValue(hit.getSourceAsString(), CodeDTO.class));
@@ -513,7 +519,13 @@ public class DomainImpl implements Domain {
                 LOG.error("SearchRequest failed!", e);
                 throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
             }
-            return codes;
+            if (!fetchMore) {
+                return codes;
+            } else {
+                meta.setFrom(MAX_ES_PAGESIZE);
+                meta.setPageSize(MAX_ES_PAGESIZE);
+                codes.addAll(getCodes(codeRegistryCodeValue, codeSchemeCodeValue, codeCodeValue, prefLabel, hierarchyLevel, broaderCodeId, language, statuses, meta));
+            }
         }
         return codes;
     }
@@ -998,7 +1010,7 @@ public class DomainImpl implements Domain {
                 boolQueryBuilder.minimumShouldMatch(1);
                 builder.must(boolQueryBuilder);
             }
-            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "contentModified", "statusModified", "status", "uri", "organizations", "languageCodes" };
+            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "created", "modified", "contentModified", "statusModified", "status", "uri", "organizations", "languageCodes" };
             searchBuilder.fetchSource(includeFields, null);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
@@ -1099,7 +1111,7 @@ public class DomainImpl implements Domain {
                 builder.mustNot(termsQuery("uri", excludedResourceUris));
             }
             addLanguagePrefLabelSort(language, "codeValue.raw", "codeValue.raw", searchBuilder);
-            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "modified", "contentModified", "statusModified", "status", "uri", "codeScheme", "parentCodeScheme" };
+            final String[] includeFields = new String[]{ "id", "codeValue", "prefLabel", "description", "created", "modified", "contentModified", "statusModified", "status", "uri", "codeScheme", "parentCodeScheme" };
             searchBuilder.fetchSource(includeFields, null);
             searchBuilder.query(builder);
             searchRequest.source(searchBuilder);
@@ -1225,8 +1237,8 @@ public class DomainImpl implements Domain {
     private void validatePageSize(final Meta meta) {
         if (meta != null) {
             final Integer pageSize = meta.getPageSize();
-            if (pageSize != null && pageSize > MAX_SIZE) {
-                throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), String.format("Paging pageSize parameter value %d exceeds max value %d.", pageSize, MAX_SIZE)));
+            if (pageSize != null && pageSize > MAX_ES_PAGESIZE) {
+                throw new YtiCodeListException(new ErrorModel(HttpStatus.NOT_ACCEPTABLE.value(), String.format("Paging pageSize parameter value %d exceeds max value %d.", pageSize, MAX_ES_PAGESIZE)));
             }
         }
     }
@@ -1251,7 +1263,7 @@ public class DomainImpl implements Domain {
 
     private SearchSourceBuilder createSearchSourceBuilderWithPagination(final Meta meta) {
         final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
-        searchBuilder.size(meta != null && meta.getPageSize() != null ? meta.getPageSize() : MAX_SIZE);
+        searchBuilder.size(meta != null && meta.getPageSize() != null ? meta.getPageSize() : MAX_ES_PAGESIZE);
         searchBuilder.from(meta != null && meta.getFrom() != null ? meta.getFrom() : 0);
         return searchBuilder;
     }
