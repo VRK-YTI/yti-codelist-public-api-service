@@ -64,7 +64,6 @@ public class SpringAppConfig {
                 requestConfigBuilder -> requestConfigBuilder
                     .setConnectTimeout(ES_CONNECTION_TIMEOUT)
                     .setSocketTimeout(ES_CONNECTION_TIMEOUT))
-            .setMaxRetryTimeoutMillis(ES_RETRY_TIMEOUT);
         return new RestHighLevelClient(builder);
     }
 }
