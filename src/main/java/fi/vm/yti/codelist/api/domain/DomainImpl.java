@@ -36,7 +36,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fi.vm.yti.codelist.api.dto.ResourceDTO;
 import fi.vm.yti.codelist.api.exception.JsonParsingException;
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
