@@ -1287,34 +1287,25 @@ public class DomainImpl implements Domain {
 
     private SearchRequest createSearchRequest(final String indexName) {
         switch (indexName) {
-            case ELASTIC_INDEX_CODEREGISTRY: {
+            case ELASTIC_INDEX_CODEREGISTRY:
                 return createSearchRequest(ELASTIC_INDEX_CODEREGISTRY, ELASTIC_TYPE_CODEREGISTRY);
-            }
-            case ELASTIC_INDEX_CODESCHEME: {
+            case ELASTIC_INDEX_CODESCHEME:
                 return createSearchRequest(ELASTIC_INDEX_CODESCHEME, ELASTIC_TYPE_CODESCHEME);
-            }
-            case ELASTIC_INDEX_CODE: {
+            case ELASTIC_INDEX_CODE:
                 return createSearchRequest(ELASTIC_INDEX_CODE, ELASTIC_TYPE_CODE);
-            }
-            case ELASTIC_INDEX_EXTENSION: {
+            case ELASTIC_INDEX_EXTENSION:
                 return createSearchRequest(ELASTIC_INDEX_EXTENSION, ELASTIC_TYPE_EXTENSION);
-            }
-            case ELASTIC_INDEX_MEMBER: {
+            case ELASTIC_INDEX_MEMBER:
                 return createSearchRequest(ELASTIC_INDEX_MEMBER, ELASTIC_TYPE_MEMBER);
-            }
-            case ELASTIC_INDEX_EXTERNALREFERENCE: {
+            case ELASTIC_INDEX_EXTERNALREFERENCE:
                 return createSearchRequest(ELASTIC_INDEX_EXTERNALREFERENCE, ELASTIC_TYPE_EXTERNALREFERENCE);
-            }
-            case ELASTIC_INDEX_PROPERTYTYPE: {
+            case ELASTIC_INDEX_PROPERTYTYPE:
                 return createSearchRequest(ELASTIC_INDEX_PROPERTYTYPE, ELASTIC_TYPE_PROPERTYTYPE);
-            }
-            case ELASTIC_INDEX_VALUETYPE: {
+            case ELASTIC_INDEX_VALUETYPE:
                 return createSearchRequest(ELASTIC_INDEX_VALUETYPE, ELASTIC_TYPE_VALUETYPE);
-            }
-            default: {
+            default:
                 LOG.error("Trying to create search request with non-supported index: " + indexName);
                 throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
-            }
         }
     }
 }
