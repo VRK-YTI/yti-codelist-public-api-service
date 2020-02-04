@@ -18,6 +18,8 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 @Component
 public class ExtensionExporter extends BaseExporter {
 
+    private static final String LOCALNAME_CROSS_REFERENCE_LIST = "crossReferenceList";
+
     private final Domain domain;
     private final MemberExporter memberExporter;
 
@@ -76,7 +78,7 @@ public class ExtensionExporter extends BaseExporter {
             memberExporter.addMembersSheetWithCrossRerefences(extension, workbook, domain.getMembers(extension, null));
         } else {
             memberExporter.addMembersSheet(extension, workbook, extensionSheetName, domain.getMembers(extension, null));
-            if (extension.getPropertyType().getLocalName().equals("crossReferenceList")) { //Cross-Reference List containing sheet will always be included as well in the normal Excel
+            if (LOCALNAME_CROSS_REFERENCE_LIST.equalsIgnoreCase(extension.getPropertyType().getLocalName())) { //Cross-Reference List containing sheet will always be included as well in the normal Excel
                 memberExporter.addMembersSheetWithCrossRerefences(extension, workbook, domain.getMembers(extension, null));
             }
         }
