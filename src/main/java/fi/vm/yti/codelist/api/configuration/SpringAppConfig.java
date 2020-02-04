@@ -63,7 +63,7 @@ public class SpringAppConfig {
             .setRequestConfigCallback(
                 requestConfigBuilder -> requestConfigBuilder
                     .setConnectTimeout(ES_CONNECTION_TIMEOUT)
-                    .setSocketTimeout(ES_CONNECTION_TIMEOUT))
+                    .setSocketTimeout(ES_CONNECTION_TIMEOUT));
         return new RestHighLevelClient(builder);
     }
 }
