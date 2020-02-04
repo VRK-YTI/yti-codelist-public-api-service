@@ -54,7 +54,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
                                           @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
                                           @Parameter(description = "ExternalReference name as string value.", in = ParameterIn.QUERY) @QueryParam("name") final String name,
                                           @Parameter(description = "CodeScheme id.", in = ParameterIn.QUERY) @QueryParam("codeSchemeId") final String codeSchemeId,
-                                          @Parameter(description = "Return all links from the system.", in = ParameterIn.QUERY) @QueryParam("all") @DefaultValue("false") final Boolean all,
+                                          @Parameter(description = "Return all links from the system.", in = ParameterIn.QUERY) @QueryParam("all") @DefaultValue("false") final boolean all,
                                           @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                           @Parameter(description = "After date filtering parameter, results will be codes with modified date after this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("after") final String after,
                                           @Parameter(description = "Before date filtering parameter, results will be codes with modified date before this ISO 8601 formatted date string.", in = ParameterIn.QUERY) @QueryParam("before") final String before,

@@ -71,7 +71,7 @@ public class IntegrationResource extends AbstractBaseResource {
                                   @Parameter(description = "Container URIs that are included.", in = ParameterIn.QUERY) @Encoded @QueryParam("uri") final String uri,
                                   @Parameter(description = "Container URIs that are excluded.", in = ParameterIn.QUERY) @Encoded @QueryParam("filter") final String filter,
                                   @Parameter(description = "User organizations filtering parameter, for filtering incomplete code lists", in = ParameterIn.QUERY) @QueryParam("includeIncompleteFrom") final String includeIncompleteFrom,
-                                  @Parameter(description = "Control boolean for returning all incomplete containers.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
+                                  @Parameter(description = "Control boolean for returning all incomplete containers.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final boolean includeIncomplete,
                                   @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), pretty));
         final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
@@ -136,7 +136,7 @@ public class IntegrationResource extends AbstractBaseResource {
                                  @Parameter(description = "Resource URIs that are filtered.", in = ParameterIn.QUERY) @Encoded @QueryParam("filter") final String filter,
                                  @Parameter(description = "Search term used to filter results based on partial prefLabel or codeValue match.", in = ParameterIn.QUERY) @QueryParam("searchTerm") final String searchTerm,
                                  @Parameter(description = "User organizations filtering parameter, for filtering incomplete code lists", in = ParameterIn.QUERY) @QueryParam("includeIncompleteFrom") final String includeIncompleteFrom,
-                                 @Parameter(description = "Control boolean for returning resources from incomplete code lists.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
+                                 @Parameter(description = "Control boolean for returning resources from incomplete code lists.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final boolean includeIncomplete,
                                  @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(), pretty));
         final List<String> containerUris = container == null ? null : asList(container.toLowerCase().split(","));

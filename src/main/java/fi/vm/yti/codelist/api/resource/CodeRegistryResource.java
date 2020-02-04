@@ -122,9 +122,9 @@ public class CodeRegistryResource extends AbstractBaseResource {
     public Response getCodeRegistry(@Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                     @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                     @Parameter(description = "Language code for sorting results.", in = ParameterIn.QUERY) @QueryParam("language") @DefaultValue("fi") final String language,
-                                    @Parameter(description = "Boolean that controls whether to embed CodeSchemes in payload or not.", in = ParameterIn.QUERY) @QueryParam("embedCodeSchemes") @DefaultValue("false") final Boolean embedCodeSchemes,
+                                    @Parameter(description = "Boolean that controls whether to embed CodeSchemes in payload or not.", in = ParameterIn.QUERY) @QueryParam("embedCodeSchemes") @DefaultValue("false") final boolean embedCodeSchemes,
                                     @Parameter(description = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv,
-                                    @Parameter(description = "Include INCOMPLETE statused code schemes.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
+                                    @Parameter(description = "Include INCOMPLETE statused code schemes.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final boolean includeIncomplete,
                                     @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODEREGISTRY, expand), pretty));
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
@@ -162,7 +162,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                                @Parameter(description = "Sort mode for response values.", in = ParameterIn.QUERY) @QueryParam("sortMode") @DefaultValue("default") final String sortMode,
                                                @Parameter(description = "User organizations filtering parameter, for filtering unfinished code schemes") @QueryParam("userOrganizations") final String userOrganizationsCsv,
-                                               @Parameter(description = "Include INCOMPLETE statused code schemes.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
+                                               @Parameter(description = "Include INCOMPLETE statused code schemes.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final boolean includeIncomplete,
                                                @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final List<String> userOrganizations = userOrganizationsCsv == null ? null : asList(userOrganizationsCsv.toLowerCase().split(","));
@@ -200,9 +200,9 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                               @Parameter(description = "Filter string (csl) for expanding specific child resources.", in = ParameterIn.QUERY) @QueryParam("expand") final String expand,
                                               @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
                                               @Parameter(description = "Download JSON as a file.", in = ParameterIn.QUERY) @QueryParam("downloadFile") @DefaultValue("false") final boolean downloadFile,
-                                              @Parameter(description = "Boolean that controls whether to embed Codes in the payload or not.", in = ParameterIn.QUERY) @QueryParam("embedCodes") @DefaultValue("false") final Boolean embedCodes,
-                                              @Parameter(description = "Boolean that controls whether to embed Extensions in the payload or not.", in = ParameterIn.QUERY) @QueryParam("embedExtensions") @DefaultValue("false") final Boolean embedExtensions,
-                                              @Parameter(description = "Boolean that controls whether to embed embedMembers in the payload or not.", in = ParameterIn.QUERY) @QueryParam("embedMembers") @DefaultValue("false") final Boolean embedMembers,
+                                              @Parameter(description = "Boolean that controls whether to embed Codes in the payload or not.", in = ParameterIn.QUERY) @QueryParam("embedCodes") @DefaultValue("false") final boolean embedCodes,
+                                              @Parameter(description = "Boolean that controls whether to embed Extensions in the payload or not.", in = ParameterIn.QUERY) @QueryParam("embedExtensions") @DefaultValue("false") final boolean embedExtensions,
+                                              @Parameter(description = "Boolean that controls whether to embed embedMembers in the payload or not.", in = ParameterIn.QUERY) @QueryParam("embedMembers") @DefaultValue("false") final boolean embedMembers,
                                               @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODESCHEME, expand), pretty));
         final CodeRegistryDTO codeRegistry = domain.getCodeRegistry(codeRegistryCodeValue);
