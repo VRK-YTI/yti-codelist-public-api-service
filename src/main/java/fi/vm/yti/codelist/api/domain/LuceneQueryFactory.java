@@ -53,12 +53,12 @@ public class LuceneQueryFactory {
                         parser.setAllowLeadingWildcard(true);
                         return QueryBuilders.queryStringQuery(parser.parse(parsedQuery, "").toString());
                     } catch (final QueryNodeException e) {
-                        // nop
+                        LOG.error("ElasticSearch prefix / suffix query failed.", e);
                     }
                 }
             }
         }
-        LOG.debug("Query string disqualified: '" + searchTerm + "'");
+        LOG.debug("ElasticSearch prefix / suffix query string disqualified: '" + searchTerm + "'");
         throw new BadRequestException("Invalid query");
     }
 }
