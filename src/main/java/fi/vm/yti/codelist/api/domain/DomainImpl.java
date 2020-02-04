@@ -915,21 +915,20 @@ public class DomainImpl implements Domain {
         return members;
     }
 
-    @SuppressWarnings("unused")
-    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
+    @SuppressWarnings({ "ResultOfMethodCallIgnored" })
     public MemberDTO getMember(final String memberId,
                                final String extensionCodeValue) {
-        boolean memberIdIsUUID = true;
+        boolean memberIdIsUuid = true;
         try {
-            final UUID theUuid = UUID.fromString(memberId);
+            UUID.fromString(memberId);
         } catch (final Exception e) {
-            memberIdIsUUID = false;
+            memberIdIsUuid = false;
         }
         if (checkIfIndexExists(ELASTIC_INDEX_MEMBER)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_MEMBER);
             final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
-            if (memberIdIsUUID) {
+            if (memberIdIsUuid) {
                 final BoolQueryBuilder builder = boolQuery().must(matchQuery("id", memberId.toLowerCase()));
                 searchBuilder.query(builder);
                 searchRequest.source(searchBuilder);
