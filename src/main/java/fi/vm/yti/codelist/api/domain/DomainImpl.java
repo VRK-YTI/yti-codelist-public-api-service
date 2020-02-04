@@ -690,7 +690,7 @@ public class DomainImpl implements Domain {
 
     public Set<ExternalReferenceDTO> getExternalReferences(final String externalReferencePrefLabel,
                                                            final CodeSchemeDTO codeScheme,
-                                                           final Boolean full,
+                                                           final boolean full,
                                                            final Meta meta) {
         validatePageSize(meta);
         final Set<ExternalReferenceDTO> externalReferences = new LinkedHashSet<>();
