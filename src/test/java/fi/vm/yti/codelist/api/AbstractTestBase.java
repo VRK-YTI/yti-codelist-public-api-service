@@ -58,13 +58,14 @@ abstract public class AbstractTestBase {
     @Inject
     private Domain domain;
 
-    protected void createAndIndexMockData() {
+    protected boolean createAndIndexMockData() {
         createAndIndexMockCodeRegistries();
         final Set<CodeRegistryDTO> codeRegistries = domain.getCodeRegistries();
         createAndIndexMockCodeSchemes(codeRegistries);
         final Set<CodeSchemeDTO> codeSchemes = domain.getCodeSchemes();
         createAndIndexMockCodes(codeSchemes);
         LOG.debug("Mock data indexed!");
+        return true;
     }
 
     private void createAndIndexMockCodeRegistries() {

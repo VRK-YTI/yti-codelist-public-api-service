@@ -60,8 +60,8 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @Parameter(description = "CodeScheme PrefLabel as string value.", in = ParameterIn.QUERY) @QueryParam("prefLabel") final String codeSchemePrefLabel,
                                    @Parameter(description = "Language code for sorting results.", in = ParameterIn.QUERY) @QueryParam("language") @DefaultValue("fi") final String language,
                                    @Parameter(description = "Search term for matching codeValue and prefLabel.", in = ParameterIn.QUERY) @QueryParam("searchTerm") final String searchTerm,
-                                   @Parameter(description = "Boolean that controls is search also matches codes' codeValues and prefLabels inside CodeSchemes.", in = ParameterIn.QUERY) @QueryParam("searchCodes") @DefaultValue("false") final Boolean searchCodes,
-                                   @Parameter(description = "Boolean that controls is search also matches extensions' codeValues and prefLabels inside CodeSchemes.", in = ParameterIn.QUERY) @QueryParam("searchExtensions") @DefaultValue("false") final Boolean searchExtensions,
+                                   @Parameter(description = "Boolean that controls is search also matches codes' codeValues and prefLabels inside CodeSchemes.", in = ParameterIn.QUERY) @QueryParam("searchCodes") @DefaultValue("false") final boolean searchCodes,
+                                   @Parameter(description = "Boolean that controls is search also matches extensions' codeValues and prefLabels inside CodeSchemes.", in = ParameterIn.QUERY) @QueryParam("searchExtensions") @DefaultValue("false") final boolean searchExtensions,
                                    @Parameter(description = "Status enumerations in CSL format.", in = ParameterIn.QUERY) @QueryParam("status") final String status,
                                    @Parameter(description = "Extension PropertyType localName as string value for searching.", in = ParameterIn.QUERY) @QueryParam("extensionPropertyType") final String extensionPropertyType,
                                    @Parameter(description = "Format for content.", in = ParameterIn.QUERY) @QueryParam("format") @DefaultValue(FORMAT_JSON) final String format,
@@ -71,7 +71,7 @@ public class CodeSchemeResource extends AbstractBaseResource {
                                    @Parameter(description = "Sort mode for response values.", in = ParameterIn.QUERY) @QueryParam("sortMode") @DefaultValue("default") final String sortMode,
                                    @Parameter(description = "Organizations filtering parameter, results will be codeschemes belonging to these organizations", in = ParameterIn.QUERY) @QueryParam("organizations") final String organizationsCsv,
                                    @Parameter(description = "User organizations filtering parameter, for filtering unfinished code schemes", in = ParameterIn.QUERY) @QueryParam("userOrganizations") final String userOrganizationsCsv,
-                                   @Parameter(description = "Include INCOMPLETE statused code schemes.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final Boolean includeIncomplete,
+                                   @Parameter(description = "Include INCOMPLETE statused code schemes.", in = ParameterIn.QUERY) @QueryParam("includeIncomplete") @DefaultValue("false") final boolean includeIncomplete,
                                    @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         final Meta meta = new Meta(200, pageSize, from, parseDateFromString(after), parseDateFromString(before));
         final List<String> infoDomainsList = parseInfoDomainsCls(infoDomain);

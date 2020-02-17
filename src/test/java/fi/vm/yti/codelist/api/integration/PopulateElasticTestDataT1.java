@@ -1,5 +1,6 @@
 package fi.vm.yti.codelist.api.integration;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -23,7 +24,7 @@ public class PopulateElasticTestDataT1 extends AbstractTestBase {
     @Test
     public void populateData() {
         LOG.debug("Indexing mock data to data ElasticSearch.");
-        createAndIndexMockData();
+        Assert.assertTrue(createAndIndexMockData());
         LOG.debug("Indexing done.");
     }
 }

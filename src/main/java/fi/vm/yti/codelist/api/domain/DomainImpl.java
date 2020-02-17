@@ -36,7 +36,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.StdDateFormat;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fi.vm.yti.codelist.api.dto.ResourceDTO;
 import fi.vm.yti.codelist.api.exception.JsonParsingException;
 import fi.vm.yti.codelist.api.exception.YtiCodeListException;
@@ -690,7 +689,7 @@ public class DomainImpl implements Domain {
 
     public Set<ExternalReferenceDTO> getExternalReferences(final String externalReferencePrefLabel,
                                                            final CodeSchemeDTO codeScheme,
-                                                           final Boolean full,
+                                                           final boolean full,
                                                            final Meta meta) {
         validatePageSize(meta);
         final Set<ExternalReferenceDTO> externalReferences = new LinkedHashSet<>();
@@ -915,21 +914,20 @@ public class DomainImpl implements Domain {
         return members;
     }
 
-    @SuppressWarnings("unused")
-    @SuppressFBWarnings("DLS_DEAD_LOCAL_STORE")
+    @SuppressWarnings({ "ResultOfMethodCallIgnored" })
     public MemberDTO getMember(final String memberId,
                                final String extensionCodeValue) {
-        boolean memberIdIsUUID = true;
+        boolean memberIdIsUuid = true;
         try {
-            final UUID theUuid = UUID.fromString(memberId);
+            UUID.fromString(memberId);
         } catch (final Exception e) {
-            memberIdIsUUID = false;
+            memberIdIsUuid = false;
         }
         if (checkIfIndexExists(ELASTIC_INDEX_MEMBER)) {
             final ObjectMapper mapper = createObjectMapperWithRegisteredModules();
             final SearchRequest searchRequest = createSearchRequest(ELASTIC_INDEX_MEMBER);
             final SearchSourceBuilder searchBuilder = new SearchSourceBuilder();
-            if (memberIdIsUUID) {
+            if (memberIdIsUuid) {
                 final BoolQueryBuilder builder = boolQuery().must(matchQuery("id", memberId.toLowerCase()));
                 searchBuilder.query(builder);
                 searchRequest.source(searchBuilder);
@@ -975,9 +973,9 @@ public class DomainImpl implements Domain {
             final BoolQueryBuilder builder = constructAndOrQueryForPrefLabelAndCodeValue(searchTerm);
             embedAfterBeforeToBoolQuery(builder, meta);
             addLanguagePrefLabelSort(language, "codeValue.raw", "codeValue.raw", searchBuilder);
-            if (includedContainerUris != null && includedContainerUris.size() > 0) {
+            if (includedContainerUris != null && !includedContainerUris.isEmpty()) {
                 builder.must(termsQuery("uri", includedContainerUris));
-            } else if (excludedContainerUris != null && excludedContainerUris.size() > 0) {
+            } else if (excludedContainerUris != null && !excludedContainerUris.isEmpty()) {
                 builder.mustNot(termsQuery("uri", excludedContainerUris));
             }
             if (statuses != null && !statuses.isEmpty()) {
@@ -1105,9 +1103,9 @@ public class DomainImpl implements Domain {
             if (statuses != null && !statuses.isEmpty()) {
                 builder.must(termsQuery("status.keyword", statuses));
             }
-            if (includedResourceUris != null && includedResourceUris.size() > 0) {
+            if (includedResourceUris != null && !includedResourceUris.isEmpty()) {
                 builder.must(termsQuery("uri", includedResourceUris));
-            } else if (excludedResourceUris != null && excludedResourceUris.size() > 0) {
+            } else if (excludedResourceUris != null && !excludedResourceUris.isEmpty()) {
                 builder.mustNot(termsQuery("uri", excludedResourceUris));
             }
             addLanguagePrefLabelSort(language, "codeValue.raw", "codeValue.raw", searchBuilder);
@@ -1287,34 +1285,25 @@ public class DomainImpl implements Domain {
 
     private SearchRequest createSearchRequest(final String indexName) {
         switch (indexName) {
-            case ELASTIC_INDEX_CODEREGISTRY: {
+            case ELASTIC_INDEX_CODEREGISTRY:
                 return createSearchRequest(ELASTIC_INDEX_CODEREGISTRY, ELASTIC_TYPE_CODEREGISTRY);
-            }
-            case ELASTIC_INDEX_CODESCHEME: {
+            case ELASTIC_INDEX_CODESCHEME:
                 return createSearchRequest(ELASTIC_INDEX_CODESCHEME, ELASTIC_TYPE_CODESCHEME);
-            }
-            case ELASTIC_INDEX_CODE: {
+            case ELASTIC_INDEX_CODE:
                 return createSearchRequest(ELASTIC_INDEX_CODE, ELASTIC_TYPE_CODE);
-            }
-            case ELASTIC_INDEX_EXTENSION: {
+            case ELASTIC_INDEX_EXTENSION:
                 return createSearchRequest(ELASTIC_INDEX_EXTENSION, ELASTIC_TYPE_EXTENSION);
-            }
-            case ELASTIC_INDEX_MEMBER: {
+            case ELASTIC_INDEX_MEMBER:
                 return createSearchRequest(ELASTIC_INDEX_MEMBER, ELASTIC_TYPE_MEMBER);
-            }
-            case ELASTIC_INDEX_EXTERNALREFERENCE: {
+            case ELASTIC_INDEX_EXTERNALREFERENCE:
                 return createSearchRequest(ELASTIC_INDEX_EXTERNALREFERENCE, ELASTIC_TYPE_EXTERNALREFERENCE);
-            }
-            case ELASTIC_INDEX_PROPERTYTYPE: {
+            case ELASTIC_INDEX_PROPERTYTYPE:
                 return createSearchRequest(ELASTIC_INDEX_PROPERTYTYPE, ELASTIC_TYPE_PROPERTYTYPE);
-            }
-            case ELASTIC_INDEX_VALUETYPE: {
+            case ELASTIC_INDEX_VALUETYPE:
                 return createSearchRequest(ELASTIC_INDEX_VALUETYPE, ELASTIC_TYPE_VALUETYPE);
-            }
-            default: {
+            default:
                 LOG.error("Trying to create search request with non-supported index: " + indexName);
                 throw new YtiCodeListException(new ErrorModel(HttpStatus.INTERNAL_SERVER_ERROR.value(), ELASTIC_QUERY_ERROR));
-            }
         }
     }
 }

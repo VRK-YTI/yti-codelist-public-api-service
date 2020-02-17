@@ -31,7 +31,7 @@ public class ApiUtils {
         builder.append(publicApiServiceProperties.getScheme());
         builder.append("://");
         builder.append(publicApiServiceProperties.getHost());
-        if (port != null && port.length() > 0) {
+        if (port != null && !port.isEmpty()) {
             builder.append(":");
             builder.append(port);
         }
@@ -135,7 +135,7 @@ public class ApiUtils {
         builder.append(publicApiServiceProperties.getScheme());
         builder.append("://");
         builder.append(publicApiServiceProperties.getHost());
-        if (port != null && port.length() > 0) {
+        if (port != null && !port.isEmpty()) {
             builder.append(":");
             builder.append(port);
         }
@@ -151,7 +151,7 @@ public class ApiUtils {
         builder.append(frontendProperties.getScheme());
         builder.append("://");
         builder.append(frontendProperties.getHost());
-        if (port != null && port.length() > 0) {
+        if (port != null && !port.isEmpty()) {
             builder.append(":");
             builder.append(port);
         }

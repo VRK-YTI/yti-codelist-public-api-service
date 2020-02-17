@@ -19,7 +19,6 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 public class SpringAppConfig {
 
     private static final int ES_CONNECTION_TIMEOUT = 300000;
-    private static final int ES_RETRY_TIMEOUT = 60000;
 
     @Value("${yti_codelist_public_api_service_elastic_host}")
     protected String elasticsearchHost;
@@ -63,8 +62,7 @@ public class SpringAppConfig {
             .setRequestConfigCallback(
                 requestConfigBuilder -> requestConfigBuilder
                     .setConnectTimeout(ES_CONNECTION_TIMEOUT)
-                    .setSocketTimeout(ES_CONNECTION_TIMEOUT))
-            .setMaxRetryTimeoutMillis(ES_RETRY_TIMEOUT);
+                    .setSocketTimeout(ES_CONNECTION_TIMEOUT));
         return new RestHighLevelClient(builder);
     }
 }

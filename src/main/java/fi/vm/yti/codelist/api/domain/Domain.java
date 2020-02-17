@@ -93,7 +93,7 @@ public interface Domain {
 
     Set<ExternalReferenceDTO> getExternalReferences(final String externalReferencePrefLabel,
                                                     final CodeSchemeDTO codeScheme,
-                                                    final Boolean full,
+                                                    final boolean full,
                                                     final Meta meta);
 
     Set<ExtensionDTO> getExtensions(final CodeSchemeDTO codeScheme);
