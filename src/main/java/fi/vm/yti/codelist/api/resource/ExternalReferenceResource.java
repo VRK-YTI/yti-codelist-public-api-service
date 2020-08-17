@@ -32,7 +32,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 @Path("/v1/externalreferences")
-@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
 @Tag(name = "ExternalReference")
 public class ExternalReferenceResource extends AbstractBaseResource {
 
@@ -49,7 +49,7 @@ public class ExternalReferenceResource extends AbstractBaseResource {
     @GET
     @Operation(description = "Return a list of available ExternalReferences.")
     @ApiResponse(responseCode = "200", description = "Returns all ExternalReferences in specified format.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
     public Response getExternalReferences(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                           @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
                                           @Parameter(description = "ExternalReference name as string value.", in = ParameterIn.QUERY) @QueryParam("name") final String name,

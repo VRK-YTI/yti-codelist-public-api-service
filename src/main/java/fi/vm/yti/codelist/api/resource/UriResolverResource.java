@@ -45,7 +45,7 @@ import static fi.vm.yti.codelist.api.util.EncodingUtils.*;
 
 @Component
 @Path("/v1/uris")
-@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
 @Tag(name = "Resolver")
 public class UriResolverResource extends AbstractBaseResource {
 

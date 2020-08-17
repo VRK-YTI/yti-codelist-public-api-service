@@ -33,7 +33,7 @@ import static java.util.Arrays.asList;
 
 @Component
 @Path("/v1/codeschemes")
-@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
 @Tag(name = "CodeScheme")
 public class CodeSchemeResource extends AbstractBaseResource {
 

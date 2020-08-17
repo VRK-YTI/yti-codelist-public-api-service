@@ -31,7 +31,7 @@ import static fi.vm.yti.codelist.common.constants.ApiConstants.*;
 
 @Component
 @Path("/v1/valuetypes")
-@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
 @Tag(name = "ValueType")
 public class ValueTypeResource extends AbstractBaseResource {
 
@@ -48,7 +48,7 @@ public class ValueTypeResource extends AbstractBaseResource {
     @GET
     @Operation(description = "Return a list of available ValueTypes.")
     @ApiResponse(responseCode = "200", description = "Returns all ValueTypes in specified format.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
     public Response getValueTypes(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                   @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
                                   @Parameter(description = "ValueType localName as string value.", in = ParameterIn.QUERY) @QueryParam("localName") final String localName,

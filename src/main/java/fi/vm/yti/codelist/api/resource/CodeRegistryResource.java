@@ -51,7 +51,7 @@ import static java.util.Arrays.asList;
 
 @Component
 @Path("/v1/coderegistries")
-@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+@Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
 public class CodeRegistryResource extends AbstractBaseResource {
 
     private static final String HEADER_CONTENT_DISPOSITION = "content-disposition";
@@ -83,7 +83,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @GET
     @Operation(summary = "Return a list of available CodeRegistries.")
     @ApiResponse(responseCode = "200", description = "Returns all CodeRegistries in specified format.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
     @Tag(name = "CodeRegistry")
     public Response getCodeRegistries(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                       @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
@@ -143,7 +143,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Path("{codeRegistryCodeValue}/codeschemes/")
     @Operation(description = "Return CodeSchemes for a CodeRegistry.")
     @ApiResponse(responseCode = "200", description = "Returns CodeSchemes for a CodeRegistry in specified format.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
     @Tag(name = "CodeScheme")
     public Response getCodeRegistryCodeSchemes(@Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                                @Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
@@ -193,7 +193,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}")
     @Operation(description = "Return one specific CodeScheme.")
     @ApiResponse(responseCode = "200", description = "Returns one specific CodeScheme in JSON format.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", MediaType.TEXT_PLAIN + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
     @Tag(name = "CodeScheme")
     public Response getCodeRegistryCodeScheme(@Parameter(description = "CodeRegistry CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeRegistryCodeValue") final String codeRegistryCodeValue,
                                               @Parameter(description = "CodeScheme CodeValue.", in = ParameterIn.PATH, required = true) @PathParam("codeSchemeCodeValue") final String codeSchemeCodeValue,
@@ -262,7 +262,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/codes/")
     @Operation(description = "Return Codes for a CodeScheme.")
     @ApiResponse(responseCode = "200", description = "Returns all Codes for CodeScheme in specified format.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
     @Tag(name = "Code")
     public Response getCodeRegistryCodeSchemeCodes(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                                    @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
@@ -403,7 +403,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/extensions/{extensionCodeValue}/members/")
     @Operation(description = "Return Members for an Extension.")
     @ApiResponse(responseCode = "200", description = "Returns all Members for an Extension.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
     @Tag(name = "Member")
     public Response getCodeRegistryCodeSchemeExtensionMembers(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                                               @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
@@ -478,7 +478,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
     @Path("{codeRegistryCodeValue}/codeschemes/{codeSchemeCodeValue}/externalreferences/")
     @Operation(description = "Return ExternalReferences for a CodeScheme.")
     @ApiResponse(responseCode = "200", description = "Returns all ExternalReferences for CodeScheme.")
-    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/xlsx", "application/csv" })
+    @Produces({ MediaType.APPLICATION_JSON + ";charset=UTF-8", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv" })
     @Tag(name = "ExternalReference")
     public Response getCodeRegistryCodeSchemeExternalReferences(@Parameter(description = "Pagination parameter for page size.", in = ParameterIn.QUERY) @QueryParam("pageSize") final Integer pageSize,
                                                                 @Parameter(description = "Pagination parameter for start index.", in = ParameterIn.QUERY) @QueryParam("from") @DefaultValue("0") final Integer from,
