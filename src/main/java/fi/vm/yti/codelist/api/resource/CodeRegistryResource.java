@@ -462,7 +462,7 @@ public class CodeRegistryResource extends AbstractBaseResource {
                                                              @Parameter(description = "Pretty format JSON output.", in = ParameterIn.QUERY) @QueryParam("pretty") final String pretty) {
         final ExtensionDTO extension = domain.getExtension(codeRegistryCodeValue, codeSchemeCodeValue, extensionCodeValue);
         if (extension != null) {
-            final MemberDTO member = domain.getMember(memberId, extensionCodeValue);
+            final MemberDTO member = domain.getMember(memberId, extensionCodeValue, codeSchemeCodeValue);
             if (member != null) {
                 ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_MEMBER, expand), pretty));
                 return Response.ok(member).build();
