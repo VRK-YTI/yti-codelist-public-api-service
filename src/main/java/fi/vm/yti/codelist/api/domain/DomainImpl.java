@@ -914,9 +914,14 @@ public class DomainImpl implements Domain {
         return members;
     }
 
+    public MemberDTO getMember(String memberId, String extensionCodeValue) {
+        return getMember(memberId, extensionCodeValue, null);
+    }
+
     @SuppressWarnings({ "ResultOfMethodCallIgnored" })
     public MemberDTO getMember(final String memberId,
-                               final String extensionCodeValue) {
+                               final String extensionCodeValue,
+                               String parentCodeSchemeValue) {
         boolean memberIdIsUuid = true;
         try {
             UUID.fromString(memberId);
@@ -933,6 +938,10 @@ public class DomainImpl implements Domain {
                 searchRequest.source(searchBuilder);
             } else {
                 final BoolQueryBuilder builder = boolQuery().must(matchQuery("sequenceId", memberId)).must(matchQuery("extension.codeValue", extensionCodeValue));
+
+                if (parentCodeSchemeValue != null) {
+                    builder.must(matchQuery("extension.parentCodeScheme.codeValue", parentCodeSchemeValue));
+                }
                 searchBuilder.query(builder);
                 searchRequest.source(searchBuilder);
             }

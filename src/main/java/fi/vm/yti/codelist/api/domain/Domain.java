@@ -122,6 +122,10 @@ public interface Domain {
     MemberDTO getMember(final String memberId,
                         final String extensionCodeValue);
 
+    MemberDTO getMember(final String memberId,
+                        final String extensionCodeValue,
+                        final String parentCodeSchemeValue);
+
     Set<ResourceDTO> getContainers(final List<String> includedContainerUris,
                                    final List<String> excludedContainerUris,
                                    final String language,
