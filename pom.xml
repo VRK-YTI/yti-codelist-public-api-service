@@ -91,7 +91,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.6</version><!--$NO-MVN-MAN-VER$ -->
+            <version>2.7</version><!--$NO-MVN-MAN-VER$ -->
         </dependency>
 
         <!-- Apache POI -->
