@@ -1,5 +1,5 @@
 # Pull base image
-FROM yti-docker-java-base:alpine
+FROM yti-docker-java11-base:alpine
 
 # Deploy project
 ADD target/yti-codelist-public-api-service.jar ${deploy_dir}/yti-codelist-public-api-service.jar
