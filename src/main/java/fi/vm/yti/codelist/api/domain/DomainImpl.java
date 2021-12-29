@@ -278,7 +278,10 @@ public class DomainImpl implements Domain {
                 builder.must(luceneQueryFactory.buildPrefixSuffixQuery(codeSchemePrefLabel).field("prefLabel.*"));
             }
             if (organizationIds != null && !organizationIds.isEmpty()) {
-                builder.must(nestedQuery("organizations", termsQuery("organizations.id.keyword", organizationIds), ScoreMode.None));
+                BoolQueryBuilder organizationQuery = boolQuery();
+                organizationQuery.should(nestedQuery("organizations", termsQuery("organizations.id.keyword", organizationIds), ScoreMode.None));
+                organizationQuery.should(nestedQuery("organizations", termsQuery("organizations.parent.id.keyword", organizationIds), ScoreMode.None));
+                builder.must(organizationQuery);
             }
             if (codeRegistryCodeValue != null && !codeRegistryCodeValue.isEmpty()) {
                 builder.must(matchQuery("codeRegistry.codeValue", codeRegistryCodeValue.toLowerCase()).analyzer(TEXT_ANALYZER));
