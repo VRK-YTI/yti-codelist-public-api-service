@@ -11,7 +11,7 @@ import fi.vm.yti.codelist.api.configuration.PublicApiServiceProperties;
 @Provider
 public class RobotsFilter implements ContainerResponseFilter {
 
-    private static final String DEV_DOMAIN = ".yti.cloud.vrk.fi";
+    private static final String DEV_DOMAIN = ".yti.cloud.dvv.fi";
 
     private final PublicApiServiceProperties publicApiServiceProperties;
 

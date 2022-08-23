@@ -20,8 +20,8 @@ yti_codelist_public_api_service_elastic_host: ${environment.elastic.host}
 yti_codelist_public_api_service_elastic_port: ${testelasticsearch.http.port}
 
 groupmanagement:
-  url: https://rhp.dev.yti.cloud.vrk.fi
-  publicUrl: https://rhp.dev.yti.cloud.vrk.fi
+  url: https://rhp.dev.yti.cloud.dvv.fi
+  publicUrl: https://rhp.dev.yti.cloud.dvv.fi
 
 environment:
   elastic:
