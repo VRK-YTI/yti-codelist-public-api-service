@@ -1,9 +1,6 @@
 package fi.vm.yti.codelist.api.resource;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
@@ -256,6 +253,22 @@ public class CodeRegistryResource extends AbstractBaseResource {
         } else {
             throw new NotFoundException();
         }
+    }
+
+
+    @GET
+    @Path("codes")
+    public Set<CodeDTO> getFromList(@QueryParam("uri") List<String> uriList) {
+        List<String> statuses = List.of();
+        final Meta meta = new Meta(200, null, 0, parseDateFromString(null), parseDateFromString(null));
+        var codes = new HashSet<CodeDTO>();
+        uriList.forEach(uri -> {
+            var splitUri = uri.split("/");
+            ObjectWriterInjector.set(new FilterModifier(createSimpleFilterProvider(FILTER_NAME_CODE, null), null));
+            var dtos = domain.getCodes(splitUri[splitUri.length-2], splitUri[splitUri.length-1], null, null, null, null, null, statuses, meta);
+            codes.addAll(dtos);
+        });
+        return codes;
     }
 
     @GET
