@@ -509,7 +509,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <spotify-docker.version>1.2.2</spotify-docker.version>
-        <elastic.version>7.17.13</elastic.version>
+        <elastic.version>6.8.22</elastic.version>
         <swagger.version>2.1.10</swagger.version>
         <swagger-ui.version>3.23.11</swagger-ui.version>
         <apache.poi.version>5.0.0</apache.poi.version>
