@@ -280,30 +280,6 @@
                 </configuration>
             </plugin>
 
-            <!-- Spotify docker maven plugin -->
-            <plugin>
-                <groupId>com.spotify</groupId>
-                <artifactId>docker-maven-plugin</artifactId>
-                <version>${spotify-docker.version}</version>
-                <configuration>
-                    <imageName>yti-codelist-public-api-service</imageName>
-                    <dockerDirectory>docker</dockerDirectory>
-                    <pullOnBuild>false</pullOnBuild>
-                    <resources>
-                        <resource>
-                            <targetPath>/target</targetPath>
-                            <directory>${project.build.directory}</directory>
-                            <include>${project.build.finalName}.jar</include>
-                        </resource>
-                        <resource>
-                            <targetPath>/target</targetPath>
-                            <directory>${project.build.outputDirectory}</directory>
-                            <include>${git.properties}</include>
-                        </resource>
-                    </resources>
-                </configuration>
-            </plugin>
-
             <!-- Swagger UI download -->
             <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
@@ -508,7 +484,6 @@
         <git.properties>git.properties</git.properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <spotify-docker.version>1.2.2</spotify-docker.version>
         <elastic.version>6.8.22</elastic.version>
         <swagger.version>2.1.10</swagger.version>
         <swagger-ui.version>3.23.11</swagger-ui.version>
