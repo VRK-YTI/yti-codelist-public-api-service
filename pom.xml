@@ -358,14 +358,14 @@
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.26.1</version>
+                <version>0.38.1</version>
                 <configuration>
                     <startParallel>true</startParallel>
                     <skip>${skipTests}</skip>
                     <portPropertyFile>target/test-classes/test-port.properties</portPropertyFile>
                     <images>
                         <image>
-                            <name>docker.elastic.co/elasticsearch/elasticsearch:6.5.4</name>
+                            <name>docker.elastic.co/elasticsearch/elasticsearch:6.8.22</name>
                             <alias>${project.artifactId}_test_elastic</alias>
                             <run>
                                 <namingStrategy>alias</namingStrategy>
