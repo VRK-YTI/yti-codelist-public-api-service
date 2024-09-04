@@ -2,7 +2,7 @@
 FROM yti-docker-java-base:corretto-11.0.22
 
 # Deploy project
-ADD target/yti-codelist-public-api-service.jar ${deploy_dir}/yti-codelist-public-api-service.jar
+ADD target/yti-codelist-public-api-service.jar yti-codelist-public-api-service.jar
 
 # Expose port
 EXPOSE 9601
